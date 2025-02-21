@@ -1,10 +1,15 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCategories } from 'features/categorySlice';
+import { addCategories, deleteCategories, fetchCategories } from 'features/categorySlice';
 import { Box, List, ListItem, ListItemText, Grid , Typography, IconButton, Button, useTheme, useMediaQuery, Dialog, DialogContent, DialogTitle, TextField, DialogActions } from "@mui/material";
 import { Add, Print, Delete, ModeEdit } from '@mui/icons-material';
 import CustomSnackbar from 'component/CustomSnackbar';
 import { useState } from 'react';
+
+const initialCategoryState = {
+    name : "",
+    description : ""
+}
 
 const CategoriesList = () => {
     const dispatch = useDispatch();
@@ -12,16 +17,53 @@ const CategoriesList = () => {
     const [openDialog , setOpenDialog] = useState(false);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    const [category , setNewCategory] = useState(initialCategoryState);
+    const [formErrors , setFormErrors] = useState({});
+
 
     useEffect(() => {
         dispatch(fetchCategories());  // Fetch categories on mount
     }, [dispatch]);
 
     const handleDelete = (id) => {
-        console.log("Delete category with ID:", id);
-        // Dispatch delete action here if needed
+        dispatch(deleteCategories(id));
     };
 
+    const validateForm = () => {
+        const errors = ["name", "description"].reduce((acc, field) => {
+            if (!category[field] || !category[field].trim()) {  // Check if field exists before calling .trim()
+                acc[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+            }
+            return acc;
+        }, {});
+    
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+    
+    
+
+    const handleInputChange = (e) => {
+        const { name , value } = e.target;
+        setNewCategory((prev) => ({ ...prev , [name] : value.trimStart() }));
+        setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if(!validateForm()) return;
+
+        await dispatch(addCategories(category));
+
+        setOpenDialog(false);
+        setNewCategory(initialCategoryState)
+    }
+
+    const handleEdit = (id) => {
+        console.log("Edit category with ID:", id);
+    };
+    
     return (    
         <>
         <Box sx={{ maxWidth: "auto", mx: "auto", p: 2 }}>
@@ -90,12 +132,12 @@ const CategoriesList = () => {
             </DialogTitle>
             <DialogContent dividers>
                 <Box sx={{display: "grid" , gap : 1.5}}>
-                    <TextField label="name" name='name' ></TextField>
-                    <TextField label="description" name='discription' ></TextField>
+                    <TextField label="name" name='name' value={category.name} onChange={handleInputChange} error={!!formErrors.name} helperText={formErrors.name}></TextField>
+                    <TextField label="description" name='description' value={category.description} onChange={handleInputChange} error={!!formErrors.description} helperText={formErrors.description}></TextField>
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => console.log("data inserted")} variant="contained" color="primary"> Add </Button>
+                <Button onClick={handleSubmit} variant="contained" color="primary"> Add </Button>
             </DialogActions>
         </Dialog>
         <CustomSnackbar />
