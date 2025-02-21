@@ -5,7 +5,7 @@ import {
     CircularProgress, useMediaQuery, useTheme
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { AddProduct, resetProductState } from "features/productSlice";
+import { AddProduct ,resetProductState} from "features/productSlice";
 import { fetchCategories } from "features/categorySlice";
 import CustomSnackbar from "./CustomSnackbar";  // Import Snackbar component
 
@@ -38,10 +38,17 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
 
     useEffect(() => {
         if (message || error) {
-            setSnackbar({open : true , message: message || error , severity : message ? "success" : "error"});
-            dispatch(resetProductState());
+            setSnackbar({ open: true, message: message || error, severity: message ? "success" : "error" });
+    
+            // Reset message after 3 seconds
+            const timer = setTimeout(() => {
+                dispatch(resetProductState());
+            }, 3000);
+    
+            return () => clearTimeout(timer); // Cleanup timeout if component unmounts
         }
     }, [message, error, dispatch]);
+    
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -73,10 +80,9 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+        
         // Validate the form
         if (!validateForm()) return;
-    
         // Check if sellerId exists
         if (!sellerId) {
             setSnackbar({ open: true, message: "Seller ID not found. Please log in again.", severity: "error" });
@@ -99,9 +105,10 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
         if (product) {
             handleUpdate(formData);
             resetForm();
+            
         } else {
             try {
-                await dispatch(AddProduct(formData)).unwrap();
+                await dispatch(AddProduct(formData));
                 resetForm();
             } catch (error) {
                 console.error("Error adding product:", error);
