@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { Box, Button, IconButton, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Typography, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import {
+  Box,
+  Button,
+  IconButton,
+  useMediaQuery,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
+} from '@mui/material';
 import { Visibility, Add, Print } from '@mui/icons-material';
 import AddProductDialog from '../../../../component/AddProductDialog';
 import { useDispatch, useSelector } from 'react-redux';
@@ -36,9 +50,10 @@ const ProductList = () => {
   const sellers = [...new Set(products.map((p) => p.sellerId?.name))];
 
   // Filter products based on selection
-  const filteredProducts = products.filter((product) =>
-    (selectedCategory ? product.category === selectedCategory : true) &&
-    (selectedSeller ? product.sellerId?.name === selectedSeller : true)
+  const filteredProducts = products.filter(
+    (product) =>
+      (selectedCategory ? product.category === selectedCategory : true) &&
+      (selectedSeller ? product.sellerId?.name === selectedSeller : true)
   );
 
   const closeViewDialog = () => {
@@ -174,8 +189,10 @@ const ProductList = () => {
           <InputLabel>Category</InputLabel>
           <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
             <MenuItem value="All">All</MenuItem>
-            {categories.map((cat,index) => (
-              <MenuItem key={index} value={cat}>{cat}</MenuItem>
+            {categories.map((cat, index) => (
+              <MenuItem key={index} value={cat}>
+                {cat}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -185,15 +202,21 @@ const ProductList = () => {
           <Select value={selectedSeller} onChange={(e) => setSelectedSeller(e.target.value)}>
             <MenuItem value="">All</MenuItem>
             {sellers.map((seller, index) => (
-              <MenuItem key={index} value={seller}>{seller}</MenuItem>
+              <MenuItem key={index} value={seller}>
+                {seller}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
 
-        <Button variant="contained" color="secondary" onClick={() => {
-          setSelectedCategory('');
-          setSelectedSeller('');
-        }}>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => {
+            setSelectedCategory('');
+            setSelectedSeller('');
+          }}
+        >
           Reset
         </Button>
         <Button
