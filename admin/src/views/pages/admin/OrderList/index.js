@@ -101,11 +101,7 @@ const OrderList = () => {
   };
 
   const columns = [
-    { field: 'index',
-      headerName: 'No',
-      width: 60,
-      renderCell: (params) => params.api.getRowIndexRelativeToVisibleRows(params.id) + 1
-    },
+    { field: 'index', headerName: 'No', width: 60, renderCell: (params) => params.api.getRowIndexRelativeToVisibleRows(params.id) + 1 },
     { field: 'orderId', headerName: 'Order ID', width: isMobile ? 100 : 150 },
     { field: 'userId', headerName: 'User ID', width: isMobile ? 120 : 200 },
     {
@@ -114,7 +110,7 @@ const OrderList = () => {
       width: isMobile ? 100 : 150,
       renderCell: (params) => params.row.paymentId?.cardHolderName || 'N/A'
     },
-    
+
     {
       field: 'totalPrice',
       headerName: 'Total ($)',
@@ -129,14 +125,14 @@ const OrderList = () => {
       width: 150,
       renderCell: (params) => {
         if (!params.row.items || !Array.isArray(params.row.items)) return 'N/A';
-    
+
         const sellerNames = params.row.items
-          .map(item => item.sellerId && item.sellerId.name ? item.sellerId.name : 'Unknown')
-          .filter(name => name !== 'Unknown'); // Remove empty values
-    
+          .map((item) => (item.sellerId && item.sellerId.name ? item.sellerId.name : 'Unknown'))
+          .filter((name) => name !== 'Unknown'); // Remove empty values
+
         return sellerNames.length > 0 ? sellerNames.join(', ') : 'N/A';
       }
-    },    
+    },
 
     {
       field: 'actions',
