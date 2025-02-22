@@ -41,22 +41,22 @@ const other = {
       roles: [0]
     },
     {
+      id: 'order',
+      title: 'Order List',
+      type: 'item',
+      url: '/order-list',
+      icon: icons.ShoppingCart,
+      breadcrumbs: false,
+      roles: [0,1]
+    },
+    {
       id: 'product',
       title: 'Product List',
       type: 'item',
       url: '/product-list',
       icon: icons.ShoppingBag,
       breadcrumbs: false,
-      roles: [1]
-    },
-    {
-      id: 'Order',
-      title: 'Order List',
-      type: 'item',
-      url: '/order-list',
-      icon: icons.ShoppingCart,
-      breadcrumbs: false,
-      roles: [1]
+      roles: [0,1]
     },
     {
       id: 'sample-page',

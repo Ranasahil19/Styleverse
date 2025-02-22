@@ -54,11 +54,11 @@ const UserList = () => {
             width: 80,
             renderCell: (params) => (
                 <Avatar sx={{ width: 35, height: 35 , mt :1 }}>
-                    {params.row.userName ? params.row.userName.charAt(0) : "U"}
+                    {params.row.username ? params.row.username.charAt(0) : "U"}
                 </Avatar>
             ),
         },
-        { field: "userName", headerName: "Name", width: 250 },
+        { field: "username", headerName: "Name", width: 250 },
         { field: "email", headerName: "Email", width: 250 },
         { field: "isActive", headerName: "Status", width: 120 ,
             renderCell : (params) => {

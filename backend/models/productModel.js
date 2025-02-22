@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 // Define the product schema
 const productSchema = new mongoose.Schema({
+  id: { type: String },
   title: { type: String, required: true },
   price: { type: Number, required: true }, // Ensure price is required
   description: { type: String, required: true },
@@ -13,7 +14,7 @@ const productSchema = new mongoose.Schema({
     enum: ["Popular", "Top Rated", "Average", "Luxury", "Affordable", "Standard"],
     default: "Popular",
   },
-  stock: { type: Number, required: true },
+  quantity: { type: Number, required: true },
   sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller", required: true }, // Ensure sellerId is required and correctly referenced
 }, { timestamps: true }); // Add timestamps for createdAt & updatedAt
 

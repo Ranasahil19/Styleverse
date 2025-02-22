@@ -8,6 +8,7 @@ import authReducer from "../features/authSlice";
 import productReducer from "../features/productSlice";
 import categoriesReducer from "features/categorySlice";
 import sellerReducer from "features/sellerSlice";
+import orderReducer from "../features/orderSlice";
 
 const getRootReducer = () => combineReducers({
   customization: customizationReducer,
@@ -15,7 +16,10 @@ const getRootReducer = () => combineReducers({
   auth: authReducer,
   products: productReducer,
   categories: categoriesReducer,
-  seller: sellerReducer
+  seller : sellerReducer,
+  orders: orderReducer,
+
+//   seller: sellerReducer
 });
 
 const persistConfig = {

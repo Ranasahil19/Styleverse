@@ -4,6 +4,7 @@ const Seller = require("../../models/seller");
 const fs = require('fs');
 const path = require('path');
 const validator = require("validator");
+require("dotenv").config();
 const algorithm = "aes-256-cbc";
 const secretKeyHex = process.env.REFRESH_ENCRYPTION_KEY;
 
