@@ -115,8 +115,8 @@ const ProductList = () => {
                                     <td>${product.title}</td>
                                     <td>${product.description}</td>
                                     <td>${product.category}</td>
-                                    <td>₹${product.price}</td>
-                                    <td>${product.stock > 0 ? 'In Stock' : 'Out of Stock'}</td>
+                                    <td>$${product.price}</td>
+                                    <td>${product.quantity > 0 ? 'In Stock' : 'Out of Stock'}</td>
                                     <td><img src="${product.image || 'https://via.placeholder.com/50'}" /></td>
                                 </tr>
                             `
@@ -151,10 +151,10 @@ const ProductList = () => {
             field: 'price',
             headerName: 'Price',
             width: isMobile ? 80 : 120,
-            renderCell: (params) => `₹${params.value}`
+            renderCell: (params) => `$${params.value}`
         },
         {
-            field: 'stock',
+            field: 'quantity',
             headerName: 'Stock',
             width: isMobile ? 80 : 120,
             renderCell: (params) => `${params.value >= 0 ? "In stock" : "Out of stock"}`
@@ -345,13 +345,13 @@ const ProductList = () => {
                                     <strong>Category:</strong> {selectedProduct.category}
                                 </Typography>
                                 <Typography variant="body1">
-                                    <strong>Price:</strong> ₹{selectedProduct.price}
+                                    <strong>Price:</strong> ${selectedProduct.price}
                                 </Typography>
                                 <Typography variant="body1">
                                     <strong>Description:</strong> {selectedProduct.description}
                                 </Typography>
                                 <Typography variant="body1">
-                                    <strong>Stock:</strong> {selectedProduct.stock}
+                                    <strong>Stock:</strong> {selectedProduct.quantity}
                                 </Typography>
                             </Box>
                         </Box>
