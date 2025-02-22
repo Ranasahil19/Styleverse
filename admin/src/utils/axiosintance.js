@@ -74,6 +74,7 @@ api.interceptors.response.use(
                 return api(originalRequest);
             } catch (refreshError) {
                 getStore().dispatch(logoutSeller());
+                getStore().dispatch(resetProduct());
                 alert("Your session expired login again")
                 window.location.href = "/login"; // Redirect to login
                 return Promise.reject(refreshError);

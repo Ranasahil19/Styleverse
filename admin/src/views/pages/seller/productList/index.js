@@ -4,7 +4,7 @@ import { Box, Button, IconButton, useMediaQuery, Dialog, DialogTitle, DialogCont
 import { Edit, Delete, Visibility, Add, Print } from '@mui/icons-material';
 import AddProductDialog from '../../../../component/AddProductDialog';
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteProduct, fetchProduct, resetProductState, updateProduct } from 'features/productSlice';
+import { deleteProduct, fetchProduct, removeProductFromState, updateProduct } from 'features/productSlice';
 
 const ProductList = () => {
     const [open, setOpen] = useState(false);
@@ -18,8 +18,7 @@ const ProductList = () => {
     const isMobile = useMediaQuery('(max-width: 600px)');
 
     useEffect(() => {
-        if (sellerId) {
-            dispatch(resetProductState()); // 🔥 Clear old products
+        if (sellerId) { // 🔥 Clear old products
             dispatch(fetchProduct(sellerId)); // Fetch new seller's products
         }
     }, [sellerId, dispatch]); 
@@ -32,7 +31,7 @@ const ProductList = () => {
     const confirmDelete = async () => {
         try {
             await dispatch(deleteProduct(confirmDialog.productId)).unwrap();
-            await dispatch(fetchProduct(sellerId));  // Refresh product list after delete
+            dispatch(removeProductFromState(confirmDialog.productId));  // Refresh product list after delete
         } catch (error) {
             console.error('Delete failed:', error);
         }
@@ -40,6 +39,7 @@ const ProductList = () => {
     };
 
     const handleOpen = () => setOpen(true);
+    
     const handleClose = () => {
         setOpen(false);
         setEditProduct(null);
@@ -62,8 +62,7 @@ const ProductList = () => {
         if (editProduct) {
             dispatch(updateProduct({ id: editProduct._id, updatedData }))
                 .unwrap()
-                .then(() => {
-                    dispatch(fetchProduct(sellerId)); // Refresh product list after update
+                .then(() => { 
                     setOpen(false);
                     setEditProduct(null);
                 })

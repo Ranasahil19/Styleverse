@@ -9,6 +9,7 @@ import productReducer from "../features/productSlice";
 import categoriesReducer from "features/categorySlice";
 import sellerReducer from "features/sellerSlice";
 import orderReducer from "../features/orderSlice";
+
 const getRootReducer = () => combineReducers({
   customization: customizationReducer,
   register: registrationReducer,
@@ -17,12 +18,14 @@ const getRootReducer = () => combineReducers({
   categories: categoriesReducer,
   seller : sellerReducer,
   orders: orderReducer,
+
+//   seller: sellerReducer
 });
 
 const persistConfig = {
-  key: "auth",
+  key: "root", // You can change this to any key you prefer
   storage,
-  whitelist: ["auth"],
+  whitelist: ["auth", "products", "categories"], // Add "products" and "categories" here
 };
 
 const persistedReducer = persistReducer(persistConfig, getRootReducer());
