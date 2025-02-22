@@ -29,6 +29,18 @@ export const deleteCategories = createAsyncThunk(
     }
 )
 
+export const updateCategory = createAsyncThunk(
+    "categories/update",
+    async ({ id, updateCategory }, { rejectWithValue }) => {
+        try {
+            const response = await api.put(`/api/categories/${id}`, updateCategory);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
 const categorySlice = createSlice ({
     name: "categories",
     initialState: {data:[], loading : false},
@@ -56,6 +68,16 @@ const categorySlice = createSlice ({
         .addCase(deleteCategories.fulfilled, (state , action) => {
             state.loading = false;
             state.data = state.data.filter((category) => category._id !== action.payload)
+        })
+        .addCase(updateCategory.pending, (state) => {
+            state.loading = true;
+        })
+        .addCase(updateCategory.fulfilled, (state, action) => {
+            state.loading = false;
+            const index = state.data.findIndex((c) => c._id === action.payload._id);
+            if (index !== -1) {
+              state.data[index] = action.payload;
+            }
         })
     }
 })

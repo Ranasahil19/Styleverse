@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addCategories, deleteCategories, fetchCategories } from 'features/categorySlice';
+import { addCategories, deleteCategories, fetchCategories, updateCategory } from 'features/categorySlice';
 import { Box, List, ListItem, ListItemText, Grid , Typography, IconButton, Button, useTheme, useMediaQuery, Dialog, DialogContent, DialogTitle, TextField, DialogActions } from "@mui/material";
-import { Add, Print, Delete, ModeEdit } from '@mui/icons-material';
+import { Add, Delete, ModeEdit, Print } from '@mui/icons-material';
 import CustomSnackbar from 'component/CustomSnackbar';
 import { useState } from 'react';
 
@@ -19,15 +19,35 @@ const CategoriesList = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const [category , setNewCategory] = useState(initialCategoryState);
     const [formErrors , setFormErrors] = useState({});
-
-
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, categoryId: null });
+    const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+    const [isEditing , setIsEditing] = useState(false)
+    const [editCategoryId , setEditCategoryId] = useState(null)
+    
     useEffect(() => {
         dispatch(fetchCategories());  // Fetch categories on mount
     }, [dispatch]);
 
     const handleDelete = (id) => {
-        dispatch(deleteCategories(id));
+        setConfirmDialog({open : true, categoryId: id})
     };
+
+    const handleEdit = (category) => {
+        setEditCategoryId(category._id)
+        setNewCategory({name : category.name, description: category.description});
+        setIsEditing(true);
+        setOpenDialog(true);
+    }
+
+    const confirmDelete = async () => {
+        try {
+            await dispatch(deleteCategories(confirmDialog.categoryId)).unwrap();
+            setSnackbar({ open: true, message: "Deleted successfully" });
+        } catch (error) {
+            console.error('Delete failed:', error);
+        }
+        setConfirmDialog({ open: false, categoryId: null });
+    }
 
     const validateForm = () => {
         const errors = ["name", "description"].reduce((acc, field) => {
@@ -54,16 +74,25 @@ const CategoriesList = () => {
 
         if(!validateForm()) return;
 
-        await dispatch(addCategories(category));
+        try {
+            if(isEditing){
+                await dispatch(updateCategory({id: editCategoryId , updateCategory: category})).unwrap()
+                setSnackbar({ open: true, message: "Updated successfully", severity: "success" });
+            }else{
+                await dispatch(addCategories(category)).unwrap();
+                setSnackbar({ open: true, message: "Added successfully" });
+            }
+        } catch (error) {
+            setSnackbar({ open: true, message: "Something went wrong", severity: "error" });
+
+        }
 
         setOpenDialog(false);
         setNewCategory(initialCategoryState)
+        setIsEditing(false)
+        setEditCategoryId(null)
     }
 
-    const handleEdit = (id) => {
-        console.log("Edit category with ID:", id);
-    };
-    
     return (    
         <>
         <Box sx={{ maxWidth: "auto", mx: "auto", p: 2 }}>
@@ -76,7 +105,12 @@ const CategoriesList = () => {
                 <Button
                     variant="contained"
                     sx={{ backgroundColor: '#333', color: 'white', '&:hover': { backgroundColor: '#444' } }}
-                    onClick={() => setOpenDialog(true)}
+                    onClick={() => {
+                        setOpenDialog(true);
+                        setNewCategory(initialCategoryState);// Reset category state
+                        setIsEditing(false); // Ensure it's not in edit mode
+                        setEditCategoryId(null);
+                    }}
                 >
                     <Add /> {isMobile ? '' : 'Add Category'}
                 </Button>
@@ -107,7 +141,7 @@ const CategoriesList = () => {
 
                     {/* Action Buttons */}
                     <Grid item xs={3} sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
-                        <IconButton edge="end" color="success" onClick={() => handleEdit(category._id)}>
+                        <IconButton edge="end" color="success" onClick={() => handleEdit(category)}>
                             <ModeEdit />
                         </IconButton>
                         <IconButton edge="end" color="error" onClick={() => handleDelete(category._id)}>
@@ -123,13 +157,14 @@ const CategoriesList = () => {
                     <ListItemText primary="No categories available" />
                 </ListItem>
             )}
-        </List>;
-
+        </List>
+        
         </Box>
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)}  maxWidth="sm" fullWidth sx={{ width: isMobile ? "auto":"450px", mx: "auto" }}>
-            <DialogTitle sx={{ textAlign: "center", fontWeight: "bold", fontSize: 15 }}>
-                Add Categories
-            </DialogTitle>
+        <DialogTitle sx={{ textAlign: "center", fontWeight: "bold", fontSize: 15 }}>
+            {isEditing ? "Edit Category" : "Add Category"}
+        </DialogTitle>
+
             <DialogContent dividers>
                 <Box sx={{display: "grid" , gap : 1.5}}>
                     <TextField label="name" name='name' value={category.name} onChange={handleInputChange} error={!!formErrors.name} helperText={formErrors.name}></TextField>
@@ -137,10 +172,86 @@ const CategoriesList = () => {
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleSubmit} variant="contained" color="primary"> Add </Button>
+                <Button onClick={handleSubmit} variant="contained" color="primary">  {isEditing ? "Update" : "Add"} </Button>
             </DialogActions>
         </Dialog>
-        <CustomSnackbar />
+
+        <Dialog
+                        open={confirmDialog.open}
+                        onClose={() => setConfirmDialog({ open: false, categoryId: null })}
+                        maxWidth="xs" // Set a smaller fixed width for the dialog
+                        fullWidth // Ensure the dialog takes up the full width of its container
+                        
+                    >
+                        {/* Dialog Title */}
+                        <DialogTitle
+                            sx={{
+                                textAlign: "center",
+                                fontWeight: "bold",
+                                fontSize: "1.25rem",
+                                backgroundColor: "#f5f5f5",
+                                py: 2,
+                                borderBottom: "1px solid #e0e0e0",
+                            }}
+                        >
+                            Confirm Deletion
+                        </DialogTitle>
+        
+                        {/* Dialog Content */}
+                        <DialogContent sx={{ p: 3, textAlign: "center" }}>
+                            <Typography variant="body1">
+                                Are you sure you want to delete this Category?
+                            </Typography>
+                        </DialogContent>
+        
+                        {/* Dialog Actions */}
+                        <DialogActions
+                            sx={{
+                                justifyContent: "center",
+                                p: 2,
+                                backgroundColor: "#f5f5f5",
+                                borderTop: "1px solid #e0e0e0",
+                            }}
+                        >
+                            {/* Cancel Button */}
+                            <Button
+                                onClick={() => setConfirmDialog({ open: false, categoryId: null })}
+                                variant="outlined"
+                                sx={{
+                                    textTransform: "none",
+                                    fontWeight: "bold",
+                                    borderColor: "#1976d2",
+                                    color: "#1976d2",
+                                    "&:hover": {
+                                        backgroundColor: "#1976d2",
+                                        color: "#fff",
+                                        borderColor: "#1976d2",
+                                    },
+                                }}
+                            >
+                                Cancel
+                            </Button>
+        
+                            {/* Delete Button */}
+                            <Button
+                                onClick={confirmDelete}
+                                variant="contained"
+                                color="error"
+                                sx={{
+                                    textTransform: "none",
+                                    fontWeight: "bold",
+                                    backgroundColor: "#d32f2f",
+                                    "&:hover": {
+                                        backgroundColor: "#b71c1c",
+                                    },
+                                }}
+                            >
+                                Delete
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+
+        <CustomSnackbar open={snackbar.open} message={snackbar.message} severity={snackbar.severity} onClose={() => setSnackbar({ ...snackbar, open: false })}/>
         </>
     );
 };
