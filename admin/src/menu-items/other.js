@@ -1,9 +1,21 @@
 // assets
-import { Business, Category, Inventory, LocalShipping, Person, ShoppingBag, ShoppingCart, Store ,  } from '@mui/icons-material';
-import { IconBrandChrome, IconHelp , IconPackage , IconCategory2} from '@tabler/icons';
+import { Business, Category, Inventory, LocalShipping, Person, ShoppingBag, ShoppingCart, Store } from '@mui/icons-material';
+import { IconBrandChrome, IconHelp, IconPackage, IconCategory2 } from '@tabler/icons';
 
 // constant
-const icons = { IconBrandChrome, IconHelp , IconPackage ,ShoppingCart , LocalShipping , ShoppingBag ,Person , Business , Inventory ,Store , Category};
+const icons = {
+  IconBrandChrome,
+  IconHelp,
+  IconPackage,
+  ShoppingCart,
+  LocalShipping,
+  ShoppingBag,
+  Person,
+  Business,
+  Inventory,
+  Store,
+  Category
+};
 
 // ==============================|| SAMPLE PAGE & DOCUMENTATION MENU ITEMS ||============================== //
 
@@ -12,7 +24,6 @@ const other = {
   title: 'Pages',
   type: 'group',
   children: [
-    
     {
       id: 'user',
       title: 'User List',
@@ -47,7 +58,7 @@ const other = {
       url: '/order-list',
       icon: icons.ShoppingCart,
       breadcrumbs: false,
-      roles: [0,1]
+      roles: [0, 1]
     },
     {
       id: 'product',
@@ -56,7 +67,7 @@ const other = {
       url: '/product-list',
       icon: icons.ShoppingBag,
       breadcrumbs: false,
-      roles: [0,1]
+      roles: [0, 1]
     },
     {
       id: 'sample-page',
@@ -65,8 +76,8 @@ const other = {
       url: '/sample-page',
       icon: icons.IconBrandChrome,
       breadcrumbs: false,
-      roles: [0,1]
-    },
+      roles: [0, 1]
+    }
   ]
 };
 
