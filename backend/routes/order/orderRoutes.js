@@ -1,5 +1,5 @@
 const express = require('express');
-const { placeOrder, getAllOrder, getOrderByUser, deleteOrder, getOrder, getOrderData, downloadOrder, sendInvoiceEmail } = require('../../controllers/order/orderController');
+const { placeOrder, getAllOrder, getOrderByUser, deleteOrder, getOrder, getOrderData, downloadOrder, sendInvoiceEmail, updateOrderStatus } = require('../../controllers/order/orderController');
 
 const router = express.Router();
 
@@ -25,5 +25,8 @@ router.delete('/api/orders/:id', deleteOrder);
 
 // Download an order
 router.get('/api/invoice/:orderId', downloadOrder);
+
+// Update order status
+router.put('/api/orders/update-status', updateOrderStatus);
 
 module.exports = router;
