@@ -18,7 +18,6 @@ export const fetchProduct = createAsyncThunk('products/fetchProduct', async (sel
 
     const response = await api.get(`/api/products?sellerId=${sellerId}`);
     return response.data;
-    console.log(response.data);
   } catch (error) {
     return rejectWithValue(error.response?.data?.message || 'Something went wrong');
   }
