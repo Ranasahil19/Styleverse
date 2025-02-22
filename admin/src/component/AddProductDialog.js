@@ -52,7 +52,7 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setNewProduct((prev) => ({ ...prev, [name]: value }));
+        setNewProduct((prev) => ({ ...prev, [name]: value.trimStart() }));
         setFormErrors((prev) => ({ ...prev, [name]: "" }));
     };
 
@@ -69,7 +69,7 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
     
     const validateForm = () => {
         const errors = ["title", "description", "price", "stock", "category"].reduce((acc , field)=> {
-            if(!newProduct[field] || (["price" , "stock"].includes(field) && newProduct[field] <= 0)){
+            if(!newProduct[field] || !newProduct[field].trim() || (["price" , "stock"].includes(field) && newProduct[field] <= 0)){
                 acc[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
             }
             return acc;
