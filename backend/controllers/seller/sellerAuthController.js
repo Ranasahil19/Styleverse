@@ -178,7 +178,7 @@ exports.logout = async (req, res) => {
 exports.protected = async (req, res) => {
     res.status(200).json({
         message: "You have access",
-      seller: req.seller, // This should now contain the user details
+        seller: req.seller, // This should now contain the user details
     });
 };
 

@@ -4,7 +4,7 @@ import { Box, Button, IconButton, useMediaQuery, Dialog, DialogTitle, DialogCont
 import { Visibility, Add, Print } from '@mui/icons-material';
 import AddProductDialog from '../../../../component/AddProductDialog';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllProducts } from 'features/productSlice';
+import {  fetchProduct } from 'features/productSlice';
 
 const ProductList = () => {
   const [open, setOpen] = useState(false);
@@ -19,7 +19,7 @@ const ProductList = () => {
 
   useEffect(() => {
     // dispatch(resetProductState()); // 🔥 Clear old products
-    dispatch(fetchAllProducts()); // Fetch new seller's products
+    dispatch(fetchProduct()); // Fetch new seller's products
   }, [dispatch]);
 
   const handleOpen = () => setOpen(true);
