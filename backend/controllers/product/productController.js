@@ -7,7 +7,7 @@ const Category = require('../../models/category');
 
 const addProduct = async (req, res) => {
   try {
-    const { title, description, category, price, stock, sellerId } = req.body;
+    const { title, description, category, price, quantity, sellerId } = req.body;
 
     // Ensure an image is uploaded
     if (!req.file) {
@@ -20,7 +20,7 @@ const addProduct = async (req, res) => {
         description,
         category,
         price,
-        stock,
+        quantity,
         image: `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`,
         sellerId // Save image URL
     });
@@ -131,7 +131,7 @@ const getAllProducts = async (req, res) => {
       query.price = { $gte: parseFloat(minPrice), $lte: parseFloat(maxPrice) };
     }
 
-    let products = await Product.find(query);
+    const products = await Product.find(query).populate("sellerId", "name");
 
     res.status(200).json(products);
   } catch (error) {
