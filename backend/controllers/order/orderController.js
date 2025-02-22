@@ -19,7 +19,9 @@ const generateInvoicePDF = async (orderId, order, filePath) => {
       ${order.userId.address.pincode || "N/A"},
       ${order.userId.address.country || "N/A"},
       Phone: ${order.userId.address.mobileno || "N/A"}
-    `.replace(/\s+/g, " ").trim()
+    `
+        .replace(/\s+/g, " ")
+        .trim()
     : "Address not available";
 
   // Header Section
@@ -37,14 +39,19 @@ const generateInvoicePDF = async (orderId, order, filePath) => {
   doc.moveDown();
 
   const tableTop = 260;
-  doc.fontSize(10).text("S.No", 50, tableTop)
+  doc
+    .fontSize(10)
+    .text("S.No", 50, tableTop)
     .text("Title", 100, tableTop)
     .text("Description", 200, tableTop)
     .text("Quantity", 350, tableTop)
     .text("Unit Price", 450, tableTop)
     .text("Total", 520, tableTop);
 
-  doc.moveTo(50, tableTop + 15).lineTo(570, tableTop + 15).stroke();
+  doc
+    .moveTo(50, tableTop + 15)
+    .lineTo(570, tableTop + 15)
+    .stroke();
 
   // Table Rows
   let currentY = tableTop + 30;
@@ -58,8 +65,14 @@ const generateInvoicePDF = async (orderId, order, filePath) => {
     const rowHeight = 20;
 
     // Wrap text for title and description
-    const wrappedTitle = doc.heightOfString(title, { width: titleWidth, align: "left" });
-    const wrappedDescription = doc.heightOfString(description, { width: descriptionWidth, align: "left" });
+    const wrappedTitle = doc.heightOfString(title, {
+      width: titleWidth,
+      align: "left",
+    });
+    const wrappedDescription = doc.heightOfString(description, {
+      width: descriptionWidth,
+      align: "left",
+    });
     const dynamicHeight = Math.max(rowHeight, wrappedTitle, wrappedDescription);
 
     // Check for page overflow
@@ -69,19 +82,25 @@ const generateInvoicePDF = async (orderId, order, filePath) => {
 
       // Re-add table headers
       const newTableTop = currentY;
-      doc.fontSize(10).text("S.No", 50, newTableTop)
+      doc
+        .fontSize(10)
+        .text("S.No", 50, newTableTop)
         .text("Title", 100, newTableTop)
         .text("Description", 200, newTableTop)
         .text("Quantity", 350, newTableTop)
         .text("Unit Price", 450, newTableTop)
         .text("Total", 520, newTableTop);
 
-      doc.moveTo(50, newTableTop + 15).lineTo(570, newTableTop + 15).stroke();
+      doc
+        .moveTo(50, newTableTop + 15)
+        .lineTo(570, newTableTop + 15)
+        .stroke();
       currentY = newTableTop + 30;
     }
 
     // Draw the table row
-    doc.fontSize(10)
+    doc
+      .fontSize(10)
       .text(serialNumber, 50, currentY)
       .text(title, 100, currentY, { width: titleWidth })
       .text(description, 200, currentY, { width: descriptionWidth })
@@ -97,7 +116,9 @@ const generateInvoicePDF = async (orderId, order, filePath) => {
   doc.moveTo(50, currentY).lineTo(570, currentY).stroke();
   currentY += 20;
 
-  doc.fontSize(12).text("Thank you for your order!", 50, currentY, { align: "center" })
+  doc
+    .fontSize(12)
+    .text("Thank you for your order!", 50, currentY, { align: "center" })
     .text("We hope to serve you again soon.", { align: "center" });
 
   doc.end();
@@ -143,10 +164,12 @@ exports.sendInvoiceEmail = async (req, res) => {
       to: order.userId.email,
       subject: `Invoice for Order ${order._id}`,
       text: `Dear ${order.userId.username},\n\nPlease find your invoice for order ${order._id} attached.\n\nThank you!`,
-      attachments: [{
-        filename: `invoice-${orderId}.pdf`,
-        path: filePath,
-      }],
+      attachments: [
+        {
+          filename: `invoice-${orderId}.pdf`,
+          path: filePath,
+        },
+      ],
     };
 
     // Send the email with the invoice attachment
@@ -190,7 +213,9 @@ exports.downloadOrder = async (req, res) => {
     // Provide the generated invoice for download
     res.download(filePath, `invoice-${orderId}.pdf`, (err) => {
       if (err) {
-        return res.status(500).json({ error: "Error downloading the invoice." });
+        return res
+          .status(500)
+          .json({ error: "Error downloading the invoice." });
       }
     });
   } catch (error) {
@@ -240,7 +265,10 @@ exports.placeOrder = async (orderDetails) => {
 
 exports.getAllOrder = async (req, res) => {
   try {
-    const orders = await Order.find(); // Fetch all orders from the collection
+    const orders = await Order.find()
+      .populate("items.productId")
+      .populate("paymentId", "cardHolderName")
+      .populate("items.sellerId", "name"); // Fetch all orders from the collection
     res.json(orders);
   } catch (err) {
     res.status(500).send("Server Error");
