@@ -33,7 +33,7 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
         setNewProduct(product 
             ? { ...product, image: null , imagePreview: product.image || null}
             : initialProductState
-        )
+           )
     }, [product]);
 
     useEffect(() => {
@@ -69,8 +69,8 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
     
     const validateForm = () => {
 
-        const errors = ["title", "description", "price", "stock", "category"].reduce((acc , field)=> {
-            if(!newProduct[field] || !newProduct[field].trim() || (["price" , "stock"].includes(field) && newProduct[field] <= 0)){
+        const errors = ["title", "description", "price", "quantity", "category"].reduce((acc , field)=> {
+            if(!newProduct[field] || !newProduct[field].trim() || (["price" , "quantity"].includes(field) && newProduct[field] <= 0)){
                 acc[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
             }
             return acc;
@@ -136,7 +136,7 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
                         <TextField label="Description" name="description" value={newProduct.description} onChange={handleInputChange} multiline rows={2} fullWidth error={!!formErrors.description} helperText={formErrors.description} />
                         <Box sx={{ display: "flex", gap: 2, flexDirection: isMobile ? "column" : "row" }}>
                             <TextField label="Price" name="price" type="number" value={newProduct.price} onChange={handleInputChange} fullWidth error={!!formErrors.price} helperText={formErrors.price} />
-                            <TextField label="Quantity" name="quantity" type="number" value={newProduct.quantity} onChange={handleInputChange} fullWidth error={!!formErrors.quantity} helperText={formErrors.stock} />
+                            <TextField label="Quantity" name="quantity" type="number" value={newProduct.quantity} onChange={handleInputChange} fullWidth error={!!formErrors.quantity} helperText={formErrors.quantity} />
                         </Box>
                         <FormControl fullWidth variant="outlined" error={!!formErrors.category}>
                             <InputLabel>Category</InputLabel>
