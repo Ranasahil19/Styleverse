@@ -1,4 +1,5 @@
 const Category = require("../../models/category");
+const mongoose = require("mongoose");
 
 // Add a new category
 
@@ -16,21 +17,21 @@ exports.addCategory = async (req, res) => {
 // Update a category
 exports.updateCategory = async (req, res) => {
   try {
-    const { id: _id } = req.params;
+    const { id } = req.params;
     const { name, description, icons } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(_id))
+    if (!mongoose.Types.ObjectId.isValid(id))
       return res.status(404).send("No category with that ID");
 
     const updatedCategory = await Category.findByIdAndUpdate(
-      _id,
+      id,
       { name, description, icons },
-      { new: true }
+      { new: true ,  runValidators: true }
     );
 
     if (!updatedCategory) return res.status(404).send("No category found");
 
-    res.json(updatedCategory);
+    res.status(200).json(updatedCategory);
   } catch (err) {
     res.status(400).json({ error: "Failed to update category" });
   }

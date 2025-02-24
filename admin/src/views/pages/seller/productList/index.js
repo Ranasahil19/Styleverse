@@ -4,7 +4,7 @@ import { Box, Button, IconButton, useMediaQuery, Dialog, DialogTitle, DialogCont
 import { Edit, Delete, Visibility, Add, Print } from '@mui/icons-material';
 import AddProductDialog from '../../../../component/AddProductDialog';
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteProduct, fetchProduct, resetProductState, updateProduct } from 'features/productSlice';
+import { deleteProduct, fetchProduct, updateProduct } from 'features/productSlice';
 
 const ProductList = () => {
   const [open, setOpen] = useState(false);
@@ -69,7 +69,6 @@ const ProductList = () => {
         .catch((err) => console.error('Update failed:', err));
     }
   };
-
   const handlePrint = () => {
     const iframe = document.createElement('iframe');
     iframe.style.position = 'absolute';

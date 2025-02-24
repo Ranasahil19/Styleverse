@@ -104,7 +104,6 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
     Object.entries(newProduct).forEach(([key, value]) => {
       if (value) formData.append(key, value);
     });
-
     if (!product) {
       formData.append('sellerId', sellerId);
     }

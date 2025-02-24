@@ -36,51 +36,98 @@ const UserList = () => {
       setSnackbarMessage('Failed to update user status');
       setSnackbarSeverity('error');
     }
-  };
+  }
+    const columns = [
+        { 
+            field: "index", 
+            headerName: "No", 
+            width: 70, 
+            renderCell: (params) => params.api.getRowIndexRelativeToVisibleRows(params.id) + 1 
+        },
+        {
+            field: "avatar",
+            headerName: "Avatar",
+            width: 80,
+            renderCell: (params) => (
+                <Avatar sx={{ width: 35, height: 35 , mt :1 }}>
+                    {params.row.username ? params.row.username.charAt(0) : "U"}
+                </Avatar>
+            ),
+        },
+        { field: "username", headerName: "Name", width: 250 },
+        { field: "email", headerName: "Email", width: 250 },
+        { field: "isActive", headerName: "Status", width: 120 ,
+            renderCell : (params) => {
+                return <Box>{params.row.isActive ? "Block" : "Unblock"}</Box>
+            }
+        },
+        {
+            field: "actions",
+            headerName: "Actions",
+            width: 150,
+            renderCell: (params) => (
+                <Box display="flex" 
+                alignItems="center" gap={1}>
+                                    <Switch
+                                checked={params.row.isActive}
+                                onChange={() => handleBlockUnblock(params.row._id , params.row.isActive)}
+                                sx={{
+                                    "& .MuiSwitch-thumb": {
+                                        backgroundColor: params.row.isActive ? "green" : "red",
+                                    },
+                                    "& .MuiSwitch-track": {
+                                        backgroundColor: params.row.isActive ? "lightgreen" : "pink",
+                                    },
+                                }}
+                            />
+                </Box>
+            ),
+        },
+    ];
 
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
   };
-  const columns = [
-    {
-      field: 'index',
-      headerName: 'No',
-      width: 70,
-      renderCell: (params) => params.api.getRowIndexRelativeToVisibleRows(params.id) + 1
-    },
-    {
-      field: 'avatar',
-      headerName: 'Avatar',
-      width: 80,
-      renderCell: (params) => (
-        <Avatar sx={{ width: 35, height: 35, mt: 1 }}>{params.row.username ? params.row.username.charAt(0) : 'U'}</Avatar>
-      )
-    },
-    { field: 'username', headerName: 'Name', width: 250 },
-    { field: 'email', headerName: 'Email', width: 250 },
-    // { field: "isActive", headerName: "Status", width: 120 },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 150,
-      renderCell: (params) => (
-        <Box display="flex" alignItems="center" gap={1}>
-          <Switch
-            checked={params.row.isActive}
-            onChange={() => handleBlockUnblock(params.row._id, params.row.isActive)}
-            sx={{
-              '& .MuiSwitch-thumb': {
-                backgroundColor: params.row.isActive ? 'green' : 'red'
-              },
-              '& .MuiSwitch-track': {
-                backgroundColor: params.row.isActive ? 'lightgreen' : 'pink'
-              }
-            }}
-          />
-        </Box>
-      )
-    }
-  ];
+  // const columns = [
+  //   {
+  //     field: 'index',
+  //     headerName: 'No',
+  //     width: 70,
+  //     renderCell: (params) => params.api.getRowIndexRelativeToVisibleRows(params.id) + 1
+  //   },
+  //   {
+  //     field: 'avatar',
+  //     headerName: 'Avatar',
+  //     width: 80,
+  //     renderCell: (params) => (
+  //       <Avatar sx={{ width: 35, height: 35, mt: 1 }}>{params.row.username ? params.row.username.charAt(0) : 'U'}</Avatar>
+  //     )
+  //   },
+  //   { field: 'username', headerName: 'Name', width: 250 },
+  //   { field: 'email', headerName: 'Email', width: 250 },
+  //   // { field: "isActive", headerName: "Status", width: 120 },
+  //   {
+  //     field: 'actions',
+  //     headerName: 'Actions',
+  //     width: 150,
+  //     renderCell: (params) => (
+  //       <Box display="flex" alignItems="center" gap={1}>
+  //         <Switch
+  //           checked={params.row.isActive}
+  //           onChange={() => handleBlockUnblock(params.row._id, params.row.isActive)}
+  //           sx={{
+  //             '& .MuiSwitch-thumb': {
+  //               backgroundColor: params.row.isActive ? 'green' : 'red'
+  //             },
+  //             '& .MuiSwitch-track': {
+  //               backgroundColor: params.row.isActive ? 'lightgreen' : 'pink'
+  //             }
+  //           }}
+  //         />
+  //       </Box>
+  //     )
+  //   }
+  // ];
 
   return (
     <>
