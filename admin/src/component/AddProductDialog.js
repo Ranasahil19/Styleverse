@@ -104,7 +104,7 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
         });
         
         if(!product){
-        formData.append("sellerId", String(sellerId));
+            formData.append("sellerId",String(sellerId));
         }
 
         // Handle update or add product
