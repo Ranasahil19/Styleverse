@@ -4,7 +4,7 @@ import { Box, Button, IconButton, useMediaQuery, Dialog, DialogTitle, DialogCont
 import { Edit, Delete, Visibility, Add, Print } from '@mui/icons-material';
 import AddProductDialog from '../../../../component/AddProductDialog';
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteProduct, fetchProduct, updateProduct } from 'features/productSlice';
+import { deleteProduct, fetchProduct, resetProductState, updateProduct } from 'features/productSlice';
 
 const ProductList = () => {
     const [open, setOpen] = useState(false);
@@ -19,6 +19,7 @@ const ProductList = () => {
 
     useEffect(() => {
         if (sellerId) { // 🔥 Clear old products
+            dispatch(resetProductState());
             dispatch(fetchProduct(sellerId)); // Fetch new seller's products
         }
     }, [sellerId, dispatch]); 
@@ -31,7 +32,6 @@ const ProductList = () => {
     const confirmDelete = async () => {
         try {
             await dispatch(deleteProduct(confirmDialog.productId)).unwrap();
-            //dispatch(removeProductFromState(confirmDialog.productId));  // Refresh product list after delete
         } catch (error) {
             console.error('Delete failed:', error);
         }

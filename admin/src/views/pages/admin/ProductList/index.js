@@ -4,7 +4,7 @@ import { Box, Button, IconButton, useMediaQuery, Dialog, DialogTitle, DialogCont
 import { Visibility, Add, Print } from '@mui/icons-material';
 import AddProductDialog from '../../../../component/AddProductDialog';
 import { useDispatch, useSelector } from 'react-redux';
-import {  fetchProduct } from 'features/productSlice';
+import {  fetchAllProducts ,resetProductState} from 'features/productSlice';
 
 const ProductList = () => {
   const [open, setOpen] = useState(false);
@@ -18,8 +18,8 @@ const ProductList = () => {
   const isMobile = useMediaQuery('(max-width: 600px)');
 
   useEffect(() => {
-    // dispatch(resetProductState()); // 🔥 Clear old products
-    dispatch(fetchProduct()); // Fetch new seller's products
+    dispatch(resetProductState()); // 🔥 Clear old products
+    dispatch(fetchAllProducts()); // Fetch new seller's products
   }, [dispatch]);
 
   const handleOpen = () => setOpen(true);
