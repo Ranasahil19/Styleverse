@@ -14,6 +14,10 @@ const addProduct = async (req, res) => {
         return res.status(400).json({ message: "Image is required!" });
     }
 
+    if (!mongoose.Types.ObjectId.isValid(sellerId)) {
+      return res.status(400).json({ message: "Invalid Seller ID format" });
+    }
+
     // Create new product
     const newProduct = new Product({
         title,
@@ -22,7 +26,7 @@ const addProduct = async (req, res) => {
         price,
         quantity,
         image: `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`,
-        sellerId // Save image URL
+        sellerId: new mongoose.Types.ObjectId(sellerId), 
     });
 
     await newProduct.save();

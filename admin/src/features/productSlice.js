@@ -1,6 +1,16 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from 'utils/axiosintance';
 
+// fetch all products
+export const fetchAllProducts = createAsyncThunk('products/fetchAllProducts', async () => {
+  try {
+    const response = await api.get('/api/products');
+    return response.data;
+  } catch (error) {
+    return rejectWithValue(error.response?.data?.message || 'Something went wrong');
+  }
+});
+
 export const AddProduct = createAsyncThunk(
   "products/addProduct",
   async (newProduct, { rejectWithValue }) => {
@@ -109,6 +119,21 @@ const productSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+
+
+      // Fetch All Products
+      .addCase(fetchAllProducts.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchAllProducts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.products = action.payload;
+      })
+      .addCase(fetchAllProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
       .addCase(deleteProduct.pending, (state) => {
         state.loading = true;
       })

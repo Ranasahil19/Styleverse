@@ -22,6 +22,7 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
     const dispatch = useDispatch();
     const { loading, error, message } = useSelector((state) => state.products);
     const sellerId = useSelector((state) => state.auth.seller?.sellerId);
+    
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -33,7 +34,7 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
         setNewProduct(product 
             ? { ...product, image: null , imagePreview: product.image || null}
             : initialProductState
-           )
+        )
     }, [product]);
 
     useEffect(() => {
@@ -68,16 +69,20 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
     };
     
     const validateForm = () => {
-
-        const errors = ["title", "description", "price", "quantity", "category"].reduce((acc , field)=> {
-            if(!newProduct[field] || !newProduct[field].trim() || (["price" , "quantity"].includes(field) && newProduct[field] <= 0)){
+        const errors = ["title", "description", "price", "quantity", "category"].reduce((acc , field) => {
+            const value = newProduct[field];
+    
+            if (!value || (typeof value === "string" && !value.trim()) || (["price", "quantity"].includes(field) && value <= 0)) {
                 acc[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
             }
+            
             return acc;
-        },{});
+        }, {});
+    
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
-    }
+    };
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -99,7 +104,7 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
         });
         
         if(!product){
-        formData.append("sellerId", sellerId);
+        formData.append("sellerId", String(sellerId));
         }
 
         // Handle update or add product
