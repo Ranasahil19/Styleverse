@@ -167,6 +167,46 @@ exports.verifyEmail = async (req, res) => {
   }
 };
 
+//resend code
+exports.resendCode = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  try {
+    const pendingUser = await PendingVerification.findOne({ email });
+
+    if (!pendingUser) {
+      return res.status(400).json({ message: "Email not found in pending verification." });
+    }
+
+    const elapsedTime = Date.now() - new Date(pendingUser.expiresAt).getTime();
+    if (elapsedTime < 60000) {  // Check if less than 1 minute has passed
+      return res.status(400).json({ message: "You can only request a new code after 1 minute." });
+    }
+
+    // Generate new verification code
+    const newCode = crypto.randomBytes(3).toString("hex").toUpperCase();
+
+    // Update the code and reset the timer
+    pendingUser.verificationCode = newCode;
+    pendingUser.expiresAt = Date.now();
+    await pendingUser.save();
+
+    // Send email with new code
+    const emailSubject = "Your new verification code";
+    const emailContent = `Your new verification code is: ${newCode}`;
+    await sendEmail(email, emailSubject, emailContent);
+
+    res.status(200).json({ message: "A new verification code has been sent." });
+  } catch (error) {
+    console.error("Error during resend code:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // Login Controller
 const MAX_LOGIN_ATTEMPTS = 3;
 const LOCK_TIME = 5 * 60 * 1000; // 5 minutes in milliseconds
@@ -236,9 +276,6 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-
-
 
 exports.getUserDetails = async (req, res) => {
   try {
