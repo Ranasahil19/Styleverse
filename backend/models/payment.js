@@ -10,6 +10,7 @@ const paymentSchema = new mongoose.Schema({
       title: { type: String, required: true },
       image: { type: String, required: true },
       category: { type: String, required: true },
+      sellerId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Seller' },
     },
   ],
   sessionId: { type: String, required: true },
