@@ -24,15 +24,15 @@ export const fetchAllOrder = createAsyncThunk('order/fetchAllOrder', async () =>
 export const updateOrderStatus = createAsyncThunk(
     "order/updateOrderStatus",
     async ({ id, status }, { rejectWithValue }) => {
-      try {
-        const response = await api.put(`/api/orders/update-status`, { id, status });
-        return response.data;
-      } catch (error) {
-        return rejectWithValue(error.response.data);
-      }
+        try {
+            const response = await api.put(`/api/orders/update-status`, { id, status });
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
     }
-  );
-  
+);
+
 
 // Initial state
 const initialState = {

@@ -53,12 +53,12 @@ const UserList = () => {
             headerName: "Avatar",
             width: 80,
             renderCell: (params) => (
-                <Avatar sx={{ width: 35, height: 35 , mt :1 }}>
-                    {params.row.username ? params.row.username.charAt(0) : "U"}
+                <Avatar sx={{ width: 35, height: 35 , mt :1 , color: 'white' , backgroundColor: '#33006F' , }}>
+                    {params.row.userName ? params.row.userName.charAt(0).toUpperCase() : "U"}
                 </Avatar>
             ),
         },
-        { field: "username", headerName: "Name", width: 250 },
+        { field: "userName", headerName: "Name", width: 200 },
         { field: "email", headerName: "Email", width: 250 },
         { field: "isActive", headerName: "Status", width: 120 ,
             renderCell : (params) => {
