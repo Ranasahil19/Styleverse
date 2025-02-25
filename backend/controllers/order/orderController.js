@@ -307,7 +307,7 @@ exports.getAllOrder = async (req, res) => {
 
 exports.updateOrderStatus = async (req, res) => {
   try {
-    const { orderId, status } = req.body;
+    const { id, status } = req.body;
 
     if (
       !["Pending", "Processing", "Shipped", "Delivered", "Cancelled"].includes(
@@ -318,7 +318,7 @@ exports.updateOrderStatus = async (req, res) => {
     }
 
     const order = await Order.findOneAndUpdate(
-      { orderId: orderId },
+      { _id: id },
       { status: status },
       { new: true }
     );

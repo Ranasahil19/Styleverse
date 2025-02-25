@@ -207,9 +207,22 @@ exports.updateProfile = async (req, res) => {
             seller.avatar = avatar;
         }
 
+        if(userName && userName !== seller.userName){
+            const existingSeller = await seller.findOne({userName})
+            if(existingSeller){
+                return res.status(400).json({ message : "UserName already in use"})
+            }
+            seller.userName = userName
+        }
+
         // Update user details, only if new values are provided
-        seller.userName = userName || seller.userName;
-        seller.email = email || seller.email;
+        if(email && email !== seller.email){
+            const existingSeller = await Seller.findOne({email});
+            if(existingSeller){
+                return res.status(400).json({ message : "Email already in use"})
+            }
+            seller.email = email;
+        }
 
         // Handle password change if both password and newPassword are provided
         if (password && newPassword) {

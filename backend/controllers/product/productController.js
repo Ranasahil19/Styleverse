@@ -67,11 +67,21 @@ const updateProductById = async (req, res) => {
     const productId = req.params.id;
     const updatedData = { ...req.body };
 
-    if (req.file) {
-      updatedData.image = `${req.protocol}://${req.get("host")}/uploads/${
-        req.file.filename
-      }`;
-    }
+
+//     if (req.file) {
+//       updatedData.image = `${req.protocol}://${req.get("host")}/uploads/${
+//         req.file.filename
+//       }`;
+//     }
+
+  if (updatedData.sellerId) {
+    delete updatedData.sellerId;
+  }
+
+  if(req.file){ 
+    updatedData.image = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+  }
+    
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
       updatedData,

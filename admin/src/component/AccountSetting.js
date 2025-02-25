@@ -12,7 +12,7 @@ const AccountSettings = () => {
   const seller = useSelector((state) => state.auth.seller);
 
   // Ensure default values for notifications and darkMode
-  const [values, setValues] = useState({
+  const [initialValues, setInitialValues] = useState({
     name: seller?.userName || "",
     email: seller?.email || "",
     password: "",
@@ -21,6 +21,7 @@ const AccountSettings = () => {
     darkMode: seller?.darkMode ?? false,  // Default to false if undefined
   });
 
+  const [values , setValues] = useState(initialValues);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState("");
 
@@ -30,13 +31,17 @@ const AccountSettings = () => {
 
   useEffect(() => {
     if (seller) {
-      setValues((prevValues) => ({
-        ...prevValues,
-        name: seller.userName || "",
-        email: seller.email || "",
+      const newInitialValues = {
+        name : seller.userName || "",
+        email : seller.email || "",
+        password: "",
+        newPassword: "",
         notifications: seller.notifications ?? true,
         darkMode: seller.darkMode ?? false,
-      }));
+      }
+
+      setInitialValues(newInitialValues);
+      setValues(newInitialValues)
 
       if(seller.avatar) setAvatarPreview(`${process.env.REACT_APP_API_URL}${seller.avatar}`);
     }
@@ -55,9 +60,33 @@ const AccountSettings = () => {
     }
   };
 
+  const hasChangs = () => {
+    return (values.name !== initialValues.name ||
+    values.email !== initialValues.email ||
+    values.password.length > 0 ||
+    values.newPassword.length > 0 ||
+    values.notifications !== initialValues.notifications ||
+    values.darkMode !== initialValues.darkMode ||
+    avatarFile !== null);
+  };
+
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
-  
+    
+    if(!values.name.trim() || !values.email.trim()){
+      setSnackbarMessage("Name and Email cannot be empty")
+      setSnackbarSeverity("error")
+      setOpenSnackbar(true)
+      return;
+    }
+
+    if((values.password && !values.newPassword) || (!values.password && values.password)){
+      setSnackbarMessage("Both Current and new password are required")
+      setSnackbarSeverity("error")
+      setOpenSnackbar(true)
+      return;
+    }
+
     const formData = new FormData();
     formData.append("userName", values.name);
     formData.append("email", values.email);
@@ -79,13 +108,18 @@ const AccountSettings = () => {
       setOpenSnackbar(true);
   
       // Set the updated profile information
-      setValues((prevValues) => ({
-        ...prevValues,
-        name: response.data.seller.userName,
-        email: response.data.seller.email,
-        notifications: response.data.seller.notifications ?? true,
-        darkMode: response.data.seller.darkMode ?? false,
-      }));
+      const updateValues = {
+        name : response.data.seller.userName,
+        email : response.data.seller.email,
+        notifications : response.data.seller.notifications ?? true,
+        darkMode : response.data.seller.darkMode ?? false,
+        password: "",
+        newPassword: "",
+      };
+
+      setValues(updateValues);
+      setInitialValues(updateValues);
+      setAvatarFile(null)
   
       // Update avatar preview immediately
       if (response.data.seller.avatar) {
@@ -93,10 +127,16 @@ const AccountSettings = () => {
       }
   
     } catch (error) {
-      setSnackbarMessage(error.response?.data?.message || "Profile update failed.");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-    }
+      const errorMessage = error.response?.data?.message || "Profile update failed."
+
+      if(error.response?.status === 400){
+        setSnackbarMessage("Incurrect current password please try again")
+      }else{
+        setSnackbarMessage(errorMessage)
+      }
+        setSnackbarSeverity("error")
+        setOpenSnackbar(true)
+      }
   };
   
 
@@ -155,7 +195,9 @@ const AccountSettings = () => {
 
               {/* Save Button */}
               <Box sx={{ textAlign: "right" }}>
-                <Button variant="contained" startIcon={<Save />} color="success" onClick={handleProfileUpdate} size="large">
+                <Button 
+                  variant="contained" startIcon={<Save />} color="success" onClick={handleProfileUpdate} size="large"
+                  disabled={!hasChangs()}>
                   Save Changes
                 </Button>
               </Box>
