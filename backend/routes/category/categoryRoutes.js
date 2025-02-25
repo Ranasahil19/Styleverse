@@ -9,6 +9,7 @@ router.post('/api/categories', addCategory);
 // Delete a Category
 router.delete('/api/categories/:id', deleteCategory);
 
+// Update a Category
 router.put('/api/categories/:id', updateCategory);
 
 // Get All Categories
