@@ -30,3 +30,25 @@ exports.approveRequest = async (req , res) => {
         res.status(500).json({message : "Server error"})
     }
 }
+
+exports.updateRequestStatus = async (req, res) => {
+    const { sellerId } = req.body;
+  
+    try {
+      const seller = await Seller.findById(sellerId);
+      if (!seller) {
+        return res.status(404).json({ message: "Seller request not found" });
+      }
+  
+      // Toggle the status
+      const newStatus = seller.status === "approved" ? "rejected" : "approved";
+      await Seller.findByIdAndUpdate(sellerId, { status: newStatus });
+  
+      res.status(200).json({
+        message: `Seller request ${newStatus}`,
+        newStatus,
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Server error" });
+    }
+  };
