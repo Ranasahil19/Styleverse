@@ -49,7 +49,7 @@ const SellerList = () => {
             ),
         },
         // { field: "userName", headerName: "Name", width: 150 },
-        { field: "name" , headerName : "Name" , Width : 150},
+        { field: "name" , headerName : "Name" , width : 200},
         { field: "email", headerName: "Email", width: 200 },
         { field: "status", headerName: "Status", width: 120 },
         {

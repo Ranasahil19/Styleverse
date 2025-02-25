@@ -44,6 +44,9 @@ SellerSchema.methods.generateRefreshToken = function () {
     );
 };
 
+SellerSchema.index({userName : 1} , {unique : true})
+SellerSchema.index({email : 1}, {unique: true})
+
 
 const Seller = mongoose.model("Seller", SellerSchema, "Seller");
 

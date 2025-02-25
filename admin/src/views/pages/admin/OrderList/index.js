@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import {
-  Container,
   Typography,
   Box,
   CircularProgress,
@@ -151,10 +150,10 @@ const OrderList = () => {
   ];
 
   return (
-    <Container sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom fontWeight="bold" textAlign="center">
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+      {/* <Typography variant="h4" gutterBottom fontWeight="bold" textAlign="center">
         Order Management
-      </Typography>
+      </Typography> */}
 
       {loading ? (
         <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
@@ -163,16 +162,23 @@ const OrderList = () => {
       ) : error ? (
         <Typography color="error">{error}</Typography>
       ) : (
-        <Box sx={{ boxShadow: 3, borderRadius: 2, bgcolor: '#fff', p: 2 }}>
+        <Box sx={{ height: 400, width: '100%', overflowX: 'auto' }}>
           <DataGrid
             rows={orders}
             columns={columns}
             pageSize={5}
-            autoHeight
             getRowId={(row) => row._id}
             sx={{
-              '& .MuiDataGrid-root': {
-                backgroundColor: '#fff'
+              '& .MuiDataGrid-columnHeaders': {
+                backgroundColor: 'white', // Dark background color
+                color: 'black' // White text for contrast
+              },
+              '& .MuiDataGrid-virtualScroller': {
+                // Light background for rows
+              },
+              '& .MuiDataGrid-footerContainer': {
+                backgroundColor: 'white', // Dark footer
+                color: 'white' // White text for footer
               }
             }}
           />
@@ -234,7 +240,7 @@ const OrderList = () => {
           </DialogActions>
         </Dialog>
       )}
-    </Container>
+    </Box>
   );
 };
 

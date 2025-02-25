@@ -25,7 +25,7 @@ const getRootReducer = () => combineReducers({
 const persistConfig = {
   key: "root", // You can change this to any key you prefer
   storage,
-  whitelist: ["auth", "products", "categories"], // Add "products" and "categories" here
+  whitelist: ["auth", "products", "categories","orders"], // Add "products" and "categories" here
 };
 
 const persistedReducer = persistReducer(persistConfig, getRootReducer());
