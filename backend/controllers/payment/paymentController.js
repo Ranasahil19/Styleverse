@@ -4,97 +4,193 @@ const stripe = require("stripe")(
 );
 const { v4: uuidv4 } = require("uuid");
 const { placeOrder } = require("../order/orderController");
+const nodemailer = require("nodemailer");
+const dotenv = require("dotenv");
+dotenv.config();
 
 const endpointSecret =
   "whsec_b6e51c8b744b6b7cf54d1e7be26cf1043cf46acfb9a49f7ac9488eb4d36720c6";
 
-exports.stripeWebhook = async (req, res) => {
-  const sig = req.headers["stripe-signature"];
-  let event;
-
-  try {
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-    console.log("Webhook event:", event);
-  } catch (err) {
-    console.error("Webhook signature verification failed:", err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  // Handle the event
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
-
+  exports.stripeWebhook = async (req, res) => {
+    const sig = req.headers["stripe-signature"];
+    let event;
+  
     try {
-      // Find the payment record by sessionId
-      const payment = await Payment.findOne({ sessionId: session.id });
-
-      if (!payment) {
-        return console.error(
-          "Payment record not found for sessionId:",
+      event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    } catch (err) {
+      console.error("Webhook signature verification failed:", err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+  
+    // Handle the event
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
+  
+      try {
+        // Find the payment record by sessionId
+        const payment = await Payment.findOne({ sessionId: session.id });
+  
+        if (!payment) {
+          return console.error(
+            "Payment record not found for sessionId:",
+            session.id
+          );
+        }
+  
+        console.log("Payment record found:", payment);
+  
+        // Update payment status
+        payment.status = "paid";
+        payment.cardHolderName = session.customer_details?.name || "Unknown";
+        await payment.save();
+        console.log("Payment record updated:", payment);
+  
+        // Extract order details
+        const {
+          userId,
+          carts,
+          totalPrice,
+          _id: paymentId,
+          shippingAddress,
+        } = payment;
+        console.log("Carts:", carts);
+  
+        // Ensure we have all necessary data
+        if (!userId || !carts || !carts.length || !totalPrice) {
+          return console.error("Missing order details.");
+        }
+  
+        console.log("Shipping Address:", shippingAddress);
+  
+        // Create the order (with shipping address)
+        const order = await placeOrder({
+          userId,
+          cartItems: carts,
+          totalPrice,
+          shippingAddress,
+          paymentId,
+          createdAt: new Date(),
+          status: "Pending",
+          deliveryDate: new Date(new Date().setDate(new Date().getDate() + 5)), // Estimated delivery
+        });
+  
+        console.log("Order placed successfully after payment");
+  
+        // Send Email Notification to User
+        await sendOrderConfirmationEmail(
+          session.customer_details.email,
+          order,
+          payment
+        );
+      } catch (err) {
+        console.error("Error processing payment or order:", err.message);
+      }
+    } else if (event.type === "checkout.session.expired") {
+      const session = event.data.object;
+  
+      try {
+        await Payment.findOneAndUpdate(
+          { sessionId: session.id },
+          { status: "unpaid" },
+          { new: true }
+        );
+        console.log(
+          "Payment status updated to 'unpaid' for sessionId:",
           session.id
         );
+      } catch (err) {
+        console.error("Error updating payment status:", err.message);
       }
-
-      console.log("Payment record found:", payment);
-
-      // Update payment status
-      payment.status = "paid";
-      payment.cardHolderName = session.customer_details?.name || "Unknown";
-      await payment.save();
-      console.log("Payment record updated:", payment);
-
-      // Extract order details
-      const {
-        userId,
-        carts,
-        totalPrice,
-        _id: paymentId,
-        shippingAddress,
-      } = payment;
-      console.log("Carts:", carts);
-
-      // Ensure we have all necessary data
-      if (!userId || !carts || !carts.length || !totalPrice) {
-        return console.error("Missing order details.");
-      }
-
-      console.log("Shipping Address:", shippingAddress);
-
-      // Create the order (with shipping address)
-      await placeOrder({
-        userId,
-        cartItems: carts,
-        totalPrice,
-        shippingAddress,
-        paymentId,
-        createdAt: new Date(),
-        status: "Pending",
-        deliveryDate: new Date(new Date().setDate(new Date().getDate() + 5)), // Estimated delivery
-      });
-
-      console.log("Order placed successfully after payment");
-    } catch (err) {
-      console.error("Error processing payment or order:", err.message);
     }
-  } else if (event.type === "checkout.session.expired") {
-    const session = event.data.object;
+  
+    res.json({ received: true });
+  };
 
-    try {
-      await Payment.findOneAndUpdate(
-        { sessionId: session.id },
-        { status: "unpaid" },
-        { new: true }
-      );
-      console.log(
-        "Payment status updated to 'unpaid' for sessionId:",
-        session.id
-      );
-    } catch (err) {
-      console.error("Error updating payment status:", err.message);
+// Function to send an order confirmation email
+const sendOrderConfirmationEmail = async (email, order, payment) => {
+  try {
+    if (!email || !order || !payment) {
+      console.error("Email, order, or payment details missing!");
+      return;
     }
+
+    console.log("Preparing to send email with order details:", order);
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: `"Your Store" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Your Order Has Been Confirmed! 🎉",
+      html: `
+        <div style="max-width: 600px; margin: auto; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 8px; padding: 20px; background-color: #f9f9f9;">
+          <div style="text-align: center;">
+            <h2 style="color: #333;">Thank you for your order! 🎉</h2>
+            <p style="color: #555;">Hello <strong>${
+              payment.cardHolderName || "Valued Customer"
+            }</strong>, your order has been successfully placed!</p>
+          </div>
+
+          <div style="background: #fff; padding: 15px; border-radius: 5px; margin-top: 20px;">
+            <h3 style="color: #333;">Order Details:</h3>
+            <p><strong>Order ID:</strong> ${order._id || "N/A"}</p>
+            <p><strong>Total Amount:</strong> $${order.totalPrice || "0.00"}</p>
+            <p><strong>Payment Status:</strong> ${
+              payment.status || "Unknown"
+            }</p>
+            <p><strong>Shipping Address:</strong> ${
+              order.shippingAddress || "Not Provided"
+            }</p>
+            <p><strong>Estimated Delivery Date:</strong> ${new Date(
+              order.deliveryDate
+            ).toDateString()}</p>
+          </div>
+
+          <div style="margin-top: 20px;">
+            <h3 style="color: #333;">Items Ordered:</h3>
+            <ul style="list-style: none; padding: 0;">
+              ${
+                (order.items || [])
+                  .map(
+                    (item) => `
+                <li style="border-bottom: 1px solid #ddd; padding: 10px 0;">
+                  <img src="${item.image || "#"}" alt="${
+                      item.title || "Product"
+                    }" style="width: 50px; height: 50px; border-radius: 5px; vertical-align: middle; margin-right: 10px;">
+                  <strong>${item.title || "Unknown Item"}</strong> - ${
+                      item.quantity || 1
+                    } x $${item.price || "0.00"}
+                </li>
+              `
+                  )
+                  .join("") || "<li>No items found.</li>"
+              }
+            </ul>
+          </div>
+
+          <div style="text-align: center; margin-top: 20px;">
+            <a href="http://localhost/profile/myorders" style="background: #28a745; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">View Order</a>
+          </div>
+
+          <div style="text-align: center; font-size: 12px; color: #999; margin-top: 20px;">
+            <p>Need help? Contact us at <a href="mailto:support@yourstore.com">support@yourstore.com</a></p>
+            <p>&copy; 2025 Your Store. All rights reserved.</p>
+          </div>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("Order confirmation email sent successfully!");
+  } catch (error) {
+    console.error("Error sending order confirmation email:", error);
   }
-
-  res.json({ received: true });
 };
 
 exports.createPayment = async (req, res) => {
@@ -113,10 +209,12 @@ exports.createPayment = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
+    const shippingCharge = 500;
+
     // Map the products into Stripe line items
     const lineItems = products.map((product) => ({
       price_data: {
-        currency: "inr",
+        currency: "usd",
         product_data: {
           name: product.title,
         },
@@ -128,6 +226,18 @@ exports.createPayment = async (req, res) => {
     if (lineItems.length === 0) {
       return res.status(400).json({ message: "No valid products in the cart" });
     }
+
+    // Add shipping charge as an extra line item
+    lineItems.push({
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: "Shipping Charge",
+        },
+        unit_amount: shippingCharge,
+      },
+      quantity: 1,
+    });
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
