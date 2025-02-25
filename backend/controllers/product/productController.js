@@ -1,38 +1,63 @@
 // /controllers/productController.js
 
-const Product = require('../../models/productModel');
-const productsData = require('../../data/productsData'); // Importing the sample product data
-const mongoose = require('mongoose');
-const Category = require('../../models/category');
+const Product = require("../../models/productModel");
+const productsData = require("../../data/productsData"); // Importing the sample product data
+const mongoose = require("mongoose");
+const Category = require("../../models/category");
+const Seller = require("../../models/seller");
 
 const addProduct = async (req, res) => {
   try {
-    const { title, description, category, price, quantity, sellerId } = req.body;
+    const { title, description, category, price, quantity, sellerId, badge } =
+      req.body;
+
+    if (!sellerId) {
+      return res.status(400).json({ message: "Seller ID is required!" });
+    }
 
     // Ensure an image is uploaded
     if (!req.file) {
-        return res.status(400).json({ message: "Image is required!" });
+      return res.status(400).json({ message: "Image is required!" });
     }
+
+    // Find the last product to get the highest id
+    const lastProduct = await Product.findOne().sort({ id: -1 });
 
     // Create new product
     const newProduct = new Product({
-        title,
-        description,
-        category,
-        price,
-        quantity,
-        image: `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`,
-        sellerId // Save image URL
+      id: lastProduct ? lastProduct.id + 1 : 1, // Generate a unique id if the last product doesn't exist
+      title,
+      price,
+      description,
+      category,
+      image: `${req.protocol}://${req.get("host")}/uploads/${
+        req.file.filename
+      }`,
+      quantity,
+      badge,
+      sellerId, // Save image URL
     });
 
     await newProduct.save();
-    res.status(200
-      
-    ).json({ message: "Product added successfully!", product: newProduct });
-} catch (error) {
+    res
+      .status(200)
+      .json({ message: "Product added successfully!", product: newProduct });
+    // Update Seller's products array
+    const updatedSeller = await Seller.findByIdAndUpdate(
+      sellerId,
+      { $push: { products: newProduct._id } }, // Push new product ID into seller's products array
+      { new: true } // Return updated document
+    );
+
+    if (!updatedSeller) {
+      return res.status(404).send({ message: "Seller not found" });
+    }
+
+    res.status(201).send(newProduct);
+  } catch (error) {
     console.error("Error adding product:", error);
     res.status(500).json({ message: "Server error" });
-}
+  }
 };
 
 // Update Product by Id
@@ -40,11 +65,13 @@ const addProduct = async (req, res) => {
 const updateProductById = async (req, res) => {
   try {
     const productId = req.params.id;
-  const updatedData = {...req.body};
+    const updatedData = { ...req.body };
 
-  if(req.file){
-    updatedData.image = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
-  }
+    if (req.file) {
+      updatedData.image = `${req.protocol}://${req.get("host")}/uploads/${
+        req.file.filename
+      }`;
+    }
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
       updatedData,
@@ -86,11 +113,13 @@ const deleteProductById = async (req, res) => {
 // Function to insert multiple products
 const insertProducts = async (req, res) => {
   try {
-    await Product.insertMany(productsData);  // Insert the sample data
-    res.status(200).json({ message: 'Products inserted successfully!' });
+    await Product.insertMany(productsData); // Insert the sample data
+    res.status(200).json({ message: "Products inserted successfully!" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Error inserting products', error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error inserting products", error: err.message });
   }
 };
 
@@ -105,23 +134,22 @@ const getAllProduct = async (req, res) => {
     // Return the products as a response
     res.json(products);
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching products' });
+    res.status(500).json({ message: "Error fetching products" });
   }
-}
-
+};
 
 const getFilters = async (req, res) => {
   try {
     const categories = await Category.find();
     res.json({ categories });
-    } catch (err) {
-      res.status(500).json({ message: 'Error fetching categories' });
-      }
-}
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching categories" });
+  }
+};
 
 const getAllProducts = async (req, res) => {
   try {
-    const { sellerId ,badge, category, minPrice, maxPrice } = req.query;
+    const { sellerId, badge, category, minPrice, maxPrice } = req.query;
     const query = {};
 
     if (sellerId) query.sellerId = sellerId;
@@ -138,9 +166,6 @@ const getAllProducts = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch products" });
   }
 };
-
-
-
 
 const fetchProductById = async (req, res) => {
   try {
@@ -172,8 +197,8 @@ module.exports = {
   getAllProduct,
   getAllProducts,
   fetchProductById,
-  getFilters, 
+  getFilters,
   addProduct,
   updateProductById,
-  deleteProductById
+  deleteProductById,
 };
