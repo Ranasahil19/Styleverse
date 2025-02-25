@@ -8,7 +8,6 @@ const productSchema = new mongoose.Schema({
   description: { type: String, required: true },
   category: { type: String, required: true },
   image: { type: String, required: true },
-  color: { type: String },
   badge: {
     type: String,
     enum: ["Popular", "Top Rated", "Average", "Luxury", "Affordable", "Standard"],
