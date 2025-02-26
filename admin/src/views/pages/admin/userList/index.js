@@ -54,15 +54,15 @@ const UserList = () => {
             width: 80,
             renderCell: (params) => (
                 <Avatar sx={{ width: 35, height: 35 , mt :1 , color: 'white' , backgroundColor: '#33006F' , }}>
-                    {params.row.userName ? params.row.userName.charAt(0).toUpperCase() : "U"}
+                    {params.row.username ? params.row.username.charAt(0).toUpperCase() : "U"}
                 </Avatar>
             ),
         },
-        { field: "userName", headerName: "Name", width: 200 },
+        { field: "username", headerName: "Name", width: 200 },
         { field: "email", headerName: "Email", width: 250 },
         { field: "isActive", headerName: "Status", width: 120 ,
             renderCell : (params) => {
-                return <Box>{params.row.isActive ? "Block" : "Unblock"}</Box>
+                return <Box>{params.row.isActive ? "Active" : "Block"}</Box>
             }
         },
         {
