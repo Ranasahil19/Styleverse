@@ -4,7 +4,7 @@ import { Box, Button, IconButton, useMediaQuery, Dialog, DialogTitle, DialogCont
 import { Visibility, Add, Print } from '@mui/icons-material';
 import AddProductDialog from '../../../../component/AddProductDialog';
 import { useDispatch, useSelector } from 'react-redux';
-import {  fetchAllProducts ,resetProductState} from 'features/productSlice';
+import { fetchAllProducts } from 'features/productSlice';
 
 const ProductList = () => {
   const [open, setOpen] = useState(false);
@@ -13,12 +13,14 @@ const ProductList = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSeller, setSelectedSeller] = useState('');
   //   const sellerId = useSelector((state) => state.auth.seller.sellerId)
+  const [isImageModelOpen, setIsImageModelOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const dispatch = useDispatch();
   // Detect screen size
   const isMobile = useMediaQuery('(max-width: 600px)');
 
   useEffect(() => {
-    dispatch(resetProductState()); // 🔥 Clear old products
+    // dispatch(resetProductState()); // 🔥 Clear old products
     dispatch(fetchAllProducts()); // Fetch new seller's products
   }, [dispatch]);
 
@@ -29,6 +31,16 @@ const ProductList = () => {
 
   const handleView = (product) => {
     setSelectedProduct(product);
+  };
+
+  const openImageModel = (image) => {
+    setSelectedImage(image);
+    setIsImageModelOpen(true);
+  };
+
+  const closeImageModel = () => {
+    setIsImageModelOpen(false);
+    setSelectedImage(null);
   };
 
   // Extract unique categories and sellers for filtering
@@ -146,7 +158,11 @@ const ProductList = () => {
       headerName: 'Image',
       width: 80,
       renderCell: (params) => (
-        <img src={params.value} alt={params.row.title} style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
+        <Button style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}
+        onClick={() => openImageModel(params.value)} >
+
+        <img src={params.value} alt={params.row.title} style={{ width: '40px', height: '40px', objectFit: 'cover', cursor: 'pointer' }} />
+        </Button>
       )
     },
     {
@@ -163,6 +179,8 @@ const ProductList = () => {
     }
   ];
 
+  
+  
   return (
     <>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
@@ -200,7 +218,7 @@ const ProductList = () => {
           variant="contained"
           sx={{ backgroundColor: '#333', color: 'white', '&:hover': { backgroundColor: '#444' } }}
           onClick={handleOpen}
-        >
+          >
           <Add /> {isMobile ? '' : 'Add Product'}
         </Button>
       </Box>
@@ -233,6 +251,25 @@ const ProductList = () => {
       )}
       <AddProductDialog open={open} handleClose={handleClose} />
 
+      {/* Image Dialog */}
+      <Dialog open={isImageModelOpen} onClose={closeImageModel} maxWidth="sm" fullWidth>
+        <DialogContent>
+          <img src={selectedImage} alt="Product" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        </DialogContent>
+        <DialogActions sx={{ p: 2, backgroundColor: '#f5f5f5' }}>
+          <Button
+            onClick={closeImageModel}
+            variant="contained"
+            sx={{
+              backgroundColor: '#1976d2',
+              color: '#fff',
+              '&:hover': { backgroundColor: '#1565c0' }
+            }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>      
       <Dialog
         open={!!selectedProduct}
         onClose={closeViewDialog}
