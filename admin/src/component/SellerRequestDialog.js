@@ -3,6 +3,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button, List, ListIt
 import { useSelector, useDispatch } from "react-redux";
 import { CheckCircle, Block } from "@mui/icons-material";
 import { updateSellerStatus } from "features/sellerSlice";
+import { selectPendingRequests } from "selectors/sellerSelectors";
 
 const SellerRequestDialog = ({ open, onClose }) => {
     const dispatch = useDispatch();
@@ -10,9 +11,7 @@ const SellerRequestDialog = ({ open, onClose }) => {
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     // Filter only pending requests
-    const pendingRequests = useSelector((state) =>
-        state.seller.sellers.filter((seller) => seller.status === "pending")
-    );
+    const pendingRequests = useSelector(selectPendingRequests)
 
     const handleAction = (sellerId, action) => {
         dispatch(updateSellerStatus({ sellerId, action }));

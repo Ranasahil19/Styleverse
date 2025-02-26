@@ -29,7 +29,7 @@ const OrderList = () => {
 
     // Debounced API call to avoid multiple quick updates
     setTimeout(() => {
-      dispatch(updateOrderStatus({ id: orderId, status: newStatus }));
+      dispatch(updateOrderStatus({ orderId: orderId, status: newStatus }));
     }, 500);
   };
 
@@ -61,8 +61,8 @@ const OrderList = () => {
       width: 180,
       renderCell: (params) => (
         <Select
-          value={statusUpdates[params.row._id] || params.row.status}
-          onChange={(e) => handleStatusChange(params.row._id, e.target.value)}
+          value={statusUpdates[params.row.orderId] || params.row.status}
+          onChange={(e) => handleStatusChange(params.row.orderId, e.target.value)}
           sx={{ width: "100%" }}
         >
           {["Pending", "Processing", "Shipped", "Delivered", "Cancelled"].map(
