@@ -130,7 +130,7 @@ const ProfileSection = () => {
         }}
         icon={
           <Avatar
-            src={`${process.env.REACT_APP_API_URL}${seller.avatar}`}
+            src={`${seller.avatar}`}
             sx={{
               ...theme.typography.mediumAvatar,
               margin: '8px 0 8px 8px !important',
