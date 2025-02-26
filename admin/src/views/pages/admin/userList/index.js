@@ -62,7 +62,7 @@ const UserList = () => {
         { field: "email", headerName: "Email", width: 250 },
         { field: "isActive", headerName: "Status", width: 120 ,
             renderCell : (params) => {
-                return <Box>{params.row.isActive ? "Block" : "Unblock"}</Box>
+                return <Box>{params.row.isActive ? "Active" : "Block"}</Box>
             }
         },
         {

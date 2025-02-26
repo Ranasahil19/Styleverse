@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { Box, Button, IconButton, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Typography } from '@mui/material';
+import { Box, Button, IconButton, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Typography, FormControl, InputLabel, MenuItem, Select} from '@mui/material';
 import { Edit, Delete, Visibility, Add, Print, UploadFile } from '@mui/icons-material';
 import AddProductDialog from '../../../../component/AddProductDialog';
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteProduct, fetchProduct, resetProductState, updateProduct } from 'features/productSlice';
+import { deleteProduct, fetchProduct, updateProduct } from 'features/productSlice';
 import CsvUploadDialog from '../../../../component/csvUploadDialog';
+// import { Box, Button, IconButton, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Typography, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+// import { Edit, Delete, Visibility, Add, Print } from '@mui/icons-material';
+// import AddProductDialog from '../../../../component/AddProductDialog';
+// import { useDispatch, useSelector } from 'react-redux';
+// import { deleteProduct, fetchProduct, updateProduct } from 'features/productSlice';
+// >>>>>>> 405813aa4a5b6d1d6db2651073340bf0632c22ee
 
 const ProductList = () => {
     const [open, setOpen] = useState(false);
@@ -15,13 +21,16 @@ const ProductList = () => {
     const [confirmDialog, setConfirmDialog] = useState({ open: false, productId: null });
     const [selectedProduct, setSelectedProduct] = useState(null);
     const sellerId = useSelector((state) => state.auth.seller.sellerId)
+    const [isImageModelOpen, setIsImageModelOpen] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedBadge, setSelectedBadge] = useState('');
     const dispatch = useDispatch();
     // Detect screen size
     const isMobile = useMediaQuery('(max-width: 600px)');
 
     useEffect(() => {
         if (sellerId) { // 🔥 Clear old products
-            dispatch(resetProductState());
             dispatch(fetchProduct(sellerId)); // Fetch new seller's products
         }
     }, [sellerId, dispatch]); 
@@ -34,6 +43,7 @@ const ProductList = () => {
     const confirmDelete = async () => {
         try {
             await dispatch(deleteProduct(confirmDialog.productId)).unwrap();
+            //dispatch(removeProductFromState(confirmDialog.productId));  // Refresh product list after delete
         } catch (error) {
             console.error('Delete failed:', error);
         }
@@ -59,6 +69,26 @@ const ProductList = () => {
         setEditProduct(product);
         setOpen(true);
     };
+
+    const openImageModel = (image) => {
+        setSelectedImage(image);
+        setIsImageModelOpen(true);
+    }
+
+    const closeImageModel = () => {
+        setSelectedImage(null);
+        setIsImageModelOpen(false);
+    }
+
+    // Extract unique category and badge for filtering
+    const categories = [...new Set(products.map((p) => p.category))];
+    const badges = [...new Set(products.map((p) => p.badge))];
+
+    // Filter products based on selection
+    const filterProducts = products.filter((product) =>
+        (selectedCategory ? product.category === selectedCategory : true) &&
+        (selectedBadge ? product.badge === selectedBadge : true)
+    );
 
     const handleUpdate = (updatedData) => {
         if (editProduct) {
@@ -158,14 +188,14 @@ const ProductList = () => {
             field: 'quantity',
             headerName: 'Stock',
             width: isMobile ? 80 : 120,
-            renderCell: (params) => `${params.value >= 0 ? "In stock" : "Out of stock"}`
+            renderCell: (params) => `${params.value >= 0 ? `${params.value}` : "Out of stock"}`
         },
         {
             field: 'image',
             headerName: 'Image',
             width: 80,
             renderCell: (params) => (
-                <img src={params.value} alt={params.row.title} style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
+                <img src={params.value} alt={params.row.title} style={{ width: '40px', height: '40px', objectFit: 'cover', cursor: 'pointer' }} onClick={() => openImageModel(params.value)} />
             )
         },
         {
@@ -194,6 +224,7 @@ const ProductList = () => {
                 <IconButton sx={{ color: '#333', '&:hover': { color: '#444' } }} onClick={handlePrint}>
                     <Print />
                 </IconButton>
+
                 <Box sx={{display:'flex',justifyContent: 'space-between'}}>
                 <Button
                     variant="contained"
@@ -202,6 +233,34 @@ const ProductList = () => {
                 >
                     <UploadFile /> {isMobile ? '' : 'Upload Product'}
                 </Button>
+
+                <FormControl sx={{ minWidth: 150 }}>
+                    <InputLabel>Category</InputLabel>
+                    <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+                        <MenuItem value="All">All</MenuItem>
+                        {categories.map((cat, index) => (
+                            <MenuItem key={index} value={cat}>{cat}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+
+                <FormControl sx={{ minWidth: 150 }}>
+                    <InputLabel>Badge</InputLabel>
+                    <Select value={selectedBadge} onChange={(e) => setSelectedBadge(e.target.value)}>
+                        <MenuItem value="All">All</MenuItem>
+                        {badges.map((badge, index) => (
+                            <MenuItem key={index} value={badge}>{badge}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+
+                <Button variant='contained' color='secondary' onClick={() => {
+                    setSelectedBadge('');
+                    setSelectedCategory('');
+                }}>
+                    Clear Filters
+                </Button>
+
                 <Button
                     variant="contained"
                     sx={{ backgroundColor: '#333', color: 'white', '&:hover': { backgroundColor: '#444' } }}
@@ -217,7 +276,7 @@ const ProductList = () => {
             ) : (
                 <Box sx={{ height: 400, width: '100%', overflowX: 'auto' }}>
                     <DataGrid
-                        rows={products.map((product) => ({ ...product, id: product._id })) }
+                        rows={filterProducts.map((product) => ({ ...product, id: product._id })) }
                         columns={columns}
                         getRowId={(row) => row._id} // Use _id as the unique identifier
                         pageSize={isMobile ? 3 : 5}
@@ -314,6 +373,26 @@ const ProductList = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Image Dialog */}
+            <Dialog open={isImageModelOpen} onClose={closeImageModel} maxWidth="sm" fullWidth>
+                <DialogContent>
+                    <img src={selectedImage} alt="Product" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                </DialogContent>
+                <DialogActions sx={{ p: 2, backgroundColor: '#f5f5f5' }}>
+                    <Button
+                    onClick={closeImageModel}
+                    variant="contained"
+                    sx={{
+                        backgroundColor: '#1976d2',
+                        color: '#fff',
+                        '&:hover': { backgroundColor: '#1565c0' }
+                    }}
+                    >
+                    Close
+                    </Button>
+                </DialogActions>
+            </Dialog>      
 
             <Dialog open={!!selectedProduct} onClose={closeViewDialog} maxWidth="sm" fullWidth sx={{ width: isMobile ? "auto":"450px", mx: "auto" }}>
                 <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem', backgroundColor: '#f5f5f5', py: 2 }}>
