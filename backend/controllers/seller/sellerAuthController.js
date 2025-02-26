@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const Seller = require("../../models/seller");
 const fs = require('fs');
 const path = require('path');
+const cloudinary = require('../../config/cloudinaryConfig')
 const validator = require("validator");
 require("dotenv").config();
 const algorithm = "aes-256-cbc";
@@ -186,7 +187,7 @@ exports.updateProfile = async (req, res) => {
     try {
         const sellerId = req.seller._id;
         const { userName, email, password, newPassword } = req.body;
-        const avatar = req.file ? `uploads/${req.file.filename}` : null;
+        let avatar = req.file?.path;
 
         let seller = await Seller.findById(sellerId);
         if (!seller) {
@@ -197,29 +198,33 @@ exports.updateProfile = async (req, res) => {
         if (avatar) {
             // Delete old avatar if it exists
             if (seller.avatar) {
-                const oldAvatarPath = path.join(__dirname, "../../", seller.avatar);
-                if (fs.existsSync(oldAvatarPath)) {
-                    fs.unlinkSync(oldAvatarPath);
-                }
+                const oldPublicId = seller.avatar.split("/").pop().split(".")[0];
+                await cloudinary.uploader.destroy(`avatars/${oldPublicId}`);
             }
 
-            // Update the avatar field with the new file path
-            seller.avatar = avatar;
+            const uploadResult = await cloudinary.uploader.upload(avatar, {
+                folder: "avatars",
+                transformation: [{ width: 300, height: 300, crop: "fill" }],
+            });
+
+            avatar = uploadResult.secure_url;
+            seller.avatar = avatar; // Update avatar field
         }
 
-        if(userName && userName !== seller.userName){
-            const existingSeller = await seller.findOne({userName})
-            if(existingSeller){
-                return res.status(400).json({ message : "UserName already in use"})
+        // Fix: Use Seller.findOne() instead of seller.findOne()
+        if (userName && userName !== seller.userName) {
+            const existingSeller = await Seller.findOne({ userName });
+            if (existingSeller) {
+                return res.status(400).json({ message: "UserName already in use" });
             }
-            seller.userName = userName
+            seller.userName = userName;
         }
 
-        // Update user details, only if new values are provided
-        if(email && email !== seller.email){
-            const existingSeller = await Seller.findOne({email});
-            if(existingSeller){
-                return res.status(400).json({ message : "Email already in use"})
+        // Fix: Use Seller.findOne() instead of seller.findOne()
+        if (email && email !== seller.email) {
+            const existingSeller = await Seller.findOne({ email });
+            if (existingSeller) {
+                return res.status(400).json({ message: "Email already in use" });
             }
             seller.email = email;
         }
@@ -230,7 +235,7 @@ exports.updateProfile = async (req, res) => {
             if (!isPasswordValid) {
                 return res.status(400).json({ message: "Current password is incorrect" });
             }
-            seller.password = newPassword; // Make sure this is hashed before saving
+            seller.password = newPassword; // Ensure this is hashed before saving
         }
 
         // Save the updated seller document
@@ -243,7 +248,7 @@ exports.updateProfile = async (req, res) => {
                 _id: seller._id,
                 userName: seller.userName,
                 email: seller.email,
-                avatar: seller.avatar, // Ensure this is the correct path stored
+                avatar: seller.avatar,
             },
         });
     } catch (error) {

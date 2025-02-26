@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { Box, Button, IconButton, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Typography, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import { Visibility, Add, Print } from '@mui/icons-material';
+import { Visibility, Add, Print , Replay } from '@mui/icons-material';
 import AddProductDialog from '../../../../component/AddProductDialog';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllProducts } from 'features/productSlice';
@@ -183,45 +183,74 @@ const ProductList = () => {
   
   return (
     <>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <IconButton sx={{ color: '#333', '&:hover': { color: '#444' } }} onClick={handlePrint}>
-          <Print />
-        </IconButton>
+      <Box
+  sx={{
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    mb: 2,
+    gap: 1,
+    flexWrap: { xs: 'wrap', sm: 'nowrap' }, // Wrap on small screens, single line on larger screens
+  }}
+>
+  <IconButton
+    sx={{ color: '#333', '&:hover': { color: '#444' }, fontSize: { xs: '0.8rem', sm: '1rem' } }}
+    onClick={handlePrint}
+  >
+    <Print fontSize="small" />
+  </IconButton>
 
-        <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Category</InputLabel>
-          <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-            <MenuItem value="All">All</MenuItem>
-            {categories.map((cat,index) => (
-              <MenuItem key={index} value={cat}>{cat}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+  <FormControl sx={{ minWidth: { xs: 100, sm: 150 } }}>
+    <InputLabel>Category</InputLabel>
+    <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+      <MenuItem value="All">All</MenuItem>
+      {categories.map((cat, index) => (
+        <MenuItem key={index} value={cat}>{cat}</MenuItem>
+      ))}
+    </Select>
+  </FormControl>
 
-        <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Seller</InputLabel>
-          <Select value={selectedSeller} onChange={(e) => setSelectedSeller(e.target.value)}>
-            <MenuItem value="">All</MenuItem>
-            {sellers.map((seller, index) => (
-              <MenuItem key={index} value={seller}>{seller}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+  <FormControl sx={{ minWidth: { xs: 100, sm: 150 } }}>
+    <InputLabel>Seller</InputLabel>
+    <Select value={selectedSeller} onChange={(e) => setSelectedSeller(e.target.value)}>
+      <MenuItem value="">All</MenuItem>
+      {sellers.map((seller, index) => (
+        <MenuItem key={index} value={seller}>{seller}</MenuItem>
+      ))}
+    </Select>
+  </FormControl>
 
-        <Button variant="contained" color="secondary" onClick={() => {
-          setSelectedCategory('');
-          setSelectedSeller('');
-        }}>
-          Reset
-        </Button>
-        <Button
-          variant="contained"
-          sx={{ backgroundColor: '#333', color: 'white', '&:hover': { backgroundColor: '#444' } }}
-          onClick={handleOpen}
-          >
-          <Add /> {isMobile ? '' : 'Add Product'}
-        </Button>
-      </Box>
+  <Button
+    variant="contained"
+    color="secondary"
+    sx={{
+      fontSize: { xs: '0.7rem', sm: '1rem' },
+      px: { xs: 1, sm: 2 },
+      minWidth: { xs: 'auto', sm: 100 },
+    }}
+    onClick={() => {
+      setSelectedCategory('');
+      setSelectedSeller('');
+    }}
+  >
+    <Replay />Reset
+  </Button>
+
+  <Button
+    variant="contained"
+    sx={{
+      backgroundColor: '#333',
+      color: 'white',
+      '&:hover': { backgroundColor: '#444' },
+      fontSize: { xs: '1rem', sm: '1rem' },
+      px: { xs: 1, sm: 2 },
+      minWidth: { xs: 'auto', sm: 150 },
+    }}
+    onClick={handleOpen}
+  >
+    <Add fontSize="small" />Add product
+  </Button>
+</Box>
 
       {loading ? (
         <p>Loading...</p>

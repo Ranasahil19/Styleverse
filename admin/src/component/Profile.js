@@ -38,7 +38,7 @@ const SellerProfile = () => {
                 {/* Avatar & Profile Details */}
                 <CardContent sx={{ textAlign: "center", position: "relative", mt: -15 }}>
                     <Avatar
-                        src={`${process.env.REACT_APP_API_URL}${seller.avatar}`}
+                        src={`${seller.avatar}`}
                         sx={{
                             width: 100,
                             height: 100,

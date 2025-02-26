@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import {
   Container, Box, Typography, Avatar, TextField, Button, Divider, 
-  Grid, Switch, FormControlLabel, Paper, IconButton
+  Grid, Switch, FormControlLabel, Paper, IconButton,
+  CircularProgress
 } from "@mui/material";
 import { Lock, Notifications, Save, CloudUpload } from "@mui/icons-material";
 import { useSelector } from "react-redux";
@@ -24,7 +25,7 @@ const AccountSettings = () => {
   const [values , setValues] = useState(initialValues);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState("");
-
+  const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -43,7 +44,7 @@ const AccountSettings = () => {
       setInitialValues(newInitialValues);
       setValues(newInitialValues)
 
-      if(seller.avatar) setAvatarPreview(`${process.env.REACT_APP_API_URL}${seller.avatar}`);
+      if(seller.avatar) setAvatarPreview(`${seller.avatar}`);
     }
   }, [seller]);
 
@@ -101,6 +102,7 @@ const AccountSettings = () => {
     }
   
     try {
+      setLoading(true);
       const response = await api.put("/update-profile", formData);
   
       setSnackbarMessage(response.data.message);
@@ -123,7 +125,7 @@ const AccountSettings = () => {
   
       // Update avatar preview immediately
       if (response.data.seller.avatar) {
-        setAvatarPreview(`${process.env.REACT_APP_API_URL}${response.data.seller.avatar}`);
+        setAvatarPreview(`${response.data.seller.avatar}`);
       }
   
     } catch (error) {
@@ -136,6 +138,8 @@ const AccountSettings = () => {
       }
         setSnackbarSeverity("error")
         setOpenSnackbar(true)
+      }finally{
+        setLoading(false);
       }
   };
   
@@ -197,8 +201,8 @@ const AccountSettings = () => {
               <Box sx={{ textAlign: "right" }}>
                 <Button 
                   variant="contained" startIcon={<Save />} color="success" onClick={handleProfileUpdate} size="large"
-                  disabled={!hasChangs()}>
-                  Save Changes
+                  disabled={!hasChangs() || loading}>
+                  {loading ? <CircularProgress/> : "Save Changes"}
                 </Button>
               </Box>
             </Paper>

@@ -20,6 +20,7 @@ const addProduct = async (req, res) => {
       return res.status(400).json({ message: "Image is required!" });
     }
 
+    const imageUrl = req.file.path
     // Find the last product to get the highest id
     const lastProduct = await Product.findOne().sort({ id: -1 });
 
@@ -30,19 +31,14 @@ const addProduct = async (req, res) => {
       price,
       description,
       category,
-      image: `${req.protocol}://${req.get("host")}/uploads/${
-        req.file.filename
-      }`,
+      image: imageUrl,
       quantity,
       badge,
       sellerId, // Save image URL
     });
 
     await newProduct.save();
-    res
-      .status(200)
-      .json({ message: "Product added successfully!", product: newProduct });
-    // Update Seller's products array
+    
     const updatedSeller = await Seller.findByIdAndUpdate(
       sellerId,
       { $push: { products: newProduct._id } }, // Push new product ID into seller's products array
@@ -53,10 +49,13 @@ const addProduct = async (req, res) => {
       return res.status(404).send({ message: "Seller not found" });
     }
 
-    res.status(201).send(newProduct);
+    return res.status(201).json({ message: "Product added successfully!", product: newProduct });
+
   } catch (error) {
     console.error("Error adding product:", error);
-    res.status(500).json({ message: "Server error" });
+    if (!res.headersSent) {
+      return res.status(500).json({ message: "Server error" });
+    }
   }
 };
 
