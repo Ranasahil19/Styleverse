@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { Box, Button, IconButton, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Typography } from '@mui/material';
-import { Edit, Delete, Visibility, Add, Print } from '@mui/icons-material';
+import { Edit, Delete, Visibility, Add, Print, UploadFile } from '@mui/icons-material';
 import AddProductDialog from '../../../../component/AddProductDialog';
 import { useDispatch, useSelector } from 'react-redux';
 import { deleteProduct, fetchProduct, resetProductState, updateProduct } from 'features/productSlice';
+import CsvUploadDialog from '../../../../component/csvUploadDialog';
 
 const ProductList = () => {
     const [open, setOpen] = useState(false);
+    const [openDialogCSV, setOpenDialogCSV] = useState(false);
     const { products, loading } = useSelector((state) => state.products);
     const [editProduct, setEditProduct] = useState(null);
     const [confirmDialog, setConfirmDialog] = useState({ open: false, productId: null });
@@ -192,6 +194,14 @@ const ProductList = () => {
                 <IconButton sx={{ color: '#333', '&:hover': { color: '#444' } }} onClick={handlePrint}>
                     <Print />
                 </IconButton>
+                <Box sx={{display:'flex',justifyContent: 'space-between'}}>
+                <Button
+                    variant="contained"
+                    sx={{ backgroundColor: '#333', mr:2 , color: 'white', '&:hover': { backgroundColor: '#444' } }}
+                    onClick={() => setOpenDialogCSV(true)}
+                >
+                    <UploadFile /> {isMobile ? '' : 'Upload Product'}
+                </Button>
                 <Button
                     variant="contained"
                     sx={{ backgroundColor: '#333', color: 'white', '&:hover': { backgroundColor: '#444' } }}
@@ -199,6 +209,7 @@ const ProductList = () => {
                 >
                     <Add /> {isMobile ? '' : 'Add Product'}
                 </Button>
+                </Box>
             </Box>
 
             {loading ? (
@@ -370,7 +381,9 @@ const ProductList = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
-        </>
+
+            <CsvUploadDialog open={openDialogCSV} handleClose={() => setOpenDialogCSV(false)} />
+            </>
     );
 };
 

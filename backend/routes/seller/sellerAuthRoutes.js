@@ -9,7 +9,7 @@ const {
     getAllSeller
 } = require("../../controllers/seller/sellerAuthController");
 const { sellerAuthMiddleware } = require("../../Middleware/authMiddleware");
-const { uploadSingle } = require("../../Middleware/multerMiddleware");
+const { uploadImage } = require("../../Middleware/multerMiddleware");
 const router = express.Router();
 
 
@@ -18,7 +18,7 @@ router.post("/seller-login", login);
 router.post("/seller-refreshtoken" , refreshAccessToken);
 router.post("/seller-logout" , sellerAuthMiddleware ,logout);
 router.get("/seller-protected", sellerAuthMiddleware , protected);
-router.put("/update-profile" , sellerAuthMiddleware , uploadSingle , updateProfile);
+router.put("/update-profile" , sellerAuthMiddleware , uploadImage , updateProfile);
 router.get("/admin/seller" , getAllSeller);
 
 module.exports = router;

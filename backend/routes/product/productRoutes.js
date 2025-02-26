@@ -1,15 +1,17 @@
 // /routes/productRoutes.js
 
 const express = require('express');
-const { insertProducts, getAllProduct, getAllProducts, fetchProductById, getFilters, addProduct, updateProductById, deleteProductById } = require('../../controllers/product/productController');
+const { insertProducts, getAllProduct, getAllProducts, fetchProductById, getFilters, addProduct, updateProductById, deleteProductById , uploadProducts } = require('../../controllers/product/productController');
 const { getBadges} = require('../../controllers/product/badgeController')
-const { uploadSingle } = require("../../Middleware/multerMiddleware");
+const { uploadImage, uploadCsv } = require("../../Middleware/multerMiddleware");
+const { sellerAuthMiddleware } = require('../../Middleware/authMiddleware');
 const router = express.Router();
 
-router.post("/api/products", uploadSingle ,addProduct);
+router.post("/api/products", uploadImage ,addProduct);
 
+router.post("/upload-csv", uploadCsv ,sellerAuthMiddleware, uploadProducts)
 // Update a product by its ID
-router.put("/api/products/:id",uploadSingle , updateProductById);
+router.put("/api/products/:id",uploadImage , updateProductById);
 
 // Delete a product by its ID
 

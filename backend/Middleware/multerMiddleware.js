@@ -3,7 +3,7 @@ const path = require("path");
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('../config/cloudinaryConfig')
 
-const storage = new CloudinaryStorage({
+const imageStorage = new CloudinaryStorage({
     cloudinary,
     params: {
         folder: "products", // Folder name in Cloudinary
@@ -12,24 +12,38 @@ const storage = new CloudinaryStorage({
     },
 })
 
+const csvStorage = multer.memoryStorage();
+
 // File filter to accept only images
-const fileFilter = (req, file, cb) => {
+const fileFilterImage = (req, file, cb) => {
     const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-    if (allowedTypes.includes(file.mimetype)) {
+    const extension = path.extname(file.originalname).toLowerCase();
+
+    if (allowedTypes.includes(file.mimetype)  || extension === ".png" || extension === ".jpg" || extension === ".jpeg" || extension === ".webp") {
         cb(null, true);
     } else {
-        cb(new Error("Only images (JPG, PNG, WebP, GIF) are allowed"), false);
+        cb(new Error("Only images (JPG, PNG, WebP, GIF) and screenshots are allowed"), false);
+    }
+};
+
+const fileFilterCsv = (req , file , cb) => {
+    if(file.mimetype === "text/csv" ||  file.originalname.endsWith(".csv")){
+        cb(null, true);
+    }else{
+        cb(new Error("Only CSV file are allowed"), false);
     }
 };
 
 // Multer configuration
-const upload = multer({
-    storage: storage,
-    fileFilter: fileFilter,
+const uploadImage = multer({
+    storage: imageStorage,
+    fileFilter: fileFilterImage,
     limits: { fileSize: 5 * 1024 * 1024 } // 5MB file size limit
-});
+}).single("image");
 
-// Middleware for single file upload
-const uploadSingle = upload.single("image");
+const uploadCsv = multer({
+    storage : csvStorage,
+    fileFilter: fileFilterCsv,
+}).single("file");
 
-module.exports = { uploadSingle };
+module.exports = { uploadCsv , uploadImage };
