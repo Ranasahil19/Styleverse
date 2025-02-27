@@ -11,7 +11,14 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Avatar
+  Avatar,
+  TableContainer,
+  Table,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableHead,
+  Paper
 } from '@mui/material';
 import { Visibility, Print } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
@@ -187,59 +194,88 @@ const OrderList = () => {
 
       {/* Order Details Modal */}
       {selectedOrder && (
-        <Dialog open={open} onClose={handleClose} fullWidth>
-          <DialogTitle>Order Details</DialogTitle>
-          <DialogContent>
-            <Typography variant="body1">
-              <strong>Order ID:</strong> {selectedOrder.orderId}
-            </Typography>
-            <Typography variant="body1">
-              <strong>User ID:</strong> {selectedOrder.userId}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Name:</strong> {selectedOrder.paymentId?.cardHolderName}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Status:</strong> {selectedOrder.status}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Total Price:</strong> ${selectedOrder.totalPrice}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Delivery Date:</strong>{' '}
-              {selectedOrder.deliveryDate ? new Date(selectedOrder.deliveryDate).toLocaleDateString() : 'N/A'}
-            </Typography>
+  <Dialog open={open} onClose={handleClose} fullWidth>
+    <DialogTitle>Order Details</DialogTitle>
+    <DialogContent>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableBody>
+            <TableRow>
+              <TableCell><strong>Order ID:</strong></TableCell>
+              <TableCell>{selectedOrder.orderId}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell><strong>User ID:</strong></TableCell>
+              <TableCell>{selectedOrder.userId}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell><strong>Name:</strong></TableCell>
+              <TableCell>{selectedOrder.paymentId?.cardHolderName}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell><strong>Status:</strong></TableCell>
+              <TableCell>{selectedOrder.status}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell><strong>Total Price:</strong></TableCell>
+              <TableCell>${selectedOrder.totalPrice}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell><strong>Delivery Date:</strong></TableCell>
+              <TableCell>
+                {selectedOrder.deliveryDate
+                  ? new Date(selectedOrder.deliveryDate).toLocaleDateString()
+                  : 'N/A'}
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-            <Typography variant="h6" sx={{ mt: 2 }}>
-              Order Items
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {selectedOrder.items.map((item) => (
-                <Box key={item.productId} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Typography variant="h6" sx={{ mt: 2 }}>
+        Order Items
+      </Typography>
+
+      <TableContainer component={Paper} sx={{ mt: 2 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell><strong>Image</strong></TableCell>
+              <TableCell><strong>Title</strong></TableCell>
+              <TableCell><strong>Category</strong></TableCell>
+              <TableCell><strong>Price</strong></TableCell>
+              <TableCell><strong>Quantity</strong></TableCell>
+              <TableCell><strong>Seller</strong></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {selectedOrder.items.map((item) => (
+              <TableRow key={item.productId}>
+                <TableCell>
                   <Avatar src={item.image} alt={item.title} sx={{ width: 50, height: 50 }} />
-                  <Box>
-                    <Typography variant="body1">
-                      <strong>{item.title}</strong> ({item.category})
-                    </Typography>
-                    <Typography variant="body2">
-                      Price: ${item.price} x {item.quantity}
-                    </Typography>
-                    <Typography variant="body2">Seller: {item.sellerId?.name}</Typography>
-                  </Box>
-                </Box>
-              ))}
-            </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handlePrint} startIcon={<Print />} color="primary">
-              Print
-            </Button>
-            <Button onClick={handleClose} color="secondary">
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
+                </TableCell>
+                <TableCell>{item.title}</TableCell>
+                <TableCell>{item.category}</TableCell>
+                <TableCell>${item.price}</TableCell>
+                <TableCell>{item.quantity}</TableCell>
+                <TableCell>{item.sellerId?.name}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </DialogContent>
+    <DialogActions>
+      <Button onClick={handlePrint} startIcon={<Print />} color="primary">
+        Print
+      </Button>
+      <Button onClick={handleClose} color="secondary">
+        Close
+      </Button>
+    </DialogActions>
+  </Dialog>
+)}
+
     </Box>
   );
 };
