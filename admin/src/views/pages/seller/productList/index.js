@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { Box, Button, IconButton, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Typography, FormControl, InputLabel, MenuItem, Select} from '@mui/material';
-import { Edit, Delete, Visibility, Add, Print, UploadFile } from '@mui/icons-material';
+import { Edit, Delete, Visibility, Add, Print, UploadFile, Replay } from '@mui/icons-material';
 import AddProductDialog from '../../../../component/AddProductDialog';
 import { useDispatch, useSelector } from 'react-redux';
 import { deleteProduct, fetchProduct, updateProduct } from 'features/productSlice';
 import CsvUploadDialog from '../../../../component/csvUploadDialog';
-// import { Box, Button, IconButton, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Typography, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
-// import { Edit, Delete, Visibility, Add, Print } from '@mui/icons-material';
-// import AddProductDialog from '../../../../component/AddProductDialog';
-// import { useDispatch, useSelector } from 'react-redux';
-// import { deleteProduct, fetchProduct, updateProduct } from 'features/productSlice';
-// >>>>>>> 405813aa4a5b6d1d6db2651073340bf0632c22ee
 
 const ProductList = () => {
     const [open, setOpen] = useState(false);
@@ -178,6 +172,7 @@ const ProductList = () => {
         { field: 'title', headerName: 'Product Name', width: isMobile ? 100 : 150 },
         { field: 'description', headerName: 'Description', width: isMobile ? 80 : 120 },
         { field: 'category', headerName: 'Category', width: isMobile ? 80 : 120 },
+        { field: 'badge', headerName: 'Badge', width: isMobile ? 80 : 120 },
         {
             field: 'price',
             headerName: 'Price',
@@ -195,7 +190,11 @@ const ProductList = () => {
             headerName: 'Image',
             width: 80,
             renderCell: (params) => (
-                <img src={params.value} alt={params.row.title} style={{ width: '40px', height: '40px', objectFit: 'cover', cursor: 'pointer' }} onClick={() => openImageModel(params.value)} />
+                <Button style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}
+                        onClick={() => openImageModel(params.value)} >
+                
+                        <img src={params.value} alt={params.row.title} style={{ width: '40px', height: '40px', objectFit: 'cover', cursor: 'pointer' }} />
+                </Button>
             )
         },
         {
@@ -220,56 +219,37 @@ const ProductList = () => {
 
     return (
         <>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                <IconButton sx={{ color: '#333', '&:hover': { color: '#444' } }} onClick={handlePrint}>
-                    <Print />
-                </IconButton>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, overflowX: 'auto', whiteSpace: 'nowrap', p: 1 }}>
+            <IconButton sx={{ color: '#333', '&:hover': { color: '#444' } }} onClick={handlePrint}><Print /></IconButton>
 
-                <Box sx={{display:'flex',justifyContent: 'space-between'}}>
-                <Button
-                    variant="contained"
-                    sx={{ backgroundColor: '#333', mr:2 , color: 'white', '&:hover': { backgroundColor: '#444' } }}
-                    onClick={() => setOpenDialogCSV(true)}
-                >
-                    <UploadFile /> {isMobile ? '' : 'Upload Product'}
-                </Button>
+            <FormControl sx={{ minWidth: 150 }}>
+                <InputLabel>Category</InputLabel>
+                <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+                    <MenuItem value="All">All</MenuItem>
+                    {categories.map((cat, index) => (<MenuItem key={index} value={cat}>{cat}</MenuItem>))}
+                </Select>
+            </FormControl>
 
-                <FormControl sx={{ minWidth: 150 }}>
-                    <InputLabel>Category</InputLabel>
-                    <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-                        <MenuItem value="All">All</MenuItem>
-                        {categories.map((cat, index) => (
-                            <MenuItem key={index} value={cat}>{cat}</MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
+            <FormControl sx={{ minWidth: 150 }}>
+                <InputLabel>Badge</InputLabel>
+                <Select value={selectedBadge} onChange={(e) => setSelectedBadge(e.target.value)}>
+                    <MenuItem value="All">All</MenuItem>
+                    {badges.map((badge, index) => (<MenuItem key={index} value={badge}>{badge}</MenuItem>))}
+                </Select>
+            </FormControl>
 
-                <FormControl sx={{ minWidth: 150 }}>
-                    <InputLabel>Badge</InputLabel>
-                    <Select value={selectedBadge} onChange={(e) => setSelectedBadge(e.target.value)}>
-                        <MenuItem value="All">All</MenuItem>
-                        {badges.map((badge, index) => (
-                            <MenuItem key={index} value={badge}>{badge}</MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-
-                <Button variant='contained' color='secondary' onClick={() => {
-                    setSelectedBadge('');
-                    setSelectedCategory('');
-                }}>
-                    Clear Filters
-                </Button>
-
-                <Button
-                    variant="contained"
-                    sx={{ backgroundColor: '#333', color: 'white', '&:hover': { backgroundColor: '#444' } }}
-                    onClick={handleOpen}
-                >
-                    <Add /> {isMobile ? '' : 'Add Product'}
-                </Button>
-                </Box>
-            </Box>
+            <Button variant="contained" color="secondary" sx={{ fontSize: '0.9rem', px: 2, minWidth: 100 }} onClick={() => { setSelectedCategory(''); setSelectedBadge(''); }}>
+                <Replay />Reset
+            </Button>
+            
+            <Button variant="contained" sx={{ backgroundColor: '#333', color: 'white', '&:hover': { backgroundColor: '#444' }, fontSize: '0.9rem', px: 2 }} onClick={() => setOpenDialogCSV(true)}>
+                <UploadFile /> {isMobile ? '' : 'Upload Product'}
+            </Button>
+            
+            <Button variant="contained" sx={{ backgroundColor: '#333', color: 'white', '&:hover': { backgroundColor: '#444' }, fontSize: '0.9rem', px: 2, minWidth: 150 }} onClick={handleOpen}>
+                <Add fontSize="small" />Add product
+            </Button>
+        </Box>
 
             {loading ? (
                 <p>Loading...</p>
@@ -375,7 +355,7 @@ const ProductList = () => {
             </Dialog>
 
             {/* Image Dialog */}
-            <Dialog open={isImageModelOpen} onClose={closeImageModel} maxWidth="sm" fullWidth>
+            <Dialog open={isImageModelOpen} onClose={closeImageModel} maxWidth="sm" sx={{ width: isMobile ? "auto":"450px", mx: "auto" }} fullWidth>
                 <DialogContent>
                     <img src={selectedImage} alt="Product" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 </DialogContent>

@@ -6,8 +6,6 @@ const mongoose = require("mongoose");
 const Category = require("../../models/category");
 const Seller = require("../../models/seller");
 const csvtojson = require("csvtojson");
-const { uploadBase64ToCloudinary } = require("../../utils/cloudinary");
-
 
 const addProduct = async (req, res) => {
   try {
@@ -24,12 +22,8 @@ const addProduct = async (req, res) => {
     }
 
     const imageUrl = req.file.path
-    // Find the last product to get the highest id
-    const lastProduct = await Product.findOne().sort({ id: -1 });
 
-    // Create new product
     const newProduct = new Product({
-      id: lastProduct ? lastProduct.id + 1 : 1, // Generate a unique id if the last product doesn't exist
       title,
       price,
       description,
@@ -62,8 +56,6 @@ const addProduct = async (req, res) => {
   }
 };
 
-const isBase64Image = (str) => /^data:image\/[a-zA-Z]+;base64,/.test(str);
-
 const uploadProducts = async (req, res) => {
   try {
       if (!req.file) {
@@ -77,14 +69,6 @@ const uploadProducts = async (req, res) => {
 
       for (const row of productData) {
           try {
-              let imageUrl = row.imageUrl;
-
-              if (isBase64Image(row.imageUrl)) {
-                  // Upload Base64 image to Cloudinary
-                  const uploadResult = await uploadBase64ToCloudinary(row.imageUrl);
-                  imageUrl = uploadResult.secure_url;
-              }
-
               const product = {
                   sellerId: req.seller._id,
                   title: row.name,
@@ -92,8 +76,8 @@ const uploadProducts = async (req, res) => {
                   price: parseFloat(row.price),
                   category: row.category,
                   quantity: parseInt(row.quantity),
-                  image: imageUrl,
                   badge: row.badge,
+                  image : null,
               };
 
               products.push(product);
@@ -102,9 +86,8 @@ const uploadProducts = async (req, res) => {
           }
       }
 
-      await Product.insertMany(products);
-
-      res.status(201).json({ message: "Products uploaded successfully" });
+      const insertedProducts = await Product.insertMany(products);
+      res.status(201).json({ message: "Products uploaded successfully" ,product : insertedProducts});
   } catch (error) {
       console.error("CSV Upload Error:", error);
       res.status(500).json({ message: "Server error" });
@@ -117,19 +100,12 @@ const updateProductById = async (req, res) => {
     const productId = req.params.id;
     const updatedData = { ...req.body };
 
-
-//     if (req.file) {
-//       updatedData.image = `${req.protocol}://${req.get("host")}/uploads/${
-//         req.file.filename
-//       }`;
-//     }
-
   if (updatedData.sellerId) {
     delete updatedData.sellerId;
   }
 
   if(req.file){ 
-    updatedData.image = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+    updatedData.image = req.file.path;
   }
     
     const updatedProduct = await Product.findByIdAndUpdate(
