@@ -114,10 +114,10 @@ const MyAccount = () => {
         setAddress({ address: "", city: "", state: "", pincode: "", country: "", mobileno: "" });
       };
    return (
-    <div className="max-w-container mx-auto px-4">
+    <div className="max-w-container mx-auto px-4 p-5">
       <Breadcrumbs title="MyAccount" prevLocation={prevLocation} />
       <div
-        className={`max-w-4xl mx-auto mt-12 shadow-2xl rounded-lg`}
+        className={`max-w-2xl mx-auto mt-12 shadow-2xl rounded-lg p-5`}
       >
         {/* Profile Header */}
         {popup.show && <PopupMsg message={popup.message} type={popup.type} />}

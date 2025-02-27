@@ -44,7 +44,7 @@ const ProductList = () => {
   };
 
   // Extract unique categories and sellers for filtering
-  const categories = [...new Set(products.map((p) => p.category))];
+  const categories = [...new Set(products.map((p) => p?.category))];
   const sellers = [...new Set(products.map((p) => p.sellerId?.name))];
 
   // Filter products based on selection
@@ -184,73 +184,70 @@ const ProductList = () => {
   return (
     <>
       <Box
-  sx={{
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    mb: 2,
-    gap: 1,
-    flexWrap: { xs: 'wrap', sm: 'nowrap' }, // Wrap on small screens, single line on larger screens
-  }}
->
-  <IconButton
-    sx={{ color: '#333', '&:hover': { color: '#444' }, fontSize: { xs: '0.8rem', sm: '1rem' } }}
-    onClick={handlePrint}
-  >
-    <Print fontSize="small" />
-  </IconButton>
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          mb: 2,
+          overflowX: 'auto', // Enable horizontal scrolling for small screens
+          whiteSpace: 'nowrap', // Prevent wrapping
+          p: 1, // Add padding for better touch interaction
+        }}
+      >
+        <IconButton
+          sx={{ color: '#333', '&:hover': { color: '#444' }, fontSize: '0.9rem' }}
+          onClick={handlePrint}
+        >
+          <Print fontSize="small" />
+        </IconButton>
 
-  <FormControl sx={{ minWidth: { xs: 100, sm: 150 } }}>
-    <InputLabel>Category</InputLabel>
-    <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-      <MenuItem value="All">All</MenuItem>
-      {categories.map((cat, index) => (
-        <MenuItem key={index} value={cat}>{cat}</MenuItem>
-      ))}
-    </Select>
-  </FormControl>
+        <FormControl sx={{ minWidth: 100 }}>
+          <InputLabel>Category</InputLabel>
+          <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+            <MenuItem value="All">All</MenuItem>
+            {categories.map((cat, index) => (
+              <MenuItem key={index} value={cat}>{cat}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-  <FormControl sx={{ minWidth: { xs: 100, sm: 150 } }}>
-    <InputLabel>Seller</InputLabel>
-    <Select value={selectedSeller} onChange={(e) => setSelectedSeller(e.target.value)}>
-      <MenuItem value="">All</MenuItem>
-      {sellers.map((seller, index) => (
-        <MenuItem key={index} value={seller}>{seller}</MenuItem>
-      ))}
-    </Select>
-  </FormControl>
+        <FormControl sx={{ minWidth: 100 }}>
+          <InputLabel>Seller</InputLabel>
+          <Select value={selectedSeller} onChange={(e) => setSelectedSeller(e.target.value)}>
+            <MenuItem value="">All</MenuItem>
+            {sellers.map((seller, index) => (
+              <MenuItem key={index} value={seller}>{seller}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-  <Button
-    variant="contained"
-    color="secondary"
-    sx={{
-      fontSize: { xs: '0.7rem', sm: '1rem' },
-      px: { xs: 1, sm: 2 },
-      minWidth: { xs: 'auto', sm: 100 },
-    }}
-    onClick={() => {
-      setSelectedCategory('');
-      setSelectedSeller('');
-    }}
-  >
-    <Replay />Reset
-  </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          sx={{ fontSize: '0.9rem', px: 2, minWidth: 100 }}
+          onClick={() => {
+            setSelectedCategory('');
+            setSelectedSeller('');
+          }}
+        >
+          <Replay />Reset
+        </Button>
 
-  <Button
-    variant="contained"
-    sx={{
-      backgroundColor: '#333',
-      color: 'white',
-      '&:hover': { backgroundColor: '#444' },
-      fontSize: { xs: '1rem', sm: '1rem' },
-      px: { xs: 1, sm: 2 },
-      minWidth: { xs: 'auto', sm: 150 },
-    }}
-    onClick={handleOpen}
-  >
-    <Add fontSize="small" />Add product
-  </Button>
-</Box>
+        <Button
+          variant="contained"
+          sx={{
+            backgroundColor: '#333',
+            color: 'white',
+            '&:hover': { backgroundColor: '#444' },
+            fontSize: '0.9rem',
+            px: 2,
+            minWidth: 150,
+          }}
+          onClick={handleOpen}
+        >
+          <Add fontSize="small" />Add product
+        </Button>
+      </Box>
 
       {loading ? (
         <p>Loading...</p>
@@ -281,7 +278,7 @@ const ProductList = () => {
       <AddProductDialog open={open} handleClose={handleClose} />
 
       {/* Image Dialog */}
-      <Dialog open={isImageModelOpen} onClose={closeImageModel} maxWidth="sm" fullWidth>
+      <Dialog open={isImageModelOpen} onClose={closeImageModel} maxWidth="sm" sx={{ width: isMobile ? "auto":"450px", mx: "auto" }} fullWidth>
         <DialogContent>
           <img src={selectedImage} alt="Product" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
         </DialogContent>
