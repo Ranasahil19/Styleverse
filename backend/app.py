@@ -66,84 +66,41 @@ def overlay_glasses(user_image, glasses_image, scale_factor=1.5):
     
     return user_image
 
-def overlay_shirt(user_image, shirt_image, scale_factor=1.4, height_adjust=0.1, sleeve_lift_factor=0.7):
-    """Overlay a shirt on a user while tracking arm movement and moving sleeves."""
+def overlay_shirt(user_image, shirt_image, scale_factor=1.4):
     user_image_rgb = cv2.cvtColor(user_image, cv2.COLOR_BGR2RGB)
     results = pose.process(user_image_rgb)
+    
+    if not results.pose_landmarks:
+        print("Pose landmarks not detected!")
+        return user_image  # Return original image if no pose is detected
+    
+    landmarks = results.pose_landmarks.landmark
+    ih, iw, _ = user_image.shape
+    left_shoulder = landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER]
+    right_shoulder = landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER]
+    left_hip = landmarks[mp_pose.PoseLandmark.LEFT_HIP]
+    right_hip = landmarks[mp_pose.PoseLandmark.RIGHT_HIP]
+    
+    shoulder_width = (right_shoulder.x - left_shoulder.x) * iw
+    new_left_x = int((left_shoulder.x * iw) - (shoulder_width * (scale_factor - 1) / 2))
+    new_right_x = int((right_shoulder.x * iw) + (shoulder_width * (scale_factor - 1) / 2))
+    
+    shirt_top_y = int(left_shoulder.y * ih)
+    shirt_bottom_y = int(right_hip.y * ih)
+    
+    # Ensure dimensions are positive and non-zero
+    shirt_width = max(1, new_right_x - new_left_x)
+    shirt_height = max(1, shirt_bottom_y - shirt_top_y)
 
-    if results.pose_landmarks:
-        landmarks = results.pose_landmarks.landmark
-        left_shoulder = landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER]
-        right_shoulder = landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER]
-        left_hip = landmarks[mp_pose.PoseLandmark.LEFT_HIP]
-        right_hip = landmarks[mp_pose.PoseLandmark.RIGHT_HIP]
-        left_wrist = landmarks[mp_pose.PoseLandmark.LEFT_WRIST]
-        right_wrist = landmarks[mp_pose.PoseLandmark.RIGHT_WRIST]
-        left_elbow = landmarks[mp_pose.PoseLandmark.LEFT_ELBOW]
-        right_elbow = landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW]
+    print(f"Shirt width: {shirt_width}, Shirt height: {shirt_height}")
+    
+    if shirt_image is None or shirt_image.shape[0] == 0 or shirt_image.shape[1] == 0:
+        print("Error: Shirt image is empty or could not be loaded")
+        return user_image
 
-        ih, iw, _ = user_image.shape
-        
-        # Shirt width based on shoulder distance
-        shoulder_distance = (right_shoulder.x - left_shoulder.x) * iw
-        new_left_x = int((left_shoulder.x * iw) - (shoulder_distance * (scale_factor - 1) / 2))
-        new_right_x = int((right_shoulder.x * iw) + (shoulder_distance * (scale_factor - 1) / 2))
-        
-        # Determine shirt height dynamically based on hip position
-        top_y = int(min(left_shoulder.y, right_shoulder.y) * ih - (height_adjust * ih))
-        bottom_y = int(max(left_hip.y, right_hip.y) * ih + (height_adjust * ih * 2))
-
-        # Adjust sleeve movement
-        left_arm_up = left_wrist.y < left_elbow.y  # If wrist is above elbow
-        right_arm_up = right_wrist.y < right_elbow.y
-
-        sleeve_movement_left = int((left_elbow.y - left_wrist.y) * ih * sleeve_lift_factor) if left_arm_up else 0
-        sleeve_movement_right = int((right_elbow.y - right_wrist.y) * ih * sleeve_lift_factor) if right_arm_up else 0
-
-        # Resize and warp shirt
-        shirt_width = new_right_x - new_left_x
-        shirt_height = bottom_y - top_y
-        resized_shirt = cv2.resize(shirt_image, (shirt_width, shirt_height), interpolation=cv2.INTER_AREA)
-
-        # Convert shirt to BGRA if needed
-        if resized_shirt.shape[2] == 3:
-            resized_shirt = cv2.cvtColor(resized_shirt, cv2.COLOR_BGR2BGRA)
-
-        # Ensure user image is BGRA
-        if user_image.shape[2] == 3:
-            user_image = cv2.cvtColor(user_image, cv2.COLOR_BGR2BGRA)
-
-        # Create a mask for overlay
-        shirt_alpha = resized_shirt[:, :, 3] / 255.0
-        user_alpha = 1.0 - shirt_alpha
-
-        # Move sleeves by adjusting the upper part of the shirt
-        sleeve_adjustment = np.zeros_like(resized_shirt[:, :, :3], dtype=np.uint8)
-        
-        # Left sleeve movement
-        if left_arm_up:
-            sleeve_adjustment[:sleeve_movement_left, :shirt_width//2] = resized_shirt[:sleeve_movement_left, :shirt_width//2]
-
-        # Right sleeve movement
-        if right_arm_up:
-            sleeve_adjustment[:sleeve_movement_right, shirt_width//2:] = resized_shirt[:sleeve_movement_right, shirt_width//2:]
-
-        # Blend sleeve movement with the main shirt
-        resized_shirt[:sleeve_movement_left, :shirt_width//2] = sleeve_adjustment[:sleeve_movement_left, :shirt_width//2]
-        resized_shirt[:sleeve_movement_right, shirt_width//2:] = sleeve_adjustment[:sleeve_movement_right, shirt_width//2:]
-
-        # Overlay shirt onto user
-        for c in range(0, 3):
-            user_image[top_y:bottom_y, new_left_x:new_right_x, c] = (
-                shirt_alpha * resized_shirt[:, :, c] +
-                user_alpha * user_image[top_y:bottom_y, new_left_x:new_right_x, c]
-            )
-
-        # Convert back to BGR
-        final_image = cv2.cvtColor(user_image, cv2.COLOR_BGRA2BGR)
-        
-        return final_image
-
+    resized_shirt = cv2.resize(shirt_image, (shirt_width, shirt_height))
+    overlay_image(user_image, resized_shirt, new_left_x, shirt_top_y)
+    
     return user_image
 
 
