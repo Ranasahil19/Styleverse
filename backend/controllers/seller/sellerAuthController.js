@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const cloudinary = require('../../config/cloudinaryConfig')
 const validator = require("validator");
+const { createNotification } = require("../notifications/notificationController");
 require("dotenv").config();
 const algorithm = "aes-256-cbc";
 const secretKeyHex = process.env.REFRESH_ENCRYPTION_KEY;
@@ -43,7 +44,6 @@ const decryptToken = (encryptedToken) => {
 
 exports.register = async (req, res) => {
     const { userName, email, name, password } = req.body;
-
     try {
         if (!userName || !email || !password || !name) {
             return res.status(400).json({ message: "All fields are required" });
@@ -66,6 +66,21 @@ exports.register = async (req, res) => {
         const savedSeller = await newSeller.save();
         savedSeller.sellerId = savedSeller._id.toString();
         await savedSeller.save();
+
+        const io = global.io;
+        const admins = await Seller.find({ role: "0" });
+
+        if (admins.length > 0) {
+            const message = `New Seller ${newSeller.name} registered`;
+
+            admins.forEach(admin => {
+                io.emit("receiveNotification", { receiverId: admin._id.toString(), message, type: "new_seller" });
+            });
+
+            await Promise.all(admins.map(admin => 
+                createNotification({ receiverId: admin._id.toString(), message, type: "new_seller" })
+            ));
+        }
 
         res.status(201).json({ message: "Seller registered successfully. Awaiting admin approval.", email: savedSeller.email });
     } catch (error) {

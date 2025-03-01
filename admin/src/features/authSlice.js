@@ -1,5 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "utils/axiosintance";
+import { resetNotifications } from "./notificationSlice";
+import { resetProduct } from "./productSlice";
+import { resetOrderState } from "./orderSlice";
 
 // Sign in seller
 export const signInSeller = createAsyncThunk(
@@ -38,10 +41,12 @@ export const refreshAccessToken = createAsyncThunk(
 // Logout seller
 export const logoutSeller = createAsyncThunk(
     "auth/logout",
-    async (_, { rejectWithValue }) => {
+    async (_, { rejectWithValue , dispatch }) => {
         try {
             await api.post("/seller-logout", {}, { withCredentials: true });
-            
+            dispatch(resetNotifications());
+            dispatch(resetProduct());
+            dispatch(resetOrderState());
             return {};
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || "Logout failed");

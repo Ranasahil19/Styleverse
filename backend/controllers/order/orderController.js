@@ -6,7 +6,8 @@ const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
 dotenv.config();
 const Product = require("../../models/productModel");
-const Seller = require("../../models/seller")
+const Seller = require("../../models/seller");
+const { checkStockAndNotify } = require("../product/checkStockAndNotify");
 
 const generateInvoicePDF = async (orderId, order, filePath) => {
   const doc = new PDFDocument({ margin: 50 });
@@ -229,6 +230,8 @@ exports.placeOrder = async (orderDetails) => {
       // Reduce stock in rating.count
       product.quantity -= item.quantity;
       await product.save();
+
+      await checkStockAndNotify(item.productId , product.sellerId)
     }
 
     // Create order
@@ -266,7 +269,16 @@ exports.placeOrder = async (orderDetails) => {
         seller.orders.push(savedOrder._id); // Add the order ID to the seller's orders array
         await seller.save(); // Save the updated seller document
         updatedSellers.add(seller._id.toString()); // Mark this seller as updated
-        console.log(`Added order to seller ${seller.username}`);
+        console.log(`Added order to seller ${seller.userName}`);
+
+        const message = `📦 New order placed for '${item.title}'`;
+        const receiverId = seller._id.toString();
+
+        const sellerSocket = global.onlineUsers.get(receiverId)
+        if(sellerSocket){
+          global.io.to(sellerSocket.socketId).emit("receiveNotification", { message, type: "new_order" });
+        }
+        await createNotification({ receiverId, message, type: "new_order" });
       }
     }
 

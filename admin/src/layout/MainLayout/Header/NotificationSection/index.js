@@ -18,7 +18,8 @@ import {
   Stack,
   TextField,
   Typography,
-  useMediaQuery
+  useMediaQuery,
+  Badge
 } from '@mui/material';
 
 // third-party
@@ -31,40 +32,46 @@ import NotificationList from './NotificationList';
 
 // assets
 import { IconBell } from '@tabler/icons';
-
-// notification status options
-const status = [
-  {
-    value: 'all',
-    label: 'All Notification'
-  },
-  {
-    value: 'new',
-    label: 'New'
-  },
-  {
-    value: 'unread',
-    label: 'Unread'
-  },
-  {
-    value: 'other',
-    label: 'Other'
-  }
-];
+import { useDispatch, useSelector } from 'react-redux';
+import { getNotification } from 'features/notificationSlice';
 
 // ==============================|| NOTIFICATION ||============================== //
 
 const NotificationSection = () => {
   const theme = useTheme();
   const matchesXs = useMediaQuery(theme.breakpoints.down('md'));
-
+  const {notification , loading} = useSelector((state) => state.notification) 
+  const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState('');
+  const [filtervalue, setFilterValue] = useState('all');
+  const seller = useSelector((state) => state.auth.seller);
+  const sellerId = seller?._id
+  
   /**
    * anchorRef is used on different componets and specifying one type leads to other components throwing an error
    * */
   const anchorRef = useRef(null);
 
+  useEffect(() => {
+      if (sellerId) {
+        dispatch(getNotification(sellerId));
+      }
+  }, [dispatch, sellerId]);
+
+  const isRecent = (createdAt) => {
+    const now = new Date();
+    const notifDate = new Date(createdAt);
+    const diffInHours = (now - notifDate) / (1000 * 60 * 60);
+    return diffInHours <= 24; 
+  }
+
+  const filterNotification = notification.filter((notif) => {
+    if(filtervalue === 'all') return true; 
+    if(filtervalue === 'new') return !notif.isRead && isRecent(notif.createdAt);
+    if(filtervalue === 'unread') return !notif.isRead;
+    return false;
+  })
+  
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };
@@ -84,10 +91,6 @@ const NotificationSection = () => {
     prevOpen.current = open;
   }, [open]);
 
-  const handleChange = (event) => {
-    if (event?.target.value) setValue(event?.target.value);
-  };
-
   return (
     <>
       <Box
@@ -99,6 +102,12 @@ const NotificationSection = () => {
           }
         }}
       >
+        <Badge
+            badgeContent={`${notification.length}`}
+            color="error"
+            overlap="circular"
+            max={99}
+            >
         <ButtonBase sx={{ borderRadius: '12px' }}>
           <Avatar
             variant="rounded"
@@ -119,9 +128,12 @@ const NotificationSection = () => {
             onClick={handleToggle}
             color="inherit"
           >
-            <IconBell stroke={1.5} size="1.3rem" />
+            
+              <IconBell stroke={1.5} size="1.3rem" />
+            
           </Avatar>
         </ButtonBase>
+        </Badge>
       </Box>
       <Popper
         placement={matchesXs ? 'bottom' : 'bottom-end'}
@@ -154,7 +166,7 @@ const NotificationSection = () => {
                             <Typography variant="subtitle1">All Notification</Typography>
                             <Chip
                               size="small"
-                              label="01"
+                              label={`${notification.length}`}
                               sx={{
                                 color: theme.palette.background.default,
                                 bgcolor: theme.palette.warning.dark
@@ -178,17 +190,15 @@ const NotificationSection = () => {
                                 id="outlined-select-currency-native"
                                 select
                                 fullWidth
-                                value={value}
-                                onChange={handleChange}
+                                value={filtervalue}
+                                onChange={(e) => setFilterValue(e.target.value)}
                                 SelectProps={{
                                   native: true
                                 }}
                               >
-                                {status.map((option) => (
-                                  <option key={option.value} value={option.value}>
-                                    {option.label}
-                                  </option>
-                                ))}
+                                <option value="all">All Notifications</option>
+                                <option value="new">New</option>
+                                <option value="unread">Unread</option>
                               </TextField>
                             </Box>
                           </Grid>
@@ -196,7 +206,7 @@ const NotificationSection = () => {
                             <Divider sx={{ my: 0 }} />
                           </Grid>
                         </Grid>
-                        <NotificationList />
+                        <NotificationList notifications={filterNotification} loading={loading}/>
                       </PerfectScrollbar>
                     </Grid>
                   </Grid>

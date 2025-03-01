@@ -9,6 +9,8 @@ dotenv.config();
 const {
   Verification_Email_Template,
 } = require("../../Middleware/EmailTemplate");
+const Seller = require("../../models/seller");
+const { createNotification } = require("../notifications/notificationController");
 
 // Configure nodemailer transport
 const transporter = nodemailer.createTransport({
@@ -95,6 +97,20 @@ exports.register = async (req, res) => {
       verificationCode
     );
     await sendEmail(email, emailSubject, emailContent);
+    const io = global.io
+    const admins = await Seller.find({role : '0'});
+
+    if(admins.length > 0){
+      const message = `New User ${pendingUser.username} Signed`;
+
+      admins.forEach((admin) => {
+        io.emit("receiveNotification", {receiverId: admin._id.toString(), message, type: "new_user" })
+      })
+
+      await Promise.all(admins.map(admin => 
+        createNotification({ receiverId: admin._id.toString(), message, type: "new_user" })
+      ));
+    }
 
     res.status(201).json({
       message:

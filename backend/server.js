@@ -6,14 +6,23 @@ const bodyParser = require('body-parser');
 const routes = require('./routes/indexRoutes');
 const cookieParser = require("cookie-parser");
 const {Server} = require('socket.io')
-const http = require('http')
+const http = require('http');
+const { createNotification } = require('./controllers/notifications/notificationController');
 require('dotenv').config();
 
 
 const app = express();
 const server = http.createServer(app)
 // Middlewares
-const allowedOrigins = ["http://localhost:3001", "http://localhost:3000"];
+const allowedOrigins = ["http://localhost:3000", "http://localhost:3001"];
+
+const io = new Server(server, {
+    cors:{
+        origin: allowedOrigins,
+        methods: ["GET", "POST"],
+        credentials: true,
+    }
+})
 
 const corsOptions = {
     origin: function (origin, callback) {
@@ -42,15 +51,8 @@ connectDB();  // This will handle the MongoDB connection
 app.use('/', routes);
 app.use("/uploads", express.static("uploads"));
 
-const io = new Server(server, {
-    cors:{
-        origin: allowedOrigins,
-        methods: ["GET", "POST"],
-        credentials: true,
-    }
-})
-
 let onlineUsers = new Map();
+global.onlineUsers = onlineUsers
 io.on("connection", (socket) => {
     console.log("New Client Connected", socket.id);
 
@@ -59,27 +61,22 @@ io.on("connection", (socket) => {
         console.log("User registered:", onlineUsers);
     })
 
-    socket.on("sendNotification", ({receiverId , message}) => {
-        const receiver = onlineUsers.get(receiverId);
-        if(receiver){
-            io.to(receiver.socketId).emit("receiveNotification", message);
+    socket.on("sendNotification", async ({ receiverId, message, type }) => {
+        try {
+            if (!receiverId || !message || !type) {
+                console.error("Invalid notification data:", { receiverId, message, type });
+                return;
+            }
+            
+            const receiver = onlineUsers.get(receiverId);
+            if (receiver) {
+                io.to(receiver.socketId).emit("receiveNotification", {message , type});
+            }
+
+            await createNotification({receiverId , message , type})
+        } catch (error) {
+            console.error("Error saving notification:", error);
         }
-    });
-
-    socket.on("notifyAdmins", (message) => {
-        onlineUsers.forEach(({ socketId, role }) => {
-            if (role === "admin") {
-                io.to(socketId).emit("receiveNotification", message);
-            }
-        });
-    });
-
-    socket.on("notifySellers", (message) => {
-        onlineUsers.forEach(({socketId , role}) => {
-            if(role === "1"){
-                io.to(socketId).emit("receiveNotification", message);
-            }
-        })
     });
 
     socket.on("disconnect", () => {
@@ -95,4 +92,7 @@ io.on("connection", (socket) => {
 
 // Start the server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+global.io = io;
+module.exports = { app, server };
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+

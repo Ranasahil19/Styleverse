@@ -29,7 +29,6 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
 import { logoutSeller, resetAuthState } from 'features/authSlice';
-import { resetProduct } from 'features/productSlice';
 
 const ProfileSection = () => {
   const theme = useTheme();
@@ -80,7 +79,6 @@ const ProfileSection = () => {
 
   const handleLogout = async () => {
     dispatch(logoutSeller()).then(() => {
-      dispatch(resetProduct());
       localStorage.removeItem('sellerRole');
     });
   };
