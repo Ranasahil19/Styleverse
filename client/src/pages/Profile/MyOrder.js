@@ -195,7 +195,7 @@ function MyOrder() {
                       </p>
                       <p className="text-sm text-gray-500">
                         Total:{" "}
-                        <span className="font-medium">₹{order.totalPrice}</span>
+                        <span className="font-medium">${order.totalPrice}</span>
                       </p>
                       <p className="text-sm text-gray-500">
                         Ship To: {user.username}
