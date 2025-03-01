@@ -204,7 +204,7 @@ const ProductList = () => {
         <FormControl sx={{ minWidth: 100 }}>
           <InputLabel>Category</InputLabel>
           <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-            <MenuItem value="All">All</MenuItem>
+            <MenuItem value="">All</MenuItem>
             {categories.map((cat, index) => (
               <MenuItem key={index} value={cat}>{cat}</MenuItem>
             ))}
