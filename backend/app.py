@@ -5,7 +5,7 @@ import mediapipe as mp
 import base64
 from flask_cors import CORS
 import traceback
-from rembg import remove
+import math
 
 app = Flask(__name__)
 CORS(app, resources={r"/tryon": {"origins": "*"}})
@@ -16,123 +16,196 @@ mp_pose = mp.solutions.pose
 face_mesh = mp_face_mesh.FaceMesh()
 pose = mp_pose.Pose()
 
-def base64_to_image(base64_string, remove_bg=False):
+def base64_to_image(base64_string):
     """Convert base64 string to OpenCV image."""
     img_data = base64.b64decode(base64_string.split(',')[-1])
     np_arr = np.frombuffer(img_data, np.uint8)
-    img = cv2.imdecode(np_arr, cv2.IMREAD_UNCHANGED)
-    
-    if remove_bg:
-        img = remove(img)
-        img = cv2.cvtColor(np.array(img), cv2.COLOR_RGBA2BGRA)
-    
-    return img
+    return cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
 def image_to_base64(image):
     """Convert OpenCV image to base64 string."""
     _, buffer = cv2.imencode('.jpg', image)
     return "data:image/jpeg;base64," + base64.b64encode(buffer).decode('utf-8')
 
+def remove_background(image):
+    """Remove background using GrabCut algorithm."""
+    mask = np.zeros(image.shape[:2], np.uint8)
+    bgdModel = np.zeros((1, 65), np.float64)
+    fgdModel = np.zeros((1, 65), np.float64)
+
+    height, width = image.shape[:2]
+    rect = (10, 10, width - 10, height - 10)
+    cv2.grabCut(image, mask, rect, bgdModel, fgdModel, 5, cv2.GC_INIT_WITH_RECT)
+    mask = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
+    result = image * mask[:, :, np.newaxis]
+    return result
+
+def rotate_image(image, angle):
+    """Rotate image by angle in degrees."""
+    (h, w) = image.shape[:2]
+    center = (w // 2, h // 2)
+    M = cv2.getRotationMatrix2D(center, angle, 1.0)
+    rotated = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+    return rotated
+
 def overlay_glasses(user_image, glasses_image, scale_factor=1.5):
-    """AI-enhanced overlay for glasses with precise landmark fitting."""
+    """Overlay glasses while keeping the user’s face and background intact with head alignment."""
     user_image_rgb = cv2.cvtColor(user_image, cv2.COLOR_BGR2RGB)
     results = face_mesh.process(user_image_rgb)
-    
+
     if results.multi_face_landmarks:
         face_landmarks = results.multi_face_landmarks[0]
         ih, iw, _ = user_image.shape
-        
-        left_eye_inner = face_landmarks.landmark[133]
-        right_eye_inner = face_landmarks.landmark[362]
+
+        # Get key landmarks for fitting glasses
         left_eye_outer = face_landmarks.landmark[33]
         right_eye_outer = face_landmarks.landmark[263]
-        eye_center = face_landmarks.landmark[168]
-        
+        left_eye_top = face_landmarks.landmark[159]
+        right_eye_top = face_landmarks.landmark[386]
+        nose_bridge = face_landmarks.landmark[168]
+
+        # Compute eye width for scaling glasses
         eye_width = (right_eye_outer.x - left_eye_outer.x) * iw
-        new_left_x = int((left_eye_inner.x * iw) - (eye_width * (scale_factor - 1) / 2))
-        new_right_x = int((right_eye_inner.x * iw) + (eye_width * (scale_factor - 1) / 2))
-        
-        top_y = int(eye_center.y * ih - (eye_width * 0.3))
-        bottom_y = int(eye_center.y * ih + (eye_width * 0.3))
-        
+        new_left_x = int((left_eye_outer.x * iw) - (eye_width * (scale_factor - 1) / 2))
+        new_right_x = int((right_eye_outer.x * iw) + (eye_width * (scale_factor - 1) / 2))
+
+        # Compute glasses height based on eye and nose position
+        top_y = int(min(left_eye_top.y, right_eye_top.y) * ih - 15)
+        bottom_y = int(nose_bridge.y * ih + 20)
+
+        # Resize glasses to fit
         glasses_width = new_right_x - new_left_x
         glasses_height = bottom_y - top_y
-        resized_glasses = cv2.resize(glasses_image, (glasses_width, glasses_height))
-        
-        if resized_glasses.shape[2] == 3:
+        resized_glasses = cv2.resize(glasses_image, (glasses_width, glasses_height), interpolation=cv2.INTER_AREA)
+
+        # Convert glasses image to BGRA if needed
+        if resized_glasses.shape[2] == 3:  
             resized_glasses = cv2.cvtColor(resized_glasses, cv2.COLOR_BGR2BGRA)
-        
-        overlay_image(user_image, resized_glasses, new_left_x, top_y)
-    
+
+        # --- Adjust for head tilt ---
+        # Calculate the tilt angle using the eye tops
+        dy = (right_eye_top.y - left_eye_top.y) * ih
+        dx = (right_eye_top.x - left_eye_top.x) * iw
+        angle = math.degrees(math.atan2(dy, dx))
+        rotated_glasses = rotate_image(resized_glasses, angle)
+
+        # Create a copy of the original image and ensure BGRA format
+        original_background = user_image.copy()
+        if user_image.shape[2] == 3:
+            user_image = cv2.cvtColor(user_image, cv2.COLOR_BGR2BGRA)
+        if original_background.shape[2] == 3:
+            original_background = cv2.cvtColor(original_background, cv2.COLOR_BGR2BGRA)
+
+        # Extract alpha channel from rotated glasses
+        glasses_alpha = rotated_glasses[:, :, 3] / 255.0
+
+        # Calculate region of interest (ensure bounds)
+        roi_h, roi_w = rotated_glasses.shape[:2]
+        end_y = min(top_y + roi_h, ih)
+        end_x = min(new_left_x + roi_w, iw)
+        start_y = max(top_y, 0)
+        start_x = max(new_left_x, 0)
+
+        # Adjust glasses region if partially outside
+        overlay_glasses_crop = rotated_glasses[0:(end_y - start_y), 0:(end_x - start_x)]
+        alpha_crop = glasses_alpha[0:(end_y - start_y), 0:(end_x - start_x)]
+        user_crop = user_image[start_y:end_y, start_x:end_x]
+
+        # Blend the glasses with the user image
+        for c in range(0, 3):
+            user_crop[:, :, c] = (alpha_crop * overlay_glasses_crop[:, :, c] +
+                                  (1 - alpha_crop) * user_crop[:, :, c])
+        user_image[start_y:end_y, start_x:end_x] = user_crop
+
+        # Restore any fully transparent areas with the original background
+        no_glasses_mask = (user_image[:, :, 3] == 0)
+        if no_glasses_mask.any():
+            user_image[no_glasses_mask] = original_background[no_glasses_mask]
+
+        final_image = cv2.cvtColor(user_image, cv2.COLOR_BGRA2BGR)
+        return final_image
+
     return user_image
 
-def overlay_shirt(user_image, shirt_image, scale_factor=1.4):
+def overlay_shirt(user_image, shirt_image, scale_factor=1.4, height_adjust=0.1):
+    """Overlay a shirt on a user while preserving original colors."""
     user_image_rgb = cv2.cvtColor(user_image, cv2.COLOR_BGR2RGB)
     results = pose.process(user_image_rgb)
-    
-    if not results.pose_landmarks:
-        print("Pose landmarks not detected!")
-        return user_image  # Return original image if no pose is detected
-    
-    landmarks = results.pose_landmarks.landmark
-    ih, iw, _ = user_image.shape
-    left_shoulder = landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER]
-    right_shoulder = landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER]
-    left_hip = landmarks[mp_pose.PoseLandmark.LEFT_HIP]
-    right_hip = landmarks[mp_pose.PoseLandmark.RIGHT_HIP]
-    
-    shoulder_width = (right_shoulder.x - left_shoulder.x) * iw
-    new_left_x = int((left_shoulder.x * iw) - (shoulder_width * (scale_factor - 1) / 2))
-    new_right_x = int((right_shoulder.x * iw) + (shoulder_width * (scale_factor - 1) / 2))
-    
-    shirt_top_y = int(left_shoulder.y * ih)
-    shirt_bottom_y = int(right_hip.y * ih)
-    
-    # Ensure dimensions are positive and non-zero
-    shirt_width = max(1, new_right_x - new_left_x)
-    shirt_height = max(1, shirt_bottom_y - shirt_top_y)
 
-    print(f"Shirt width: {shirt_width}, Shirt height: {shirt_height}")
-    
-    if shirt_image is None or shirt_image.shape[0] == 0 or shirt_image.shape[1] == 0:
-        print("Error: Shirt image is empty or could not be loaded")
-        return user_image
+    if results.pose_landmarks:
+        landmarks = results.pose_landmarks.landmark
+        left_shoulder = landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER]
+        right_shoulder = landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER]
+        left_hip = landmarks[mp_pose.PoseLandmark.LEFT_HIP]
+        right_hip = landmarks[mp_pose.PoseLandmark.RIGHT_HIP]
+        
+        # Calculate positions
+        ih, iw, _ = user_image.shape
+        shoulder_distance = (right_shoulder.x - left_shoulder.x) * iw
+        new_left_x = (left_shoulder.x * iw) - (shoulder_distance * (scale_factor - 1) / 2)
+        new_right_x = (right_shoulder.x * iw) + (shoulder_distance * (scale_factor - 1) / 2)
+        
+        mid_shoulder = ((left_shoulder.x + right_shoulder.x) / 2, (left_shoulder.y + right_shoulder.y) / 2)
+        mid_hip = ((left_hip.x + right_hip.x) / 2, (left_hip.y + right_hip.y) / 2)
+        third_point = (mid_shoulder[0], mid_hip[1] + height_adjust)
 
-    resized_shirt = cv2.resize(shirt_image, (shirt_width, shirt_height))
-    overlay_image(user_image, resized_shirt, new_left_x, shirt_top_y)
-    
+        src_points = np.array([
+            [0, 0],
+            [shirt_image.shape[1], 0],
+            [shirt_image.shape[1] // 2, shirt_image.shape[0]]
+        ], dtype=np.float32)
+
+        dst_points = np.array([
+            [new_left_x, left_shoulder.y * ih - (height_adjust * ih)],
+            [new_right_x, right_shoulder.y * ih - (height_adjust * ih)],
+            [third_point[0] * iw, third_point[1] * ih]
+        ], dtype=np.float32)
+
+        # Transform shirt image
+        M = cv2.getAffineTransform(src_points, dst_points)
+        warped_shirt = cv2.warpAffine(shirt_image, M, (iw, ih), flags=cv2.INTER_LINEAR)
+
+        # Convert warped shirt to grayscale and create a mask
+        gray = cv2.cvtColor(warped_shirt, cv2.COLOR_BGR2GRAY)
+        _, mask = cv2.threshold(gray, 1, 255, cv2.THRESH_BINARY)
+
+        # Invert mask
+        mask_inv = cv2.bitwise_not(mask)
+
+        # Extract regions
+        user_bg = cv2.bitwise_and(user_image, user_image, mask=mask_inv)  # Keep user image
+        shirt_fg = cv2.bitwise_and(warped_shirt, warped_shirt, mask=mask)  # Keep only shirt
+
+        # Merge images
+        result = cv2.add(user_bg, shirt_fg)
+
+        return result
+
     return user_image
 
-
-def overlay_image(background, overlay, x, y):
-    """General function to overlay transparent images on a background."""
-    h, w, _ = overlay.shape
-    alpha = overlay[:, :, 3] / 255.0
-    for c in range(3):
-        background[y:y+h, x:x+w, c] = (
-            alpha * overlay[:, :, c] + (1 - alpha) * background[y:y+h, x:x+w, c]
-        )
 
 @app.route('/tryon', methods=['POST'])
 def try_on():
+    """Handle try-on API request."""
     try:
         data = request.get_json()
         if not data or 'userImage' not in data or 'productImage' not in data or 'category' not in data:
             return jsonify({'error': 'Missing required fields'}), 400
-        
+
         user_image = base64_to_image(data['userImage'])
-        product_image = base64_to_image(data['productImage'], remove_bg=True)
-        
+        product_image = base64_to_image(data['productImage'])
+        product_image = remove_background(product_image)
+
         if data['category'] == "glasses":
             result_image = overlay_glasses(user_image, product_image)
         elif data['category'] == "men":
             result_image = overlay_shirt(user_image, product_image)
         else:
             return jsonify({'error': 'Invalid category'}), 400
-        
+
         result_base64 = image_to_base64(result_image)
         return jsonify({'resultImage': result_base64}), 200
-    
+
     except Exception as e:
         print("Error in /tryon:", e)
         print(traceback.format_exc()) 
