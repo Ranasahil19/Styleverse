@@ -2,12 +2,11 @@ const mongoose = require("mongoose");
 
 // Define the product schema
 const productSchema = new mongoose.Schema({
-  id: { type: String },
   title: { type: String, required: true },
   price: { type: Number, required: true }, // Ensure price is required
   description: { type: String, required: true },
   category: { type: String, required: true },
-  image: { type: String, required: true },
+  image: { type: String, required: function () { return this.image !== null; }, default: null },
   badge: {
     type: String,
     enum: ["Popular", "Top Rated", "Average", "Luxury", "Affordable", "Standard"],

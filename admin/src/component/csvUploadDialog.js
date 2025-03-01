@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { CloudUpload } from "@mui/icons-material";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography } from "@mui/material";
-import api from "utils/axiosintance";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography , useMediaQuery} from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { uploadProduct } from "features/productSlice";
 
 const CsvUploadDialog = ({ open, handleClose }) => {
   const [csvFile, setCsvFile] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const {loading} = useSelector((state) => state.products)
+  const isMobile = useMediaQuery('(max-width: 600px)');
+  const dispatch = useDispatch(); 
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -17,30 +20,32 @@ const CsvUploadDialog = ({ open, handleClose }) => {
     }
   };
 
+  const handleCloseDialog = () => {
+    handleClose()
+    setCsvFile(null)
+  }
+
   const handleUpload = async () => {
     if (!csvFile) {
       alert("Please select a CSV file first.");
       return;
     }
-
-    setLoading(true);
+    
     const formData = new FormData();
     formData.append("file", csvFile);
-
-    try {
-      const response = await api.post("/upload-csv", formData);
-      alert(response.data.message);
-      setCsvFile(null);
-      handleClose(); // Close dialog after success
-    } catch (error) {
-      alert("Error uploading CSV file");
-    } finally {
-      setLoading(false);
+  
+    const result = await dispatch(uploadProduct(formData)); // ✅ Wait for dispatch
+  
+    if (uploadProduct.fulfilled.match(result)) {
+      handleCloseDialog();
+    } else {
+      alert(result.payload || "Upload failed!");
     }
   };
+  
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" sx={{ width: isMobile ? "auto":"450px", mx: "auto" }} fullWidth>
       <DialogTitle>Upload Product CSV</DialogTitle>
       <DialogContent>
         <input
@@ -58,7 +63,7 @@ const CsvUploadDialog = ({ open, handleClose }) => {
         {csvFile && <Typography>{csvFile.name}</Typography>}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} color="secondary">
+        <Button onClick={handleCloseDialog} color="secondary">
           Cancel
         </Button>
         <Button

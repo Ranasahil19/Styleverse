@@ -69,6 +69,17 @@ export const updateProduct = createAsyncThunk(
   }
 );
 
+export const uploadProduct = createAsyncThunk(
+  "products/uploadProduct",
+  async(formData , {rejectWithValue}) => {
+    try {
+      const response = await api.post("/upload-csv", formData)
+      return response.data.product;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Something went wrong");
+    }
+  }
+)
 // Initial state
 const initialState = {
   loading: false,
@@ -161,8 +172,23 @@ const productSlice = createSlice({
       .addCase(updateProduct.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-
-      });
+      })
+      .addCase(uploadProduct.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(uploadProduct.fulfilled, (state, action) => {
+        state.loading = false;
+        if(Array.isArray(action.payload)){
+          state.products = [...state.products , ...action.payload];
+        }else{
+          state.products = [...state.products, action.payload]; 
+        }
+        state.message = "Product Uploaded Successfully";
+      })
+      .addCase(uploadProduct.rejected, (state , action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
   }
 });
 
