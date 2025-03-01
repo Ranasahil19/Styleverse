@@ -58,41 +58,58 @@ const addProduct = async (req, res) => {
 
 const uploadProducts = async (req, res) => {
   try {
-      if (!req.file) {
-          return res.status(400).json({ message: "Please upload a CSV file" });
+    if (!req.file) {
+      return res.status(400).json({ message: "Please upload a CSV file" });
+    }
+
+    const csvBuffer = req.file.buffer.toString("utf-8");
+    const productData = await csvtojson().fromString(csvBuffer);
+
+    let products = [];
+
+    for (const row of productData) {
+      try {
+        let imageUrl = row.imageUrl;
+
+        const product = new Product({
+          sellerId: req.seller._id,
+          title: row.name,
+          description: row.description,
+          price: parseFloat(row.price),
+          category: row.category,
+          quantity: parseInt(row.quantity),
+          image: imageUrl || null,
+          badge: row.badge,
+        });
+
+        products.push(product);
+      } catch (error) {
+        console.error("Error processing row:", error);
       }
+    }
 
-      const csvBuffer = req.file.buffer.toString("utf-8");
-      const productData = await csvtojson().fromString(csvBuffer);
+    // Insert products into the database
+    const insertedProducts = await Product.insertMany(products);
+    const insertedProductIds = insertedProducts.map((product) => product._id);
 
-      let products = [];
+    // Update seller's product list
+    const updatedSeller = await Seller.findByIdAndUpdate(
+      req.seller._id,
+      { $push: { products: { $each: insertedProductIds } } },
+      { new: true }
+    );
 
-      for (const row of productData) {
-          try {
-              const product = {
-                  sellerId: req.seller._id,
-                  title: row.name,
-                  description: row.description,
-                  price: parseFloat(row.price),
-                  category: row.category,
-                  quantity: parseInt(row.quantity),
-                  badge: row.badge,
-                  image : null,
-              };
+    if (!updatedSeller) {
+      return res.status(404).json({ message: "Seller not found" });
+    }
 
-              products.push(product);
-          } catch (error) {
-              console.error("Error processing row:", error);
-          }
-      }
-
-      const insertedProducts = await Product.insertMany(products);
-      res.status(201).json({ message: "Products uploaded successfully" ,product : insertedProducts});
+    res.status(201).json({ message: "Products uploaded successfully", product: insertedProducts });
   } catch (error) {
-      console.error("CSV Upload Error:", error);
-      res.status(500).json({ message: "Server error" });
+    console.error("CSV Upload Error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
 // Update Product by Id
 
 const updateProductById = async (req, res) => {
