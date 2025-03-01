@@ -75,8 +75,8 @@ const ProductList = () => {
     }
 
     // Extract unique category and badge for filtering
-    const categories = [...new Set(products.map((p) => p.category))];
-    const badges = [...new Set(products.map((p) => p.badge))];
+    const categories = [...new Set(products.map((p) => p?.category))];
+    const badges = [...new Set(products.map((p) => p?.badge))];
 
     // Filter products based on selection
     const filterProducts = products.filter((product) =>
@@ -225,7 +225,7 @@ const ProductList = () => {
             <FormControl sx={{ minWidth: 150 }}>
                 <InputLabel>Category</InputLabel>
                 <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-                    <MenuItem value="All">All</MenuItem>
+                    <MenuItem value="">All</MenuItem>
                     {categories.map((cat, index) => (<MenuItem key={index} value={cat}>{cat}</MenuItem>))}
                 </Select>
             </FormControl>
@@ -233,7 +233,7 @@ const ProductList = () => {
             <FormControl sx={{ minWidth: 150 }}>
                 <InputLabel>Badge</InputLabel>
                 <Select value={selectedBadge} onChange={(e) => setSelectedBadge(e.target.value)}>
-                    <MenuItem value="All">All</MenuItem>
+                    <MenuItem value="">All</MenuItem>
                     {badges.map((badge, index) => (<MenuItem key={index} value={badge}>{badge}</MenuItem>))}
                 </Select>
             </FormControl>
