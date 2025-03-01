@@ -246,12 +246,14 @@ const Product = (props) => {
   const navigate = useNavigate();
   const { state } = useContext(AuthContext);
   const { isLoggedIn, user } = state;
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
   const [videoStream, setVideoStream] = useState(null);
   const [tryOnImage, setTryOnImage] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const productInfo = props;
   const [showPopup, setShowPopup] = useState(false);
+  
 
   const handleProductDetails = () => {
     navigate(`/products/${props._id}`, {
@@ -286,14 +288,15 @@ const Product = (props) => {
   };
 
   const startCamera = async () => {
+    setIsOpen(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      setVideoStream(stream);
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
-    } catch (err) {
-      console.error("Error accessing the camera:", err);
+      setVideoStream(stream);
+    } catch (error) {
+      console.error("Error accessing webcam:", error);
     }
   };
 
@@ -308,67 +311,78 @@ const Product = (props) => {
     if (videoRef.current) {
       const stream = videoRef.current.srcObject;
       if (stream) {
-        const tracks = stream.getTracks();
-        tracks.forEach((track) => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
       }
       videoRef.current.srcObject = null;
     }
     clearCanvas();
     setTryOnImage(null);
     setVideoStream(null);
+    setIsOpen(false);
   };
 
   const getBase64FromUrl = async (imageUrl) => {
-        const response = await fetch(imageUrl);
-        const blob = await response.blob();
-        return new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(blob);
-        });
-      };
-      
-      const processFrame = async () => {
-        if (!videoRef.current || !canvasRef.current) return;
-      
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext("2d");
-        const video = videoRef.current;
-      
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
-        const userImageBase64 = canvas.toDataURL("image/jpeg");
-      
-        try {
-          const productImageBase64 = await getBase64FromUrl(props.image); // Convert image URL to Base64
-      
-          const response = await axios.post("http://127.0.0.1:5000/tryon", {
-            userImage: userImageBase64,
-            productImage: productImageBase64,
-            category: props.category, // or "men"
-            headers: { 'Content-Type': 'multipart/form-data' }
-          });
-      
-          if (response.data.resultImage) {
-            setTryOnImage(response.data.resultImage);
-          }
-        } catch (error) {
-          console.error("Error with virtual try-on:", error);
-        }
-      };
-      
-      // Process a frame every second when the camera is running
-      useEffect(() => {
-        let interval;
-        if (videoStream) {
-          interval = setInterval(processFrame, 1000);
-        }
-        return () => {
-          if (interval) clearInterval(interval);
-        };
-      }, [videoStream]);
+    const response = await fetch(imageUrl);
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const processFrame = async () => {
+    if (!videoRef.current || !canvasRef.current || !videoRef.current.srcObject) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const video = videoRef.current;
+
+    if (video.readyState < 2) {
+      console.warn("Video not ready");
+      return;
+    }
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const userImageBase64 = canvas.toDataURL("image/jpeg");
+    if (userImageBase64 === "data:,") {
+      console.error("Captured image is empty. Check if video is playing.");
+      return;
+    }
+
+    try {
+      const productImageBase64 = await getBase64FromUrl(props.image);
+      const response = await axios.post(
+        "http://127.0.0.1:5000/tryon",
+        {
+          userImage: userImageBase64,
+          productImage: productImageBase64,
+          category: props.category,
+        },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      if (response.data.resultImage) {
+        setTryOnImage(response.data.resultImage);
+      }
+    } catch (error) {
+      console.error("Error with virtual try-on:", error);
+    }
+  };
+
+  useEffect(() => {
+    let interval;
+    if (videoStream) {
+      interval = setInterval(processFrame, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [videoStream]);
+
 
   return (
     <div className="w-full relative group border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-xl transition duration-300">
@@ -386,9 +400,7 @@ const Product = (props) => {
           <button onClick={startCamera} className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 transition duration-300">
             Start Try On <GiReturnArrow />
           </button>
-          <button onClick={stopTryOn} className="flex items-center gap-2 text-sm text-gray-700 hover:text-red-600 transition duration-300">
-            Stop Try On <GiReturnArrow />
-          </button>
+      
           <button onClick={handleAddToCart} className="flex items-center gap-2 text-sm text-gray-700 hover:text-green-600 transition duration-300">
             Add to Cart <FaShoppingCart />
           </button>
@@ -411,17 +423,27 @@ const Product = (props) => {
       {showPopup && <CartPopup productInfo={productInfo} qty={1} setShowPopup={setShowPopup} />}
 
       {/* Virtual Try-On Elements */}
-      {videoStream && (
-        <div className="mt-4">
-          <video ref={videoRef} width="400" height="300" autoPlay playsInline className="rounded-md" />
-          <canvas ref={canvasRef} style={{ display: "none" }} />
+      {isOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 className="text-lg font-semibold mb-4">Virtual Try-On</h2>
+            <video ref={videoRef} width="400" height="300" autoPlay playsInline className="rounded-md" />
+            <canvas ref={canvasRef} style={{ display: "none" }} />
+            {tryOnImage && <img src={tryOnImage} alt="Try-On Result" className="mt-4 rounded-md w-94 h-auto" />}
+            <div className="mt-4 flex justify-between">
+              <button
+                onClick={stopTryOn}
+                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
-      )}
-      {tryOnImage && (
-        <img src={tryOnImage} alt="Live Try-On Result" className="mt-4 rounded-md w-72 h-auto" />
       )}
     </div>
   );
 };
 
 export default Product;
+
