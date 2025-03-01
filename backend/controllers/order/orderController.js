@@ -222,16 +222,16 @@ exports.placeOrder = async (orderDetails) => {
         throw new Error(`Product not found: ${item.title}`);
       }
 
-      // Check if stock (rating.count) is available
+      // Check if stock is available
       if (product.quantity < item.quantity) {
         throw new Error(`Insufficient stock for product: ${item.title}`);
       }
 
-      // Reduce stock in rating.count
+      // Reduce stock
       product.quantity -= item.quantity;
       await product.save();
 
-      await checkStockAndNotify(item.productId , product.sellerId)
+      await checkStockAndNotify(item.productId, product.sellerId);
     }
 
     // Create order
@@ -253,31 +253,37 @@ exports.placeOrder = async (orderDetails) => {
       deliveryDate: new Date(new Date().setDate(new Date().getDate() + 5)), // Estimated delivery
     });
 
-    // Generate the orderId before saving
     order.orderId = order._id.toString();
     
     const savedOrder = await order.save();
     console.log("Order placed successfully, product count updated:", savedOrder);
     
-    // Track sellers who have been updated to avoid duplication
+    // Track updated sellers
     const updatedSellers = new Set();
 
-    // Now add the order to the respective seller's orders list
+    // Process seller orders and notifications
     for (const item of cartItems) {
       const seller = await Seller.findOne({ sellerId: item.sellerId });
       if (seller && !updatedSellers.has(seller._id.toString())) {
-        seller.orders.push(savedOrder._id); // Add the order ID to the seller's orders array
-        await seller.save(); // Save the updated seller document
-        updatedSellers.add(seller._id.toString()); // Mark this seller as updated
+        seller.orders.push(savedOrder._id);
+        await seller.save();
+        updatedSellers.add(seller._id.toString());
+
         console.log(`Added order to seller ${seller.userName}`);
 
+        // Notification message
         const message = `📦 New order placed for '${item.title}'`;
         const receiverId = seller._id.toString();
 
-        const sellerSocket = global.onlineUsers.get(receiverId)
-        if(sellerSocket){
-          global.io.to(sellerSocket.socketId).emit("receiveNotification", { message, type: "new_order" });
+        // Check if global.onlineUsers is defined and seller is online
+        if (global.onlineUsers && global.onlineUsers.has(receiverId)) {
+          const sellerSocket = global.onlineUsers.get(receiverId);
+          if (sellerSocket) {
+            await global.io.to(sellerSocket.socketId).emit("receiveNotification", { message, type: "new_order" });
+          }
         }
+
+        // Store notification in the database
         await createNotification({ receiverId, message, type: "new_order" });
       }
     }
@@ -288,6 +294,7 @@ exports.placeOrder = async (orderDetails) => {
     throw new Error("Failed to place order");
   }
 };
+
 
 exports.getAllOrder = async (req, res) => {
   try {
