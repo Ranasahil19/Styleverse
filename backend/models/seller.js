@@ -11,7 +11,7 @@ const SellerSchema = new mongoose.Schema({
     name: {type : String , required: true},
     refreshToken : {type : String, default: undefined},
     avatar : { type: String , default : ""},
-    Products:[{type : mongoose.Schema.Types.ObjectId, ref : "Product" }],
+    products:[{type : mongoose.Schema.Types.ObjectId, ref : "Product" }],
     orders:[{type : mongoose.Schema.Types.ObjectId, ref: "Order"}],
     status: {type : String , enum : ["pending" , "approved" , "rejected"], default: "pending"},
     role:{type: String, default: 1},
