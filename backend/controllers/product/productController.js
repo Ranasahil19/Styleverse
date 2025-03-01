@@ -66,50 +66,68 @@ const isBase64Image = (str) => /^data:image\/[a-zA-Z]+;base64,/.test(str);
 
 const uploadProducts = async (req, res) => {
   try {
-      if (!req.file) {
-          return res.status(400).json({ message: "Please upload a CSV file" });
+    if (!req.file) {
+      return res.status(400).json({ message: "Please upload a CSV file" });
+    }
+
+    const csvBuffer = req.file.buffer.toString("utf-8");
+    const productData = await csvtojson().fromString(csvBuffer);
+
+    let products = [];
+    let productIds = [];
+
+    for (const row of productData) {
+      try {
+        let imageUrl = row.imageUrl;
+
+        if (isBase64Image(row.imageUrl)) {
+          // Upload Base64 image to Cloudinary
+          const uploadResult = await uploadBase64ToCloudinary(row.imageUrl);
+          imageUrl = uploadResult.secure_url;
+        }
+
+        const product = new Product({
+          sellerId: req.seller._id,
+          title: row.name,
+          description: row.description,
+          price: parseFloat(row.price),
+          category: row.category,
+          quantity: parseInt(row.quantity),
+          image: imageUrl,
+          badge: row.badge,
+        });
+
+        products.push(product);
+        productIds.push(product._id);
+      } catch (error) {
+        console.error("Error processing row:", error);
       }
+    }
 
-      const csvBuffer = req.file.buffer.toString("utf-8");
-      const productData = await csvtojson().fromString(csvBuffer);
+    // Insert products into the database
+    const insertedProducts = await Product.insertMany(products);
 
-      let products = [];
+    // Collect inserted product IDs
+    const insertedProductIds = insertedProducts.map((product) => product._id);
 
-      for (const row of productData) {
-          try {
-              let imageUrl = row.imageUrl;
+    // Update seller's product list
+    const updatedSeller = await Seller.findByIdAndUpdate(
+      req.seller._id,
+      { $push: { products: { $each: insertedProductIds } } },
+      { new: true }
+    );
 
-              if (isBase64Image(row.imageUrl)) {
-                  // Upload Base64 image to Cloudinary
-                  const uploadResult = await uploadBase64ToCloudinary(row.imageUrl);
-                  imageUrl = uploadResult.secure_url;
-              }
+    if (!updatedSeller) {
+      return res.status(404).json({ message: "Seller not found" });
+    }
 
-              const product = {
-                  sellerId: req.seller._id,
-                  title: row.name,
-                  description: row.description,
-                  price: parseFloat(row.price),
-                  category: row.category,
-                  quantity: parseInt(row.quantity),
-                  image: imageUrl,
-                  badge: row.badge,
-              };
-
-              products.push(product);
-          } catch (error) {
-              console.error("Error processing row:", error);
-          }
-      }
-
-      await Product.insertMany(products);
-
-      res.status(201).json({ message: "Products uploaded successfully" });
+    res.status(201).json({ message: "Products uploaded successfully" });
   } catch (error) {
-      console.error("CSV Upload Error:", error);
-      res.status(500).json({ message: "Server error" });
+    console.error("CSV Upload Error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
 // Update Product by Id
 
 const updateProductById = async (req, res) => {
