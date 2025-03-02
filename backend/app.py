@@ -205,7 +205,7 @@ def try_on():
 
         if data['category'] == "glasses":
             result_image = overlay_glasses(user_image, product_image)
-        elif data['category'] == "men":
+        elif data['category'] == "men" or data['category'] == "women":
             result_image = overlay_shirt(user_image, product_image)
         else:
             return jsonify({'error': 'Invalid category'}), 400

@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const Category = require("../../models/category");
 const Seller = require("../../models/seller");
 const csvtojson = require("csvtojson");
+const { uploadBase64ToCloudinary } = require("../../utils/cloudinary");
 
 const addProduct = async (req, res) => {
   try {
@@ -21,9 +22,13 @@ const addProduct = async (req, res) => {
       return res.status(400).json({ message: "Image is required!" });
     }
 
-    const imageUrl = req.file.path
+    const imageUrl = req.file.path;
+    // Find the last product to get the highest id
+    const lastProduct = await Product.findOne().sort({ id: -1 });
 
+    // Create new product
     const newProduct = new Product({
+      id: lastProduct ? lastProduct.id + 1 : 1, // Generate a unique id if the last product doesn't exist
       title,
       price,
       description,
@@ -35,7 +40,7 @@ const addProduct = async (req, res) => {
     });
 
     await newProduct.save();
-    
+
     const updatedSeller = await Seller.findByIdAndUpdate(
       sellerId,
       { $push: { products: newProduct._id } }, // Push new product ID into seller's products array
@@ -46,8 +51,9 @@ const addProduct = async (req, res) => {
       return res.status(404).send({ message: "Seller not found" });
     }
 
-    return res.status(201).json({ message: "Product added successfully!", product: newProduct });
-
+    return res
+      .status(201)
+      .json({ message: "Product added successfully!", product: newProduct });
   } catch (error) {
     console.error("Error adding product:", error);
     if (!res.headersSent) {
@@ -55,6 +61,8 @@ const addProduct = async (req, res) => {
     }
   }
 };
+
+const isBase64Image = (str) => /^data:image\/[a-zA-Z]+;base64,/.test(str);
 
 const uploadProducts = async (req, res) => {
   try {
@@ -117,14 +125,22 @@ const updateProductById = async (req, res) => {
     const productId = req.params.id;
     const updatedData = { ...req.body };
 
-  if (updatedData.sellerId) {
-    delete updatedData.sellerId;
-  }
+    //     if (req.file) {
+    //       updatedData.image = `${req.protocol}://${req.get("host")}/uploads/${
+    //         req.file.filename
+    //       }`;
+    //     }
 
-  if(req.file){ 
-    updatedData.image = req.file.path;
-  }
-    
+    if (updatedData.sellerId) {
+      delete updatedData.sellerId;
+    }
+
+    if (req.file) {
+      updatedData.image = `${req.protocol}://${req.get("host")}/uploads/${
+        req.file.filename
+      }`;
+    }
+
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
       updatedData,
