@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { styled, useTheme } from "@mui/material/styles";
 import { Avatar, Box, Grid, Menu, MenuItem, Typography } from "@mui/material";
 import MainCard from "ui-component/cards/MainCard";
@@ -13,8 +13,8 @@ import GetAppTwoToneIcon from "@mui/icons-material/GetAppOutlined";
 import FileCopyTwoToneIcon from "@mui/icons-material/FileCopyOutlined";
 import PictureAsPdfTwoToneIcon from "@mui/icons-material/PictureAsPdfOutlined";
 import ArchiveTwoToneIcon from "@mui/icons-material/ArchiveOutlined";
-
-import api from "utils/axiosintance";
+import { useSellerDashboard } from "services/sellerDashBoardServices";
+import { useSelector } from "react-redux";
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
   backgroundColor: theme.palette.secondary.dark,
@@ -55,7 +55,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 const EarningCard = ({ isLoading }) => {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [totalProduct, setTotalProduct] = useState(0); // Initialize with number
+  const sellerId = useSelector((state) => state.auth.seller.sellerId);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -65,17 +65,10 @@ const EarningCard = ({ isLoading }) => {
     setAnchorEl(null);
   };
 
-  useEffect(() => {
-    const fetchTotalProduct = async () => {
-      try {
-        const response = await api.get("/admin/total-products");
-        setTotalProduct(response.data.totalProducts); // Ensure response.data is the expected value
-      } catch (error) {
-        console.error("Error fetching total products:", error);
-      }
-    };
-    fetchTotalProduct();
-  }, []);
+  const { loading, error, data } = useSellerDashboard(sellerId);
+
+  if(loading) return <SkeletonEarningCard/>
+  if (error) return <p>Error: {JSON.stringify(error)}</p>;
 
   return (
     <>
@@ -160,7 +153,7 @@ const EarningCard = ({ isLoading }) => {
                         mb: 0.75,
                       }}
                     >
-                      {totalProduct} {/* ✅ Corrected JSX variable usage */}
+                      {data?.totalProductsBySeller} 
                     </Typography>
                   </Grid>
                   <Grid item>
