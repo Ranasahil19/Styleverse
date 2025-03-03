@@ -9,7 +9,17 @@ import MainCard from 'ui-component/cards/MainCard';
 import TotalIncomeCard from 'ui-component/cards/Skeleton/TotalIncomeCard';
 
 // assets
-import StorefrontTwoToneIcon from '@mui/icons-material/StorefrontTwoTone';
+import PeopleAltTwoToneIcon from '@mui/icons-material/PeopleAltTwoTone'; // Users icon
+import BusinessTwoToneIcon from '@mui/icons-material/BusinessTwoTone'; // Sellers icon
+import { gql, useQuery } from '@apollo/client';
+
+// GraphQL query
+const GET_USER_SELLER_NUMBER = gql`
+  query getUserSellerNumber {
+    totalUsers
+    totalSellers
+  }
+`;
 
 // styles
 const CardWrapper = styled(MainCard)(({ theme }) => ({
@@ -37,10 +47,18 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
   }
 }));
 
-// ==============================|| DASHBOARD - TOTAL INCOME LIGHT CARD ||============================== //
+// ==============================|| DASHBOARD - TOTAL USERS & SELLERS CARD ||============================== //
 
 const TotalIncomeLightCard = ({ isLoading }) => {
   const theme = useTheme();
+  const { loading, error, data } = useQuery(GET_USER_SELLER_NUMBER, {
+    fetchPolicy: "no-cache",
+  });
+
+  if (loading) return <TotalIncomeCard />;
+  if (error) return <Typography color="error">Error loading data</Typography>;
+
+  const { totalUsers, totalSellers } = data || {};
 
   return (
     <>
@@ -50,6 +68,7 @@ const TotalIncomeLightCard = ({ isLoading }) => {
         <CardWrapper border={false} content={false}>
           <Box sx={{ p: 2 }}>
             <List sx={{ py: 0 }}>
+              {/* Total Users */}
               <ListItem alignItems="center" disableGutters sx={{ py: 0 }}>
                 <ListItemAvatar>
                   <Avatar
@@ -57,11 +76,11 @@ const TotalIncomeLightCard = ({ isLoading }) => {
                     sx={{
                       ...theme.typography.commonAvatar,
                       ...theme.typography.largeAvatar,
-                      backgroundColor: theme.palette.warning.light,
-                      color: theme.palette.warning.dark
+                      backgroundColor: theme.palette.info.light,
+                      color: theme.palette.info.dark
                     }}
                   >
-                    <StorefrontTwoToneIcon fontSize="inherit" />
+                    <PeopleAltTwoToneIcon fontSize="inherit" />
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText
@@ -70,7 +89,7 @@ const TotalIncomeLightCard = ({ isLoading }) => {
                     mt: 0.45,
                     mb: 0.45
                   }}
-                  primary={<Typography variant="h4">$203k</Typography>}
+                  primary={<Typography variant="h4">{totalUsers}</Typography>}
                   secondary={
                     <Typography
                       variant="subtitle2"
@@ -79,7 +98,43 @@ const TotalIncomeLightCard = ({ isLoading }) => {
                         mt: 0.5
                       }}
                     >
-                      Total Income
+                      Total Users
+                    </Typography>
+                  }
+                />
+              </ListItem>
+
+              {/* Total Sellers */}
+              <ListItem alignItems="center" disableGutters sx={{ py: 0 }}>
+                <ListItemAvatar>
+                  <Avatar
+                    variant="rounded"
+                    sx={{
+                      ...theme.typography.commonAvatar,
+                      ...theme.typography.largeAvatar,
+                      backgroundColor: theme.palette.success.light,
+                      color: theme.palette.success.dark
+                    }}
+                  >
+                    <BusinessTwoToneIcon fontSize="inherit" />
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  sx={{
+                    py: 0,
+                    mt: 0.45,
+                    mb: 0.45
+                  }}
+                  primary={<Typography variant="h4">{totalSellers}</Typography>}
+                  secondary={
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        color: theme.palette.grey[500],
+                        mt: 0.5
+                      }}
+                    >
+                      Total Sellers
                     </Typography>
                   }
                 />
