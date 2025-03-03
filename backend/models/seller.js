@@ -4,22 +4,18 @@ const jwt = require("jsonwebtoken");
 
 // Define the User schema
 const SellerSchema = new mongoose.Schema({
-  sellerId: { type: String },
-  email: { type: String, required: true, unique: true },
-  userName: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  name: { type: String, required: true },
-  refreshToken: { type: String, default: undefined },
-  avatar: { type: String, default: "" },
-  Products: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
-  orders: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
-  status: {
-    type: String,
-    enum: ["pending", "approved", "rejected"],
-    default: "pending",
-  },
-  role: { type: String, default: 1 },
-  createdAt: { type: Date, default: Date.now },
+    sellerId: { type: String },
+    email: { type: String, required: true, unique: true },
+    userName: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    name: {type : String , required: true},
+    refreshToken : {type : String, default: undefined},
+    avatar : { type: String , default : ""},
+    products:[{type : mongoose.Schema.Types.ObjectId, ref : "Product" }],
+    orders:[{type : mongoose.Schema.Types.ObjectId, ref: "Order"}],
+    status: {type : String , enum : ["pending" , "approved" , "rejected"], default: "pending"},
+    role:{type: String, default: 1},
+    createdAt: { type: Date, default: Date.now },
 });
 
 SellerSchema.pre("save", async function (next) {

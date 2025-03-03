@@ -6,9 +6,12 @@ import base64
 from flask_cors import CORS
 import traceback
 import math
+from flask_socketio import SocketIO, emit
 
+# Initialize Flask app and Socket.IO
 app = Flask(__name__)
 CORS(app, resources={r"/tryon": {"origins": "*"}})
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Initialize Mediapipe solutions
 mp_face_mesh = mp.solutions.face_mesh
@@ -138,31 +141,35 @@ def overlay_shirt(user_image, shirt_image, scale_factor=1.4, height_adjust=0.1):
         right_shoulder = landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER]
         left_hip = landmarks[mp_pose.PoseLandmark.LEFT_HIP]
         right_hip = landmarks[mp_pose.PoseLandmark.RIGHT_HIP]
-        
+
         # Calculate positions
         ih, iw, _ = user_image.shape
         shoulder_distance = (right_shoulder.x - left_shoulder.x) * iw
         new_left_x = (left_shoulder.x * iw) - (shoulder_distance * (scale_factor - 1) / 2)
         new_right_x = (right_shoulder.x * iw) + (shoulder_distance * (scale_factor - 1) / 2)
-        
+
         mid_shoulder = ((left_shoulder.x + right_shoulder.x) / 2, (left_shoulder.y + right_shoulder.y) / 2)
         mid_hip = ((left_hip.x + right_hip.x) / 2, (left_hip.y + right_hip.y) / 2)
-        third_point = (mid_shoulder[0], mid_hip[1] + height_adjust)
+        third_point = (mid_shoulder[0] * iw, (mid_hip[1] + height_adjust) * ih)  # Bottom center of the shirt
 
+        # Define source points for affine transformation
         src_points = np.array([
-            [0, 0],
-            [shirt_image.shape[1], 0],
-            [shirt_image.shape[1] // 2, shirt_image.shape[0]]
+            [0, 0],  # Top-left corner of the shirt
+            [shirt_image.shape[1], 0],  # Top-right corner of the shirt
+            [shirt_image.shape[1] // 2, shirt_image.shape[0]]  # Bottom center of the shirt
         ], dtype=np.float32)
 
+        # Define destination points for affine transformation
         dst_points = np.array([
-            [new_left_x, left_shoulder.y * ih - (height_adjust * ih)],
-            [new_right_x, right_shoulder.y * ih - (height_adjust * ih)],
-            [third_point[0] * iw, third_point[1] * ih]
+            [new_left_x, left_shoulder.y * ih - (height_adjust * ih)],  # Top-left destination
+            [new_right_x, right_shoulder.y * ih - (height_adjust * ih)],  # Top-right destination
+            [third_point[0], third_point[1]]  # Bottom center destination
         ], dtype=np.float32)
 
-        # Transform shirt image
+        # Compute affine transformation matrix
         M = cv2.getAffineTransform(src_points, dst_points)
+
+        # Apply affine transformation to the shirt image
         warped_shirt = cv2.warpAffine(shirt_image, M, (iw, ih), flags=cv2.INTER_LINEAR)
 
         # Convert warped shirt to grayscale and create a mask
@@ -211,5 +218,28 @@ def try_on():
         print(traceback.format_exc()) 
         return jsonify({'error': str(e)}), 500
 
+# Socket.IO event for real-time updates
+@socketio.on('tryon_request')
+def handle_tryon_request(data):
+    try:
+        user_image = base64_to_image(data['userImage'])
+        product_image = base64_to_image(data['productImage'])
+        product_image = remove_background(product_image)
+
+        if data['category'] == "glasses":
+            result_image = overlay_glasses(user_image, product_image)
+        elif data['category'] == "men":
+            result_image = overlay_shirt(user_image, product_image)
+        else:
+            emit('tryon_error', {'error': 'Invalid category'})
+            return
+
+        result_base64 = image_to_base64(result_image)
+        emit('tryon_result', {'resultImage': result_base64})
+
+    except Exception as e:
+        print("Error in tryon_request:", e)
+        emit('tryon_error', {'error': str(e)})
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    socketio.run(app, host='0.0.0.0', port=5000)

@@ -74,18 +74,20 @@ const uploadProducts = async (req, res) => {
     const productData = await csvtojson().fromString(csvBuffer);
 
     let products = [];
-    let productIds = [];
 
     for (const row of productData) {
       try {
         let imageUrl = row.imageUrl;
 
-        // if (isBase64Image(row.imageUrl)) {
-        //   // Upload Base64 image to Cloudinary
-        //   const uploadResult = await uploadBase64ToCloudinary(row.imageUrl);
-        //   imageUrl = uploadResult.secure_url;
-        // }
+// <<<<<<< feature-branch-7
+//         // if (isBase64Image(row.imageUrl)) {
+//         //   // Upload Base64 image to Cloudinary
+//         //   const uploadResult = await uploadBase64ToCloudinary(row.imageUrl);
+//         //   imageUrl = uploadResult.secure_url;
+//         // }
 
+// =======
+// >>>>>>> main
         const product = new Product({
           sellerId: req.seller._id,
           title: row.name,
@@ -93,12 +95,11 @@ const uploadProducts = async (req, res) => {
           price: parseFloat(row.price),
           category: row.category,
           quantity: parseInt(row.quantity),
-          image: imageUrl,
+          image: imageUrl || null,
           badge: row.badge,
         });
 
         products.push(product);
-        productIds.push(product._id);
       } catch (error) {
         console.error("Error processing row:", error);
       }
@@ -106,8 +107,6 @@ const uploadProducts = async (req, res) => {
 
     // Insert products into the database
     const insertedProducts = await Product.insertMany(products);
-
-    // Collect inserted product IDs
     const insertedProductIds = insertedProducts.map((product) => product._id);
 
     // Update seller's product list
@@ -121,7 +120,7 @@ const uploadProducts = async (req, res) => {
       return res.status(404).json({ message: "Seller not found" });
     }
 
-    res.status(201).json({ message: "Products uploaded successfully" });
+    res.status(201).json({ message: "Products uploaded successfully", product: insertedProducts });
   } catch (error) {
     console.error("CSV Upload Error:", error);
     res.status(500).json({ message: "Server error" });
