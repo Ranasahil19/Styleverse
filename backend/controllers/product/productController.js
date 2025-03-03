@@ -6,7 +6,6 @@ const mongoose = require("mongoose");
 const Category = require("../../models/category");
 const Seller = require("../../models/seller");
 const csvtojson = require("csvtojson");
-const { uploadBase64ToCloudinary } = require("../../utils/cloudinary");
 
 const addProduct = async (req, res) => {
   try {
@@ -61,8 +60,6 @@ const addProduct = async (req, res) => {
     }
   }
 };
-
-const isBase64Image = (str) => /^data:image\/[a-zA-Z]+;base64,/.test(str);
 
 const uploadProducts = async (req, res) => {
   try {
