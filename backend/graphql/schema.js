@@ -12,8 +12,11 @@ const typeDefs = gql`
     totalOrders: Int
     totalRevenue: Float
     totalProduct : Int
+    totalUsers: Int
+    totalSellers: Int
     totalOrdersBySeller(sellerId : ID!): Int
     totalProductsBySeller(sellerId : ID!): Int
+    totalAdminIncome: Float
     sellers: [Seller]
   }
 
