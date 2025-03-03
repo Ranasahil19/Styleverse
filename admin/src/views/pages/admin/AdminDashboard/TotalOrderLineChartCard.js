@@ -4,6 +4,7 @@ import { useState } from 'react';
 // material-ui
 import { useTheme, styled } from '@mui/material/styles';
 import { Avatar, Box, Button, Grid, Typography } from '@mui/material';
+import { useQuery, gql } from '@apollo/client';
 
 // third-party
 import Chart from 'react-apexcharts';
@@ -11,9 +12,6 @@ import Chart from 'react-apexcharts';
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import SkeletonTotalOrderCard from 'ui-component/cards/Skeleton/EarningCard';
-
-import ChartDataMonth from './chart-data/total-order-month-line-chart';
-import ChartDataYear from './chart-data/total-order-year-line-chart';
 
 // assets
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
@@ -61,14 +59,75 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
   }
 }));
 
-// ==============================|| DASHBOARD - TOTAL ORDER LINE CHART CARD ||============================== //
+const GET_TOTAL_ORDER_DATA = gql`
+  query getTotalOrderData {
+    totalOrders
+  }
+`;
 
 const TotalOrderLineChartCard = ({ isLoading }) => {
   const theme = useTheme();
-
   const [timeValue, setTimeValue] = useState(false);
+
   const handleChangeTime = (event, newValue) => {
     setTimeValue(newValue);
+  };
+
+  const { loading, error, data } = useQuery(GET_TOTAL_ORDER_DATA, {
+    fetchPolicy: 'no-cache',
+  });
+
+  if (loading) return <SkeletonTotalOrderCard />;
+  if (error) return <p>Error: {error.message}</p>;
+
+  // Update chartData dynamically
+  const chartData = {
+    type: 'line',
+    height: 90,
+    options: {
+      chart: {
+        sparkline: {
+          enabled: true
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      colors: ['#fff'],
+      fill: {
+        type: 'solid',
+        opacity: 1
+      },
+      stroke: {
+        curve: 'smooth',
+        width: 3
+      },
+      yaxis: {
+        min: 0,
+        max: 100
+      },
+      tooltip: {
+        theme: 'dark',
+        fixed: {
+          enabled: false
+        },
+        x: {
+          show: false
+        },
+        y: {
+          title: 'Total Order'
+        },
+        marker: {
+          show: false
+        }
+      }
+    },
+    series: [
+      {
+        name: 'Total Orders',
+        data: data.totalOrders || [45, 66, 41, 89, 25, 44, 9, 54] // Default if data is missing
+      }
+    ]
   };
 
   return (
@@ -122,11 +181,9 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
                   <Grid item xs={6}>
                     <Grid container alignItems="center">
                       <Grid item>
-                        {timeValue ? (
-                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>$108</Typography>
-                        ) : (
-                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>$961</Typography>
-                        )}
+                        <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>
+                          {data.totalOrders}
+                        </Typography>
                       </Grid>
                       <Grid item>
                         <Avatar
@@ -141,20 +198,14 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
                         </Avatar>
                       </Grid>
                       <Grid item xs={12}>
-                        <Typography
-                          sx={{
-                            fontSize: '1rem',
-                            fontWeight: 500,
-                            color: theme.palette.primary[200]
-                          }}
-                        >
+                        <Typography sx={{ fontSize: '1rem', fontWeight: 500, color: theme.palette.primary[200] }}>
                           Total Order
                         </Typography>
                       </Grid>
                     </Grid>
                   </Grid>
                   <Grid item xs={6}>
-                    {timeValue ? <Chart {...ChartDataMonth} /> : <Chart {...ChartDataYear} />}
+                    <Chart {...chartData} />
                   </Grid>
                 </Grid>
               </Grid>

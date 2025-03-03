@@ -17,6 +17,7 @@ import GetAppTwoToneIcon from '@mui/icons-material/GetAppOutlined';
 import FileCopyTwoToneIcon from '@mui/icons-material/FileCopyOutlined';
 import PictureAsPdfTwoToneIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import ArchiveTwoToneIcon from '@mui/icons-material/ArchiveOutlined';
+import { gql, useQuery } from '@apollo/client';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
   backgroundColor: theme.palette.secondary.dark,
@@ -54,12 +55,37 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
   }
 }));
 
+const GET_ADMIN_DASHBOARD = gql`
+  query getAdminDashboard {
+    totalRevenue
+    sellers {
+      _id
+      name
+      totalSales
+      orders {
+        _id
+        totalPrice
+        createdAt
+      }
+    }
+  }
+`;
+
 // ===========================|| DASHBOARD DEFAULT - EARNING CARD ||=========================== //
 
 const EarningCard = ({ isLoading }) => {
   const theme = useTheme();
 
   const [anchorEl, setAnchorEl] = useState(null);
+
+  const { loading, error, data } = useQuery(GET_ADMIN_DASHBOARD, {
+    fetchPolicy: 'no-cache'
+  });
+
+  if (loading) return <SkeletonEarningCard />;
+  if (error) return <p>Error: {JSON.stringify(error)}</p>;
+
+  console.log('API Data:', data?.sellers);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -142,8 +168,27 @@ const EarningCard = ({ isLoading }) => {
               </Grid>
               <Grid item>
                 <Grid container alignItems="center">
-                  <Grid item>
-                    <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>$500.00</Typography>
+                  {/* Total Revenue Section */}
+                  <Grid item sx={{ mb: 1.5 }}>
+                    <Typography sx={{ fontSize: '1.5rem', fontWeight: 600, color: theme.palette.primary[200] }}>Total Revenue</Typography>
+                    <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, color: 'green', mt: 1 }}>
+                      ${data?.totalRevenue.toFixed(2)}
+                    </Typography>
+                    <Typography sx={{ fontSize: '1.25rem', fontWeight: 500, color: theme.palette.primary[300], mb: 1 }}>
+                      Revenue by Seller
+                    </Typography>
+                    {data?.sellers?.map((seller) => (
+                      <Grid key={seller._id} container justifyContent="space-between" sx={{ color: theme.palette.primary[100], mb: 0.5 }}>
+                        <Grid item>
+                          <Typography sx={{ fontSize: '1rem' }}>{seller?.name}</Typography>
+                        </Grid>
+                        <Grid item>
+                          <Typography sx={{ fontSize: '1rem', fontWeight: 600 }}>
+                            ${seller?.totalSales ? Number(seller.totalSales).toFixed(2) : '0.00'}
+                          </Typography>
+                        </Grid>
+                      </Grid>
+                    ))}
                   </Grid>
                   <Grid item>
                     <Avatar
@@ -167,7 +212,7 @@ const EarningCard = ({ isLoading }) => {
                     color: theme.palette.secondary[200]
                   }}
                 >
-                  Total Earning
+                  Total Revenue
                 </Typography>
               </Grid>
             </Grid>

@@ -2,7 +2,8 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline, StyledEngineProvider } from '@mui/material';
-
+import client from 'views/pages/admin/AdminDashboard/apolloClient';
+import { ApolloProvider } from '@apollo/client';
 // routing
 import Routes from 'routes';
 
@@ -46,7 +47,9 @@ const App = () => {
       <ThemeProvider theme={themes(customization)}>
         <CssBaseline />
         <NavigationScroll>
-          <Routes />
+          <ApolloProvider client={client}>
+            <Routes />
+          </ApolloProvider>
         </NavigationScroll>
       </ThemeProvider>
     </StyledEngineProvider>
