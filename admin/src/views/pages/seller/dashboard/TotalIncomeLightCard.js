@@ -8,6 +8,11 @@ import { Avatar, Box, List, ListItem, ListItemAvatar, ListItemText, Typography }
 import MainCard from 'ui-component/cards/MainCard';
 import TotalIncomeCard from 'ui-component/cards/Skeleton/TotalIncomeCard';
 
+import { useSellerDashboard } from 'services/sellerDashBoardServices';
+import { useSelector } from 'react-redux';
+
+import { useState, useEffect } from 'react';
+
 // assets
 import StorefrontTwoToneIcon from '@mui/icons-material/StorefrontTwoTone';
 
@@ -41,6 +46,24 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 const TotalIncomeLightCard = ({ isLoading }) => {
   const theme = useTheme();
+  const sellerId = useSelector((state) => state.auth.seller.sellerId);
+
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [totalOrders, setTotalOrders] = useState(0);
+
+  useEffect(() => {
+    if (data && data.seller) {
+      const orders = data.seller;
+      const revenue = orders.reduce((sum, order) => sum + order.totalPrice, 0);
+      setTotalRevenue(revenue);
+      setTotalOrders(orders.length);
+    }
+  });
+
+  const { loading, error, data } = useSellerDashboard(sellerId);
+
+  if (loading) return <TotalIncomeCard />;
+  if (error) return <p>Error: {JSON.stringify(error)}</p>;
 
   return (
     <>
@@ -70,7 +93,7 @@ const TotalIncomeLightCard = ({ isLoading }) => {
                     mt: 0.45,
                     mb: 0.45
                   }}
-                  primary={<Typography variant="h4">$203k</Typography>}
+                  primary={<Typography variant="h4">${totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(2) : '0.00'}</Typography>}
                   secondary={
                     <Typography
                       variant="subtitle2"
@@ -79,7 +102,7 @@ const TotalIncomeLightCard = ({ isLoading }) => {
                         mt: 0.5
                       }}
                     >
-                      Total Income
+                      Avg Order Value
                     </Typography>
                   }
                 />

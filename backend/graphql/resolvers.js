@@ -5,6 +5,36 @@ const User = require("../models/user");
 
 const resolvers = {
   Query: {
+
+    // Get Seller Orders
+    seller: async (_, { sellerId }) => {
+      try {
+        const orders = await Order.find({ "items.sellerId": sellerId });
+
+        // Filter out the seller's products and calculate the correct sales amount
+        const sellerOrders = orders.map((order) => {
+          const sellerItems = order.items.filter(
+            (item) => item.sellerId.toString() === sellerId
+          );
+          const sellerTotalPrice = sellerItems.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+          );
+
+          return {
+            _id: order._id,
+            totalPrice: sellerTotalPrice, // Only sum up this seller's products
+            createdAt: order.createdAt,
+          };
+        });
+
+        return sellerOrders;
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        throw new Error("Error fetching orders");
+      }
+    },
+
     // Get Total number of Orders
     totalOrders: async () => {
       try {
