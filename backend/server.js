@@ -4,6 +4,9 @@ const path = require('path');
 const connectDB = require('./config/db');  // Import the connectDB function
 const bodyParser = require('body-parser');
 const routes = require('./routes/indexRoutes');
+const { ApolloServer } = require('apollo-server-express');
+const typeDefs = require('./graphql/schema');
+const resolvers = require('./graphql/resolvers')
 const cookieParser = require("cookie-parser");
 const {Server} = require('socket.io')
 const http = require('http');
@@ -50,6 +53,22 @@ connectDB();  // This will handle the MongoDB connection
 // Use product routes
 app.use('/', routes);
 app.use("/uploads", express.static("uploads"));
+
+// Set up Apollo Server with GraphQL schema and resolvers
+const apolloServer = new ApolloServer({
+    typeDefs,
+    resolvers,
+    context: ({ req }) => ({ req }) // You can add authentication logic here
+});
+
+// Start Apollo Server and apply middleware
+async function startApolloServer() {
+    await apolloServer.start();
+    apolloServer.applyMiddleware({ app, path: '/graphql' });
+    console.log(`🚀 Apollo Server ready at http://localhost:${PORT}/graphql`);
+}
+
+startApolloServer();
 
 let onlineUsers = new Map();
 global.onlineUsers = onlineUsers
