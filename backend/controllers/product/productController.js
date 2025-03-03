@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 const Category = require("../../models/category");
 const Seller = require("../../models/seller");
 const csvtojson = require("csvtojson");
-const { uploadBase64ToCloudinary } = require("../../utils/cloudinary");
+// const { uploadBase64ToCloudinary } = require("../../utils/cloudinary");
 
 const addProduct = async (req, res) => {
   try {
@@ -62,7 +62,7 @@ const addProduct = async (req, res) => {
   }
 };
 
-const isBase64Image = (str) => /^data:image\/[a-zA-Z]+;base64,/.test(str);
+// const isBase64Image = (str) => /^data:image\/[a-zA-Z]+;base64,/.test(str);
 
 const uploadProducts = async (req, res) => {
   try {
@@ -80,11 +80,11 @@ const uploadProducts = async (req, res) => {
       try {
         let imageUrl = row.imageUrl;
 
-        if (isBase64Image(row.imageUrl)) {
-          // Upload Base64 image to Cloudinary
-          const uploadResult = await uploadBase64ToCloudinary(row.imageUrl);
-          imageUrl = uploadResult.secure_url;
-        }
+        // if (isBase64Image(row.imageUrl)) {
+        //   // Upload Base64 image to Cloudinary
+        //   const uploadResult = await uploadBase64ToCloudinary(row.imageUrl);
+        //   imageUrl = uploadResult.secure_url;
+        // }
 
         const product = new Product({
           sellerId: req.seller._id,
