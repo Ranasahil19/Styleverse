@@ -9,13 +9,14 @@ const typeDefs = gql`
   }
 
   type Query {
+    seller(sellerId: ID!): [Order]
     totalOrders: Int
     totalRevenue: Float
-    totalProduct : Int
+    totalProduct: Int
     totalUsers: Int
     totalSellers: Int
-    totalOrdersBySeller(sellerId : ID!): Int
-    totalProductsBySeller(sellerId : ID!): Int
+    totalOrdersBySeller(sellerId: ID!): Int
+    totalProductsBySeller(sellerId: ID!): Int
     totalAdminIncome: Float
     sellers: [Seller]
   }
