@@ -8,8 +8,12 @@ import { Avatar, Box, List, ListItem, ListItemAvatar, ListItemText, Typography }
 import MainCard from 'ui-component/cards/MainCard';
 import TotalIncomeCard from 'ui-component/cards/Skeleton/TotalIncomeCard';
 
+import { useSellerDashboard } from "services/sellerDashBoardServices";
+import { useSelector } from "react-redux";
+
 // assets
 import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
+import { useState, useEffect } from 'react';
 
 // styles
 const CardWrapper = styled(MainCard)(({ theme }) => ({
@@ -43,6 +47,22 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 const TotalIncomeDarkCard = ({ isLoading }) => {
   const theme = useTheme();
+  const sellerId = useSelector((state) => state.auth.seller.sellerId);
+
+  const [totalRevenue, setTotalRevenue] = useState(0);
+
+  useEffect(() => {
+    if(data && data.seller) {
+      const orders = data.seller;
+      const revenue = orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
+      setTotalRevenue(revenue);
+    }
+  });
+
+  const { loading, error, data } = useSellerDashboard(sellerId);
+
+  if(loading) return <TotalIncomeCard />;
+  if (error) return <p>Error: {JSON.stringify(error)}</p>;
 
   return (
     <>
@@ -74,12 +94,12 @@ const TotalIncomeDarkCard = ({ isLoading }) => {
                   }}
                   primary={
                     <Typography variant="h4" sx={{ color: '#fff' }}>
-                      $203k
+                      ${totalRevenue}
                     </Typography>
                   }
                   secondary={
                     <Typography variant="subtitle2" sx={{ color: 'primary.light', mt: 0.25 }}>
-                      Total Income
+                      Total Revenue
                     </Typography>
                   }
                 />
