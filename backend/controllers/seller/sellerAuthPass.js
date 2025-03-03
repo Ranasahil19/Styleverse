@@ -2,6 +2,7 @@ const nodemailer = require('nodemailer')
 const dotenv = require("dotenv");
 const Seller = require('../../models/seller');
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcryptjs')
 dotenv.config();
 
 exports.forgotPassword = async( req , res) => {
@@ -61,9 +62,11 @@ exports.resetPassword = async (req , res) => {
             return res.status(401).json({ message: "Invalid token or seller ID" });
         }
 
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         const seller = await Seller.findByIdAndUpdate(
             {_id : id},
-            {password : password},
+            {password : hashedPassword},
             {new : true}
         );
 
