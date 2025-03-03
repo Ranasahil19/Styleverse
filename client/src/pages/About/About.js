@@ -12,7 +12,8 @@ const AboutPage = () => {
       >
         <h1 className="text-5xl font-extrabold">About Our Store</h1>
         <p className="text-lg mt-4 max-w-3xl mx-auto">
-          Your one-stop destination for quality products, seamless shopping, and excellent customer service.
+          Your one-stop destination for quality products, seamless shopping, and
+          excellent customer service.
         </p>
       </motion.div>
 
@@ -25,8 +26,9 @@ const AboutPage = () => {
       >
         <h2 className="text-3xl font-bold">Our Mission & Vision</h2>
         <p className="mt-4 text-gray-600">
-          We strive to bring the best products to your doorstep with an easy and reliable shopping experience. Our goal is to
-          create a trusted community of buyers and sellers worldwide.
+          We strive to bring the best products to your doorstep with an easy and
+          reliable shopping experience. Our goal is to create a trusted
+          community of buyers and sellers worldwide.
         </p>
       </motion.div>
 
@@ -59,7 +61,11 @@ const AboutPage = () => {
               className="bg-gray-100 p-6 rounded-lg shadow-md text-center"
               whileHover={{ scale: 1.05 }}
             >
-              <img src={member.image} alt={member.name} className="w-28 h-28 mx-auto rounded-full mb-4 border-4 border-gray-300" />
+              <img
+                src={member.image}
+                alt={member.name}
+                className="w-28 h-28 mx-auto rounded-full mb-4 border-4 border-gray-300"
+              />
               <h3 className="text-xl font-semibold">{member.name}</h3>
               <p className="text-gray-600">{member.role}</p>
             </motion.div>
@@ -69,7 +75,9 @@ const AboutPage = () => {
 
       {/* Customer Reviews */}
       <motion.div className="mt-12 max-w-4xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-6">What Our Customers Say</h2>
+        <h2 className="text-3xl font-bold text-center mb-6">
+          What Our Customers Say
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {reviews.map((review, index) => (
             <motion.div
@@ -88,20 +96,41 @@ const AboutPage = () => {
 };
 
 const features = [
-  { title: "Fast & Secure Shipping", description: "We ensure quick delivery with secure packaging." },
-  { title: "Quality Assurance", description: "Every product is tested for quality before shipment." },
-  { title: "24/7 Customer Support", description: "Our team is here to help you at any time." }
+  {
+    title: "Fast & Secure Shipping",
+    description: "We ensure quick delivery with secure packaging.",
+  },
+  {
+    title: "Quality Assurance",
+    description: "Every product is tested for quality before shipment.",
+  },
+  {
+    title: "24/7 Customer Support",
+    description: "Our team is here to help you at any time.",
+  },
 ];
 
 const teamData = [
-  { name: "Alice Johnson", role: "CEO", image: "https://via.placeholder.com/100" },
-  { name: "Mark Wilson", role: "CTO", image: "https://via.placeholder.com/100" },
-  { name: "Emma Brown", role: "Marketing Head", image: "https://via.placeholder.com/100" }
+  {
+    name: "Alice Johnson",
+    role: "CEO",
+    image: "https://via.placeholder.com/100",
+  },
+  {
+    name: "Mark Wilson",
+    role: "CTO",
+    image: "https://via.placeholder.com/100",
+  },
+  {
+    name: "Emma Brown",
+    role: "Marketing Head",
+    image: "https://via.placeholder.com/100",
+  },
 ];
 
 const reviews = [
   { text: "Amazing quality and service!", author: "John Doe" },
-  { text: "Fast delivery and great support.", author: "Jane Smith" }
+  { text: "Fast delivery and great support.", author: "Jane Smith" },
 ];
 
 export default AboutPage;
