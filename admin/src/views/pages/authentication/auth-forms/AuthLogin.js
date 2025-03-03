@@ -125,6 +125,7 @@ const FirebaseLogin = ({ ...others }) => {
         
         {/* Forgot Password (Right) */}
         <Button 
+          onClick={() => navigate('/forgot-password')}
           variant="text" 
           color="primary" 
           sx={{ textTransform: 'none', fontSize: '0.9rem' }}
