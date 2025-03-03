@@ -1,4 +1,5 @@
 const Order = require("../models/order");
+const Product = require("../models/productModel");
 const Seller = require("../models/seller");
 
 const resolvers = {
@@ -10,6 +11,41 @@ const resolvers = {
       } catch (err) {
         console.log(err);
         throw new Error(err.message);
+      }
+    },
+
+    //Get Total Products 
+    totalProduct : async () => {
+      try {
+        return await Product.countDocuments();
+      } catch (error) {
+        console.log(error)
+        throw new Error(error.message)
+      }
+    },
+
+    //Get Total Products by Seller
+    totalProductsBySeller : async (_, {sellerId}) => {
+      try {
+        return await Product.countDocuments({sellerId});
+      } catch (error) {
+        console.error("Error fetching total products by seller:", err);
+        throw new Error("Error fetching total products by seller");
+      }
+    },
+
+    //Get Total Orders by Seller
+    totalOrdersBySeller : async (_, {sellerId}) => {
+      try {
+        const result =  await Order.aggregate([
+          { $match : {"items.sellerId" : sellerId}},
+          { $count : "totalOrders"}
+        ]);
+
+        return result.length > 0 ? result.totalOrders : 0;
+      } catch (error) {
+        console.error("Error fetching total orders by seller:", err);
+        throw new Error("Error fetching total orders by seller");
       }
     },
 
