@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   Typography,
   Box,
-  CircularProgress,
   useMediaQuery,
   useTheme,
   Select,
@@ -22,7 +21,7 @@ import { fetchOrderBySeller, updateOrderStatus } from "features/orderSlice";
 
 const OrderList = () => {
   const dispatch = useDispatch();
-  const { orders = [], loading, error } = useSelector((state) => state.orders);
+  const { orders = [], loading } = useSelector((state) => state.orders);
   const sellerId = useSelector((state) => state.auth.seller.sellerId)
   const isMobile = useMediaQuery("(max-width: 600px)");
   const theme = useTheme();
@@ -185,18 +184,13 @@ const OrderList = () => {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", mb: 2 }}>
-      {loading ? (
-        <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
-          <CircularProgress />
-        </Box>
-      ) : error ? (
-        <Typography color="error">{error}</Typography>
-      ) : (
+      
         <Box sx={{ height: 500, width: "100%", overflowX: "auto" }}>
           <DataGrid
             rows={orders}
             columns={columns}
             pageSize={5}
+            loading={loading}
             getRowId={(row) => row._id}
             sx={{
               "& .MuiDataGrid-columnHeaders": {
@@ -210,7 +204,7 @@ const OrderList = () => {
             }}
           />
         </Box>
-      )}
+
       {/* Order Details Modal */}
       {selectedOrder && (
         <Dialog open={open} onClose={handleClose} fullWidth>

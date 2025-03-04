@@ -249,9 +249,6 @@ const ProductList = () => {
         </Button>
       </Box>
 
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
         <Box sx={{ height: 400, width: '100%', overflowX: 'auto' }}>
           <DataGrid
             rows={filteredProducts.map((product) => ({ ...product, id: product._id }))}
@@ -259,6 +256,7 @@ const ProductList = () => {
             getRowId={(row) => row._id} // Use _id as the unique identifier
             pageSize={isMobile ? 3 : 5}
             disableColumnMenu={isMobile}
+            loading={loading}
             sx={{
               '& .MuiDataGrid-columnHeaders': {
                 backgroundColor: 'white', // Dark background color
@@ -274,7 +272,7 @@ const ProductList = () => {
             }}
           />
         </Box>
-      )}
+
       <AddProductDialog open={open} handleClose={handleClose} />
 
       {/* Image Dialog */}

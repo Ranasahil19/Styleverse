@@ -3,7 +3,6 @@ import { DataGrid } from '@mui/x-data-grid';
 import {
   Typography,
   Box,
-  CircularProgress,
   useMediaQuery,
   Button,
   IconButton,
@@ -25,7 +24,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllOrder } from 'features/orderSlice';
 
 const OrderList = () => {
-  const { orders, loading, error } = useSelector((state) => state.orders);
+  const { orders, loading } = useSelector((state) => state.orders);
   const dispatch = useDispatch();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const isMobile = useMediaQuery('(max-width: 600px)');
@@ -162,18 +161,12 @@ const OrderList = () => {
         Order Management
       </Typography> */}
 
-      {loading ? (
-        <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
-          <CircularProgress />
-        </Box>
-      ) : error ? (
-        <Typography color="error">{error}</Typography>
-      ) : (
         <Box sx={{ height: 400, width: '100%', overflowX: 'auto' }}>
           <DataGrid
             rows={orders}
             columns={columns}
             pageSize={5}
+            loading={loading}
             getRowId={(row) => row._id}
             sx={{
               '& .MuiDataGrid-columnHeaders': {
@@ -190,7 +183,6 @@ const OrderList = () => {
             }}
           />
         </Box>
-      )}
 
       {/* Order Details Modal */}
       {selectedOrder && (
