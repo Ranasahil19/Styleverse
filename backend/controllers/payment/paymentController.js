@@ -256,6 +256,7 @@ exports.createPayment = async (req, res) => {
       category: product.category,
       quantity: product.quantity,
       price: product.price,
+      sellerId: product.sellerId,
     }));
 
     // Create a new payment record in the database

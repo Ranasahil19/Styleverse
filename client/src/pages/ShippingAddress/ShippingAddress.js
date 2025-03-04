@@ -22,7 +22,8 @@ const ShippingAddress = ({ cartItems, totalPrice, clearCart }) => {
     mobileno: "",
   });
   const [isUpdating, setIsUpdating] = useState(false);
-  const [shippingCharge, setShippingCharge] = useState("");
+const [shippingCharge, setShippingCharge] = useState(0);
+
   const [popup, setPopup] = useState({
     message: "",
     type: "",
@@ -103,7 +104,8 @@ const ShippingAddress = ({ cartItems, totalPrice, clearCart }) => {
     }
   }, [totalPrice]);
 
-  totalPrice = totalPrice + shippingCharge;
+totalPrice = Number(totalPrice) + Number(shippingCharge);
+
   console.log("Total Price:", totalPrice);
 
   const finalPrice = totalPrice;
@@ -257,8 +259,6 @@ const ShippingAddress = ({ cartItems, totalPrice, clearCart }) => {
           </div>
           <div className="md:col-span-2">
             <label
-              htmlFor="mobileno"
-              className="block text-sm font-medium text-gray-600"
             >
               Mobile Number
             </label>
@@ -287,7 +287,7 @@ const ShippingAddress = ({ cartItems, totalPrice, clearCart }) => {
         <div className="flex justify-between items-center text-lg font-medium">
           <span>Total Price:</span>
           <span>
-            ${finalPrice}
+            ${cartItems ? (totalPrice).toFixed(2) : 0}
           </span>
         </div>
         <button
