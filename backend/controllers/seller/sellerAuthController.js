@@ -129,7 +129,7 @@ exports.login = async (req , res) => {
         }
 
         if (sellers.status !== "approved") {
-            return res.status(403).json({ message: "Your request is still pending approval or has been rejected." });
+            return res.status(404).json({ message: "Your request is still pending approval or has been rejected." });
         }
 
         const isPasswordValid = await sellers.isPasswordCorrect(password);
