@@ -1,9 +1,9 @@
 // assets
-import { Business, Category, Inventory, LocalShipping, Person, ShoppingBag, ShoppingCart, Store ,  } from '@mui/icons-material';
+import { Business, Category, Inventory, LocalOffer, LocalShipping, Person, ShoppingBag, ShoppingCart, Store ,  } from '@mui/icons-material';
 import { IconBrandChrome, IconHelp , IconPackage , IconCategory2} from '@tabler/icons';
 
 // constant
-const icons = { IconBrandChrome, IconHelp , IconPackage ,ShoppingCart , LocalShipping , ShoppingBag ,Person , Business , Inventory ,Store , Category};
+const icons = { IconBrandChrome, IconHelp , IconPackage ,ShoppingCart , LocalShipping , ShoppingBag ,Person , Business , Inventory ,Store , Category ,LocalOffer};
 
 // ==============================|| SAMPLE PAGE & DOCUMENTATION MENU ITEMS ||============================== //
 
@@ -55,6 +55,15 @@ const other = {
       type: 'item',
       url: '/product-list',
       icon: icons.ShoppingBag,
+      breadcrumbs: false,
+      roles: [0,1]
+    },
+    {
+      id: 'Coupon',
+      title: 'Coupon',
+      type: 'item',
+      url: '/coupon-list',
+      icon: icons.LocalOffer,
       breadcrumbs: false,
       roles: [0,1]
     },
