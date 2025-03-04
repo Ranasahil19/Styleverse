@@ -5,12 +5,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { logoLight } from "../../assets/images";
 import { PopupMsg } from "../../components/popup/PopupMsg";
+import CryptoJS from "crypto-js";
 
 const SignIn = () => {
   const { state, dispatch } = useContext(AuthContext); // Get user from context
   const user = state?.user;
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [message, setMessage] = useState("");
   const [isUserExist, setIsUserExist] = useState(true);
   const navigate = useNavigate();
@@ -25,6 +27,7 @@ const SignIn = () => {
   });
   const [failedAttempts, setFailedAttempts] = useState(0); // Track failed login attempts
   const [hasAttemptedLogin, setHasAttemptedLogin] = useState(false); // Tracks login attempts
+  const secretKey = "011942a9f721c4f4487bf8893a76c3e2c604c0c20ca28dba9b66e426dfa82b73";
 
   useEffect(() => {
     // Redirect if user is already logged in
@@ -33,6 +36,23 @@ const SignIn = () => {
     }
   }, [user, navigate]);
 
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("rememberedUsername");
+    const storedEncryptedPassword = localStorage.getItem("rememberedPassword");
+
+    if (storedUsername && storedEncryptedPassword) {
+      setUsername(storedUsername);
+      const decryptedBytes = CryptoJS.AES.decrypt(
+        storedEncryptedPassword,
+        secretKey
+      );
+      const decryptedPassword = decryptedBytes.toString(CryptoJS.enc.Utf8);
+
+      setPassword(decryptedPassword);
+      setRememberMe(true);
+    }
+  }, []);
+
   const validateForm = () => {
     let errors = {};
     if (!username) errors.username = "Username is required";
@@ -40,6 +60,13 @@ const SignIn = () => {
     setErrors(errors);
     return Object.keys(errors).length === 0;
   };
+
+  useEffect(() => {
+    window.history.pushState(null, "", window.location.href);
+    window.onpopstate = () => {
+      window.history.pushState(null, "", window.location.href);
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,6 +90,18 @@ const SignIn = () => {
           type: "LOGIN",
           payload: userData,
         });
+
+        if (rememberMe) {
+          const encryptedPassword = CryptoJS.AES.encrypt(
+            password,
+            secretKey
+          ).toString();
+          localStorage.setItem("rememberedUsername", username);
+          localStorage.setItem("rememberedPassword", encryptedPassword);
+        } else {
+          localStorage.removeItem("rememberedUsername");
+          localStorage.removeItem("rememberedPassword");
+        }
         setPopup({
           message: "Login successful",
           type: "success",
@@ -213,7 +252,13 @@ const SignIn = () => {
                 </div>
                 <div className="flex justify-between items-center mb-4">
                   <label className="flex items-center text-sm">
-                    <input type="checkbox" className="mr-2" /> Remember me
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="mr-2"
+                    />{" "}
+                    Remember me
                   </label>
                   <Link
                     to="/forgot-password"
@@ -241,26 +286,26 @@ const SignIn = () => {
               )}
               {!isUserExist && (
                 <>
-                <p className="text-sm text-center mt-4">
-                  User does not exist.{" "}
-                  <Link
-                    to="/signup"
-                    className="text-purple-600 hover:underline"
-                  >
-                    Sign up
-                  </Link>
-                </p> 
-                <p className="text-sm text-center mt-4">
-                  Not registered?{" "}
+                  <p className="text-sm text-center mt-4">
+                    User does not exist.{" "}
                     <Link
                       to="/signup"
                       className="text-purple-600 hover:underline"
-                      >
+                    >
+                      Sign up
+                    </Link>
+                  </p>
+                  <p className="text-sm text-center mt-4">
+                    Not registered?{" "}
+                    <Link
+                      to="/signup"
+                      className="text-purple-600 hover:underline"
+                    >
                       Sign Up
                     </Link>
                   </p>
                 </>
-                )}
+              )}
             </>
           )}
         </div>

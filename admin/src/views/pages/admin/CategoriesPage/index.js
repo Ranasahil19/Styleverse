@@ -83,7 +83,7 @@ const CategoriesList = () => {
                 setSnackbar({ open: true, message: "Added successfully" });
             }
         } catch (error) {
-            setSnackbar({ open: true, message: "Something went wrong", severity: "error" });
+            setSnackbar({ open: true, message: "Category Already Exist", severity: "error" });
 
         }
 
