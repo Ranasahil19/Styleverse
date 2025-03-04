@@ -65,17 +65,17 @@ const other = {
       url: '/coupon-list',
       icon: icons.LocalOffer,
       breadcrumbs: false,
-      roles: [0,1]
+      roles: [0]
     },
-    {
-      id: 'sample-page',
-      title: 'Sample Page',
-      type: 'item',
-      url: '/sample-page',
-      icon: icons.IconBrandChrome,
-      breadcrumbs: false,
-      roles: [0,1]
-    },
+    // {
+    //   id: 'sample-page',
+    //   title: 'Sample Page',
+    //   type: 'item',
+    //   url: '/sample-page',
+    //   icon: icons.IconBrandChrome,
+    //   breadcrumbs: false,
+    //   roles: [0,1]
+    // },
   ]
 };
 
