@@ -14,7 +14,7 @@ const checkStockAndNotify = async (productId, sellerId) => {
     if (product.quantity <= 5) {
       const notification = new Notification({
         receiverId: sellerId, // Notify the seller
-        message: `⚠️ Item '${product.name}' is running low on stock!`,
+        message: `⚠️ Item '${product.title}' is running low on stock!`,
         type: "low_stock",
       });
 
