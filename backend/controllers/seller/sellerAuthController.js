@@ -274,7 +274,7 @@ exports.updateProfile = async (req, res) => {
 
 exports.getAllSeller = async (req , res) => {
     try {
-        const seller = await Seller.find({} , {password: 0});
+        const seller = await Seller.find({role : 1} , {password: 0});
         res.json(seller);
     } catch (error) {
         res.status(500).json({ message: "Error fetching Seller" });

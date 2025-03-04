@@ -3,7 +3,7 @@ const Seller = require("../../models/seller")
 //get all pending request
 exports.getSellerRequest = async ( req , res) => {
     try {
-        const request = await Seller.find().select("-password");
+        const request = await Seller.find({role : 1}).select("-password");
         res.status(200).json(request);
     } catch (error) {
         res.status(500).json({message : 'Server error'})
