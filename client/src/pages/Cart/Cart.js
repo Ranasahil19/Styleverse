@@ -26,7 +26,7 @@ const Cart = () => {
     show: false,
   });
   const [totalAmt, setTotalAmt] = useState("");
-  const [shippingCharge, setShippingCharge] = useState("");
+  const [shippingCharge, setShippingCharge] = useState(0);
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
@@ -236,7 +236,7 @@ const Cart = () => {
                 <p className="flex items-center justify-between border-[1px] border-gray-400 py-1.5 text-lg px-4 font-medium">
                   Total
                   <span className="font-bold tracking-wide text-lg font-titleFont">
-                    ${totalAmt + shippingCharge}
+                    ${(totalAmt + shippingCharge).toFixed(2)}
                   </span>
                 </p>
               </div>

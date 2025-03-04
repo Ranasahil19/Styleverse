@@ -8,6 +8,7 @@ dotenv.config();
 const Product = require("../../models/productModel");
 const Seller = require("../../models/seller");
 const { checkStockAndNotify } = require("../product/checkStockAndNotify");
+const { createNotification } = require("../notifications/notificationController");
 
 const generateInvoicePDF = async (orderId, order, filePath) => {
   const doc = new PDFDocument({ margin: 50 });

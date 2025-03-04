@@ -122,7 +122,7 @@ function OrderDetails() {
                   </p>
                   <p className="text-sm text-gray-600">{item.category}</p>
                   <p className="text-lg text-gray-700">
-                    ₹{item.price} × {item.quantity}
+                    ${item.price} × {item.quantity}
                   </p>
                 </div>
               </div>
@@ -143,7 +143,7 @@ function OrderDetails() {
               Transaction ID: {payment.transactionId}
             </p>
             <p className="text-xl font-semibold text-gray-800 mt-4">
-              Amount Paid: ₹{payment.totalPrice.toFixed(2)}
+              Amount Paid: ${payment.totalPrice.toFixed(2)}
             </p>
           </div>
         )}
