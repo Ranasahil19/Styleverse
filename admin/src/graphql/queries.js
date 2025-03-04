@@ -4,5 +4,10 @@ export const GET_SELLER_DASHBOARD = gql`
     query getSellerDashboard($sellerId : ID!){
         totalProductsBySeller(sellerId: $sellerId)
         totalOrdersBySeller(sellerId: $sellerId)
+        seller(sellerId: $sellerId) {
+            _id
+            totalPrice
+            createdAt
+        }
     }
-`
+`;

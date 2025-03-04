@@ -1,17 +1,18 @@
+import { gql, useQuery } from '@apollo/client';
 import PropTypes from 'prop-types';
-
-// material-ui
 import { styled, useTheme } from '@mui/material/styles';
 import { Avatar, Box, List, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
-
-// project imports
 import MainCard from 'ui-component/cards/MainCard';
 import TotalIncomeCard from 'ui-component/cards/Skeleton/TotalIncomeCard';
-
-// assets
 import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
 
-// styles
+// GraphQL Query to Fetch Total Admin Income
+const GET_TOTAL_ADMIN_INCOME = gql`
+  query {
+    totalAdminIncome
+  }
+`;
+
 const CardWrapper = styled(MainCard)(({ theme }) => ({
   backgroundColor: theme.palette.primary.dark,
   color: theme.palette.primary.light,
@@ -39,10 +40,12 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
   }
 }));
 
-// ==============================|| DASHBOARD - TOTAL INCOME DARK CARD ||============================== //
-
 const TotalIncomeDarkCard = ({ isLoading }) => {
   const theme = useTheme();
+  const { loading, error, data } = useQuery(GET_TOTAL_ADMIN_INCOME);
+
+  if (loading) return <TotalIncomeCard />;
+  if (error) return <Typography color="error">Error loading income</Typography>;
 
   return (
     <>
@@ -74,12 +77,12 @@ const TotalIncomeDarkCard = ({ isLoading }) => {
                   }}
                   primary={
                     <Typography variant="h4" sx={{ color: '#fff' }}>
-                      $203k
+                      ${data?.totalAdminIncome.toLocaleString()} {/* Format income */}
                     </Typography>
                   }
                   secondary={
                     <Typography variant="subtitle2" sx={{ color: 'primary.light', mt: 0.25 }}>
-                      Total Income
+                      Total Admin Income
                     </Typography>
                   }
                 />

@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 // material-ui
 import { useTheme, styled } from '@mui/material/styles';
-import { Avatar, Box, Button, Grid, Typography } from '@mui/material';
+import { Avatar, Box, Grid, Typography } from '@mui/material';
 
 // third-party
 import Chart from 'react-apexcharts';
@@ -69,14 +69,14 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
   const theme = useTheme();
   const sellerId = useSelector((state) => state.auth.seller.sellerId);
 
-  const [timeValue, setTimeValue] = useState(false);
-  const handleChangeTime = (event, newValue) => {
-    setTimeValue(newValue);
-  };
+  const [timeValue] = useState(false);
+  // const handleChangeTime = (event, newValue) => {
+  //   setTimeValue(newValue);
+  // };
 
   const { loading, error, data } = useSellerDashboard(sellerId);
 
-  if(loading) return <SkeletonTotalOrderCard />
+  if (loading) return <SkeletonTotalOrderCard />;
   if (error) return <p>Error: {JSON.stringify(error)}</p>;
 
   return (
@@ -103,7 +103,7 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
                       <LocalMallOutlinedIcon fontSize="inherit" />
                     </Avatar>
                   </Grid>
-                  <Grid item>
+                  {/* <Grid item>
                     <Button
                       disableElevation
                       variant={timeValue ? 'contained' : 'text'}
@@ -122,7 +122,7 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
                     >
                       Year
                     </Button>
-                  </Grid>
+                  </Grid> */}
                 </Grid>
               </Grid>
               <Grid item sx={{ mb: 0.75 }}>
@@ -130,11 +130,9 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
                   <Grid item xs={6}>
                     <Grid container alignItems="center">
                       <Grid item>
-                        {timeValue ? (
-                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>{data?.totalOrdersBySeller}</Typography>
-                        ) : (
-                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>$961</Typography>
-                        )}
+                        <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>
+                          {data?.totalOrdersBySeller}
+                        </Typography>
                       </Grid>
                       <Grid item>
                         <Avatar

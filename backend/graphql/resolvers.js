@@ -1,9 +1,40 @@
 const Order = require("../models/order");
 const Product = require("../models/productModel");
 const Seller = require("../models/seller");
+const User = require("../models/user");
 
 const resolvers = {
   Query: {
+
+    // Get Seller Orders
+    seller: async (_, { sellerId }) => {
+      try {
+        const orders = await Order.find({ "items.sellerId": sellerId });
+
+        // Filter out the seller's products and calculate the correct sales amount
+        const sellerOrders = orders.map((order) => {
+          const sellerItems = order.items.filter(
+            (item) => item.sellerId.toString() === sellerId
+          );
+          const sellerTotalPrice = sellerItems.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+          );
+
+          return {
+            _id: order._id,
+            totalPrice: sellerTotalPrice, // Only sum up this seller's products
+            createdAt: order.createdAt,
+          };
+        });
+
+        return sellerOrders;
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        throw new Error("Error fetching orders");
+      }
+    },
+
     // Get Total number of Orders
     totalOrders: async () => {
       try {
@@ -37,15 +68,31 @@ const resolvers = {
     //Get Total Orders by Seller
     totalOrdersBySeller : async (_, {sellerId}) => {
       try {
-        const result =  await Order.aggregate([
-          { $match : {"items.sellerId" : sellerId}},
-          { $count : "totalOrders"}
-        ]);
-
-        return result.length > 0 ? result.totalOrders : 0;
+        const totalOrders = await Order.countDocuments({ "items.sellerId": sellerId });
+        return totalOrders;
       } catch (error) {
-        console.error("Error fetching total orders by seller:", err);
+        console.error("Error fetching total orders by seller:", error);
         throw new Error("Error fetching total orders by seller");
+      }
+    },
+
+    // Get Total number of Users
+    totalUsers: async () => {
+      try {
+        return await User.countDocuments();
+      } catch (err) {
+        console.log(err);
+        throw new Error(err.message);
+      }
+    },
+
+    // Get Total number of Sellers
+    totalSellers: async () => {
+      try {
+        return await Seller.countDocuments();
+      } catch (err) {
+        console.log(err);
+        throw new Error(err.message);
       }
     },
 
@@ -60,6 +107,47 @@ const resolvers = {
         }
     },
 
+    // Get Total Admin Income
+    totalAdminIncome: async () => {
+      try {
+        // Get all orders
+        const orders = await Order.find();
+    
+        // Fetch all sellers
+        const sellers = await Seller.find().lean();
+    
+        // Calculate total earnings of all sellers dynamically
+        let sellerTotalEarnings = 0;
+    
+        for (const seller of sellers) {
+          const sellerOrders = await Order.find({ "items.sellerId": seller._id });
+    
+          // Calculate total sales for this seller
+          const sellerTotal = sellerOrders.reduce((sum, order) => {
+            const sellerItems = order.items.filter(item => item.sellerId.toString() === seller._id.toString());
+            return sum + sellerItems.reduce((itemSum, item) => itemSum + (item.price * item.quantity), 0);
+          }, 0);
+    
+          sellerTotalEarnings += sellerTotal;
+        }
+    
+        // Calculate total revenue from all orders
+        const totalRevenue = orders.reduce((total, order) => total + order.totalPrice, 0);
+    
+        // Admin's income = Total Revenue - Sellers' earnings
+        const adminIncome = totalRevenue - sellerTotalEarnings;
+    
+        console.log("Total Revenue:", totalRevenue);
+        console.log("Seller Total Earnings:", sellerTotalEarnings);
+        console.log("Total Admin Income:", adminIncome);
+    
+        return adminIncome;
+      } catch (err) {
+        console.error("Error calculating admin income:", err);
+        throw new Error(err.message);
+      }
+    },    
+
     sellers: async () => {
         try {
           const sellers = await Seller.find({ role: 1}).lean();
@@ -72,16 +160,11 @@ const resolvers = {
                 const sellerItems = order.items.filter(
                   (item) => item.sellerId.toString() === seller._id.toString()
                 );
-                
-                console.log(sellerItems);
   
                 const sellerTotalPrice = sellerItems.reduce(
                   (sum, item) => sum + item.price * item.quantity,
                   0
                 );
-  
-  
-                console.log(sellerTotalPrice);
   
                 return {
                   _id: order._id,
@@ -89,8 +172,6 @@ const resolvers = {
                   createdAt: order.createdAt,
                 };
               });
-  
-              console.log(filteredOrders);
   
               const totalSales = filteredOrders.reduce(
                 (sum, order) => sum + order.totalPrice,
