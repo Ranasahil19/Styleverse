@@ -63,7 +63,7 @@ const CsvUploadDialog = ({ open, handleClose }) => {
         {csvFile && <Typography>{csvFile.name}</Typography>}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCloseDialog} color="secondary">
+        <Button onClick={handleCloseDialog} variant="contained" color="error">
           Cancel
         </Button>
         <Button

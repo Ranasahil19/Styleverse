@@ -146,6 +146,11 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
     });
   };
 
+  const handleCloseAdd = () => {
+    resetForm()
+    handleClose()
+  }
+
   return (
     <>
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth sx={{ width: isMobile ? 'auto' : '450px', mx: 'auto' }}>
@@ -237,6 +242,9 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
           </Box>
         </DialogContent>
         <DialogActions>
+          <Button onClick={handleCloseAdd} variant="contained" color="error">
+            Close
+          </Button>
           <Button onClick={handleSubmit} variant="contained" color="primary">
             {loading ? <CircularProgress size={22} /> : product ? 'Update' : 'Add'}
           </Button>
