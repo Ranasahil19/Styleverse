@@ -4,6 +4,7 @@ import MainLayout from "layout/MainLayout";
 import UserProfile from "component/Profile";
 import AccountSettings from "component/AccountSetting";
 import CategoriesList from "views/pages/admin/CategoriesPage";
+import CouponManage from "views/pages/admin/CouponList";
 
 const AdminDashboard = Loadable(lazy(() => import("views/pages/admin/AdminDashboard")));
 const UserList = Loadable(lazy(() => import("views/pages/admin/userList")));
@@ -22,6 +23,7 @@ const AdminRoutes = {
         { path:"categories-list", element: <CategoriesList />},
         { path: "product-list", element: <ProductList /> },
         { path: "order-list", element: <OrderList /> },
+        { path: "coupon-list", element: <CouponManage /> },
         // Add more routes here...
         { path: "sample-page", element: <SamplePage /> },
         {path : "profile" , element: <UserProfile/>},

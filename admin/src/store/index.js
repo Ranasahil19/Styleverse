@@ -10,7 +10,7 @@ import categoriesReducer from "features/categorySlice";
 import sellerReducer from "features/sellerSlice";
 import orderReducer from "../features/orderSlice";
 import ordernotificationReducer from "../features/notificationSlice";
-
+import couponReducer from "features/couponSlice"
 
 const getRootReducer = () => combineReducers({
   customization: customizationReducer,
@@ -21,13 +21,14 @@ const getRootReducer = () => combineReducers({
   seller : sellerReducer,
   orders: orderReducer,
   notification : ordernotificationReducer,
+  coupon : couponReducer,
 //   seller: sellerReducer
 });
 
 const persistConfig = {
   key: "root", // You can change this to any key you prefer
   storage,
-  whitelist: ["auth", "products", "categories","orders", "notification"], // Add "products" and "categories" here
+  whitelist: ["auth", "products", "categories","orders", "notification","coupon"], // Add "products" and "categories" here
 };
 
 const persistedReducer = persistReducer(persistConfig, getRootReducer());
