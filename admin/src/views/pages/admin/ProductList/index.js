@@ -284,11 +284,7 @@ const ProductList = () => {
           <Button
             onClick={closeImageModel}
             variant="contained"
-            sx={{
-              backgroundColor: '#1976d2',
-              color: '#fff',
-              '&:hover': { backgroundColor: '#1565c0' }
-            }}
+            color='error'
           >
             Close
           </Button>
@@ -359,11 +355,7 @@ const ProductList = () => {
           <Button
             onClick={closeViewDialog}
             variant="contained"
-            sx={{
-              backgroundColor: '#1976d2',
-              color: '#fff',
-              '&:hover': { backgroundColor: '#1565c0' }
-            }}
+            color='error'
           >
             Close
           </Button>

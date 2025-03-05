@@ -18,7 +18,7 @@ export const AddProduct = createAsyncThunk(
       const response = await api.post("/api/products", newProduct);
       return response.data.product; // API should return the new product
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Something went wrong");
+      return rejectWithValue(error.response?.data?.message );
     }
   }
 );
@@ -64,7 +64,7 @@ export const updateProduct = createAsyncThunk(
 
       return response.data.updatedProduct; // Return only the updated product object
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Something went wrong");
+      return rejectWithValue(error.response?.data?.message );
     }
   }
 );

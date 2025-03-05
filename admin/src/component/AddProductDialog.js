@@ -122,11 +122,9 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
     // Handle update or add product
     if (product) {
       handleUpdate(formData);
-      resetForm();
     } else {
       try {
         await dispatch(AddProduct(formData));
-        resetForm();
       } catch (error) {
         console.error('Error adding product:', error);
       }
@@ -147,6 +145,7 @@ const AddProductDialog = ({ open, handleClose, product, handleUpdate }) => {
   };
 
   const handleCloseAdd = () => {
+    setFormErrors({})
     resetForm()
     handleClose()
   }

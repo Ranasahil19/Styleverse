@@ -60,7 +60,7 @@ const SellerRequestDialog = ({ open, onClose }) => {
                 )}
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} variant="outlined" color="primary">Close</Button>
+                <Button onClick={onClose} variant="outlined" color="error">Close</Button>
             </DialogActions>
         </Dialog>
     );

@@ -62,7 +62,10 @@ const CategoriesList = () => {
     };
     
     
-
+    const handleClose = () => {
+        setOpenDialog(false)
+        setFormErrors({})
+    }
     const handleInputChange = (e) => {
         const { name , value } = e.target;
         setNewCategory((prev) => ({ ...prev , [name] : value.trimStart() }));
@@ -160,7 +163,7 @@ const CategoriesList = () => {
         </List>
         
         </Box>
-        <Dialog open={openDialog} onClose={() => setOpenDialog(false)}  maxWidth="sm" fullWidth sx={{ width: isMobile ? "auto":"450px", mx: "auto" }}>
+        <Dialog open={openDialog} onClose={handleClose}  maxWidth="sm" fullWidth sx={{ width: isMobile ? "auto":"450px", mx: "auto" }}>
         <DialogTitle sx={{ textAlign: "center", fontWeight: "bold", fontSize: 15 }}>
             {isEditing ? "Edit Category" : "Add Category"}
         </DialogTitle>
@@ -172,6 +175,7 @@ const CategoriesList = () => {
                 </Box>
             </DialogContent>
             <DialogActions>
+                <Button onClick={handleClose} variant="contained" color="error">  close </Button>
                 <Button onClick={handleSubmit} variant="contained" color="primary">  {isEditing ? "Update" : "Add"} </Button>
             </DialogActions>
         </Dialog>

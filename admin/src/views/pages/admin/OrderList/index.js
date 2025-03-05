@@ -258,10 +258,10 @@ const OrderList = () => {
       </TableContainer>
     </DialogContent>
     <DialogActions>
-      <Button onClick={handlePrint} startIcon={<Print />} color="primary">
+      <Button onClick={handlePrint} startIcon={<Print />}  variant="contained" color="primary">
         Print
       </Button>
-      <Button onClick={handleClose} color="secondary">
+      <Button onClick={handleClose} variant="contained" color="error">
         Close
       </Button>
     </DialogActions>
