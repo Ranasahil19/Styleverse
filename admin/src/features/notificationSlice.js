@@ -38,6 +38,18 @@ export const deleteNotification = createAsyncThunk(
     }
 )
 
+export const markAsAllRead = createAsyncThunk(
+    "notification/allRead",
+    async(_, {rejectWithValue}) => {
+        try {
+            const response = await api.put('/api/notifications/mark-as-all-read'); // Ensure API call works
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
+)
+
 const initialState = {
     notification : [],
     loading : false,
@@ -77,6 +89,9 @@ const notificationSlice = createSlice({
         .addCase(deleteNotification.fulfilled, (state , action) => {
             state.loading = false;
             state.notification = state.notification.filter((notification) => notification._id !== action.payload);
+        })
+        .addCase(markAsAllRead.fulfilled, (state ) => {
+            state.notification = state.notification.map(n => ({...n , isRead : true}));
         })
     }
 })

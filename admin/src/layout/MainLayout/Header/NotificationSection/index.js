@@ -33,7 +33,7 @@ import NotificationList from './NotificationList';
 // assets
 import { IconBell } from '@tabler/icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { getNotification } from 'features/notificationSlice';
+import { getNotification, markAsAllRead } from 'features/notificationSlice';
 
 // ==============================|| NOTIFICATION ||============================== //
 
@@ -83,6 +83,9 @@ const NotificationSection = () => {
     setOpen(false);
   };
 
+  const handleMarkAsAllRead = () => {
+    dispatch(markAsAllRead());
+  } 
   const prevOpen = useRef(open);
   useEffect(() => {
     if (prevOpen.current === true && open === false) {
@@ -175,9 +178,16 @@ const NotificationSection = () => {
                           </Stack>
                         </Grid>
                         <Grid item>
-                          <Typography component={Link} to="#" variant="subtitle2" color="primary">
+                        <Typography 
+                            component={Link} 
+                            to="#" 
+                            variant="subtitle2" 
+                            color="primary" 
+                            onClick={handleMarkAsAllRead} // Attach function here
+                            style={{ cursor: "pointer", textDecoration: "none" , marginLeft: '6px' }} // Ensure it's clickable
+                        >
                             Mark as all read
-                          </Typography>
+                        </Typography>
                         </Grid>
                       </Grid>
                     </Grid>
