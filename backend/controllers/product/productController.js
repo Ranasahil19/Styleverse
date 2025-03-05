@@ -17,6 +17,11 @@ const addProduct = async (req, res) => {
       return res.status(400).json({ message: "Seller ID is required!" });
     }
 
+    const existingProduct = await Product.findOne({title})
+    if(existingProduct){
+      return res.status(400).json({message : "Product Already Exist"});
+    }
+
     // Ensure an image is uploaded
     if (!req.file) {
       return res.status(400).json({ message: "Image is required!" });
@@ -140,6 +145,11 @@ const updateProductById = async (req, res) => {
 
     if (updatedData.sellerId) {
       delete updatedData.sellerId;
+    }
+    const title = updatedData.title
+    const existingProduct = await Product.findOne({title})
+    if(existingProduct){
+      return res.status(400).json({message : "Product Already Exist"});
     }
 
     if (req.file) {
