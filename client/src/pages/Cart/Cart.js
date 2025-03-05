@@ -14,8 +14,12 @@ import ShippingAddress from "../ShippingAddress/ShippingAddress"
 const Cart = () => {
   const dispatch = useDispatch();
   // let cartItems = useSelector((state) => state.orebiReducer.cartItems);
+  const [originalTotalAmt, setOriginalTotalAmt] = useState(0);
   const [ cartItems, setCartItems ] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [coupons , setCoupons] = useState({});
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
+  const [couponApplied, setCouponApplied] = useState(false);
   const { state } = useContext(AuthContext);
   const [ proceedToCheckout, setProceedToCheckout ] = useState(false); //
   const { user } = state || {}; 
@@ -54,7 +58,9 @@ const Cart = () => {
       return price;
     });
     setTotalAmt(price);
+    setOriginalTotalAmt(price);
   }, [cartItems]);
+
   useEffect(() => {
     if (totalAmt > 0) {
       setShippingCharge(5)
@@ -63,8 +69,63 @@ const Cart = () => {
     }
   }, [totalAmt]);
 
-  const totalPrice = totalAmt;
+  useEffect(() => {
+    const getCoupon =async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/get-coupons`);
+        setCoupons(response.data)
+      } catch (error) {
+        console.error("Error :",error);
+      }
+    }
 
+    getCoupon()
+  }, []);
+
+  const handleCouponChange = (event) => {
+    const selected = coupons.find(coupon => coupon.code === event.target.value);
+    setSelectedCoupon(selected);
+  };
+
+  const handleApplyCoupon = async () => {
+    if (!selectedCoupon) {
+      setPopup({ message: "Please select a coupon!", type: "error", show: true });
+      return;
+    }
+
+    try {
+      const response = await axios.post(`http://localhost:5000/apply-coupon`, {
+        code: selectedCoupon.code,
+        cartTotal: originalTotalAmt, // Use original total to apply discount
+      });
+
+      if (response.data.success) {
+        setTotalAmt(response.data.finalAmount);
+        setCouponApplied(true);
+        setPopup({
+          message: `Coupon applied! You saved $${response.data.discountAmount}`,
+          type: "success",
+          show: true,
+        });
+      } else {
+        setPopup({ message: response.data.error, type: "error", show: true });
+      }
+    } catch (error) {
+      console.error("Error applying coupon:", error);
+      setPopup({ message: "Failed to apply coupon", type: "error", show: true });
+    }
+  };
+
+
+  const handleRemoveCoupon = () => {
+    setTotalAmt(originalTotalAmt); // Restore the original total amount
+    setSelectedCoupon(null); // Deselect the applied coupon
+    setCouponApplied(false);
+    setPopup({ message: "Coupon removed successfully", type: "success", show: true });
+  };
+  
+
+  const totalPrice = totalAmt;
   
   const handleDelete = async (cartItemId) => {
     try {
@@ -204,18 +265,56 @@ const Cart = () => {
             Reset cart
           </button>
 
-          <div className="flex flex-col mdl:flex-row justify-between border py-4 px-4 items-center gap-2 mdl:gap-0">
+          <div className="flex flex-col md:flex-row items-center gap-4 w-full p-4 border border-gray-300 rounded-md bg-white">
+            {/* Dropdown List */}
+            <select
+              className="w-full md:w-52 h-10 px-4 border text-primeColor text-sm outline-none border-gray-400 rounded-md"
+              onChange={handleCouponChange}
+              defaultValue=""
+            >
+              <option value="" disabled>Select a Coupon</option>
+              {coupons.map((coupon) => (
+                <option key={coupon.id} value={coupon.code}>
+                  {coupon.code} ({coupon.type === "flat" ? `$${coupon.discount}` : `${coupon.discount}%`}) (Min: ${coupon.minPurchase})
+                </option>
+              ))}
+            </select>
+
+            {/* Coupon Details Card (Responsive) */}
+            {selectedCoupon && (
+              <div className="border p-3 rounded-lg bg-gray-100 text-gray-700 w-full md:w-60 flex flex-col items-center">
+                <h3 className="font-bold text-xs text-primeColor border border-dashed border-gray-500 px-4 py-1">
+                  {selectedCoupon.code}
+                </h3>
+                <p className="text-xs"><strong>Discount:</strong> {selectedCoupon.type === "flat" ? `$${selectedCoupon.discount}` : `${selectedCoupon.discount}%`}</p>
+                <p className="text-xs"><strong>Min Purchase:</strong> ${selectedCoupon.minPurchase}</p>
+                <p className="text-xs"><strong>Max Discounts:</strong>${selectedCoupon.maxDiscount}</p>
+              </div>
+            )}
+
+          <div className="flex justify-between items-center w-full">
+                  {selectedCoupon && (
             <div className="flex items-center gap-4">
-              <input
-                className="w-44 mdl:w-52 h-8 px-4 border text-primeColor text-sm outline-none border-gray-400"
-                type="text"
-                placeholder="Coupon Number"
-              />
-              <p className="text-sm mdl:text-base font-semibold">
-                Apply Coupon
-              </p>
+              <button 
+                onClick={handleApplyCoupon}
+                disabled={couponApplied} // Disable button if a coupon is already applied
+                className={`bg-blue-600 text-white font-semibold py-2 px-4 hover:bg-blue-700 transition ${
+                  couponApplied ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                Apply
+              </button>
+              <button 
+                  onClick={handleRemoveCoupon}
+                  className="bg-red-600 text-white font-semibold py-2 px-4 hover:bg-red-700 transition"
+                >
+                  Remove
+                </button>
+              </div>
+            )}
+
+              <p className="text-lg font-semibold ml-auto">Update Cart</p>
             </div>
-            <p className="text-lg font-semibold">Update Cart</p>
           </div>
           <div className="max-w-7xl gap-4 flex justify-end mt-4">
             <div className="w-96 flex flex-col gap-4">
