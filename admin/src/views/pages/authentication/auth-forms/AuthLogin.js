@@ -22,18 +22,38 @@ import { signInSeller } from 'features/authSlice';
 import { useEffect } from 'react';
 import { resetAuthState } from 'features/authSlice';
 import CustomSnackbar from 'component/CustomSnackbar';
+import cryptoJs from 'crypto-js';
 
 const FirebaseLogin = ({ ...others }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [checked, setChecked] = useState(true);
+  const [rememberMe , setRememberMe] = useState(false)
   const [formData, setFormData] = useState({ userName: '', password: '' });
   const { loading , error , message ,role} = useSelector((state) => state.auth);
   const [openSnackbar , setOpenSnackbar] = useState(false);
   const [snackbarMessage , setSnackbarMessage] = useState('');
   const [snackbarSeverity , setSnackbarSeverity] = useState('success');
+  const SECRET_KEY = '011942a9f721c4f4487bf8893a76c3e2c604c0c20ca28dba9b66e426dasama1';
 
+  useEffect(() => {
+    const savedUsername = localStorage.getItem('rememberedUsername');
+    const savedEncryptedPassword = localStorage.getItem('rememberedPassword');
+    const savedRememberMe = localStorage.getItem('rememberMe') === 'true';
+  
+    if (savedRememberMe && savedUsername && savedEncryptedPassword) {
+      try {
+        const bytes = cryptoJs.AES.decrypt(savedEncryptedPassword, SECRET_KEY);
+        const decryptedPassword = bytes.toString(cryptoJs.enc.Utf8); // Correct encoding
+  
+        setFormData({ userName: savedUsername, password: decryptedPassword });
+        setRememberMe(true);
+      } catch (error) {
+        console.error("Decryption error:", error);
+      }
+    }
+  }, []);
+  
   useEffect(() => {
     if( message || error){
       setSnackbarMessage(message || error);
@@ -81,8 +101,25 @@ const FirebaseLogin = ({ ...others }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+  
+    const trimmedUsername = formData.userName.trim();
+    const trimmedPassword = formData.password.trim();
+  
+    if (rememberMe && trimmedUsername && trimmedPassword) {
+      localStorage.setItem('rememberedUsername', trimmedUsername);
+  
+      const encryptedPassword = cryptoJs.AES.encrypt(trimmedPassword, SECRET_KEY).toString();
+      localStorage.setItem('rememberedPassword', encryptedPassword);
+      localStorage.setItem('rememberMe', 'true');
+    } else {
+      localStorage.removeItem('rememberedUsername');
+      localStorage.removeItem('rememberedPassword');
+      localStorage.removeItem('rememberMe');
+    }
+  
     dispatch(signInSeller(formData));
   };
+  
 
   return (
     <>
@@ -119,7 +156,7 @@ const FirebaseLogin = ({ ...others }) => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
         {/* Remember Me (Left) */}
         <FormControlLabel
-          control={<Checkbox checked={checked} onChange={(event) => setChecked(event.target.checked)} color="primary" />}
+          control={<Checkbox checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} color="primary" />}
           label={<Typography variant="subtitle1">Remember me</Typography>}
         />
         
