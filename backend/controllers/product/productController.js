@@ -137,36 +137,42 @@ const updateProductById = async (req, res) => {
     const productId = req.params.id;
     const updatedData = { ...req.body };
 
-    //     if (req.file) {
-    //       updatedData.image = `${req.protocol}://${req.get("host")}/uploads/${
-    //         req.file.filename
-    //       }`;
-    //     }
-
+    // Prevent sellerId from being updated
     if (updatedData.sellerId) {
       delete updatedData.sellerId;
     }
-    const title = updatedData.title
-    const existingProduct = await Product.findOne({title})
-    if(existingProduct){
-      return res.status(400).json({message : "Product Already Exist"});
-    }
 
+    // If a new image is uploaded, update the image field
     if (req.file) {
       updatedData.image = `${req.protocol}://${req.get("host")}/uploads/${
         req.file.filename
       }`;
     }
 
+    // Fetch the existing product details
+    const existingProduct = await Product.findById(productId);
+    if (!existingProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // If title is being updated, check for duplicates excluding the current product
+    if (updatedData.title && updatedData.title !== existingProduct.title) {
+      const duplicateProduct = await Product.findOne({
+        title: updatedData.title,
+        _id: { $ne: productId }, // Exclude the current product
+      });
+
+      if (duplicateProduct) {
+        return res.status(400).json({ message: "Product with this title already exists" });
+      }
+    }
+
+    // Update the product
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
       updatedData,
       { new: true }
     );
-
-    if (!updatedProduct) {
-      return res.status(404).send("Product not found");
-    }
 
     res
       .status(200)
