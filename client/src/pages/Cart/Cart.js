@@ -29,7 +29,7 @@ const Cart = () => {
     type: "",
     show: false,
   });
-  const [totalAmt, setTotalAmt] = useState("");
+  const [totalAmt, setTotalAmt] = useState(0);
   const [shippingCharge, setShippingCharge] = useState(0);
   useEffect(() => {
     const fetchCartItems = async () => {
