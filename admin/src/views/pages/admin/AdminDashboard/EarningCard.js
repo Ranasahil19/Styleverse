@@ -85,8 +85,6 @@ const EarningCard = ({ isLoading }) => {
   if (loading) return <SkeletonEarningCard />;
   if (error) return <p>Error: {JSON.stringify(error)}</p>;
 
-  console.log('API Data:', data?.sellers);
-
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
