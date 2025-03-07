@@ -14,10 +14,9 @@ import themes from 'themes';
 import NavigationScroll from 'layout/NavigationScroll';
 import { useEffect } from 'react';
 import { getNotification } from 'features/notificationSlice';
-import { io } from 'socket.io-client';
+import socket from 'socket';
 // ==============================|| APP ||============================== //
 
-const socket = io("http://localhost:5000", { withCredentials: true });
 
 const App = () => {
   const customization = useSelector((state) => state.customization);
@@ -27,20 +26,24 @@ const App = () => {
   
   useEffect(() => {
     if (sellerId) {
-      const role = seller?.role
-      socket.emit("register", { sellerId , role});
-  
-      const handleNotification = () => {
-        dispatch(getNotification(sellerId));
-      };
-  
-      socket.on("receiveNotification", handleNotification);
-  
-      return () => {
-        socket.off("receiveNotification", handleNotification); // Cleanup
-      };
+        if (!socket.connected) {
+            socket.connect();  // Ensure the socket is connected
+        }
+
+        const role = seller?.role;
+        socket.emit("register", { sellerId, role });
+
+        const handleNotification = () => {
+            dispatch(getNotification(sellerId));
+        };
+
+        socket.on("receiveNotification", handleNotification);
+
+        return () => {
+            socket.off("receiveNotification", handleNotification);
+        };
     }
-  }, [dispatch, sellerId]);  
+  }, [dispatch, sellerId]);  // Ensure it re-runs when sellerId changes
 
   return (
     <StyledEngineProvider injectFirst>

@@ -29,6 +29,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
 import { logoutSeller, resetAuthState } from 'features/authSlice';
+import socket from 'socket';
 
 const ProfileSection = () => {
   const theme = useTheme();
@@ -78,6 +79,13 @@ const ProfileSection = () => {
   };
 
   const handleLogout = async () => {
+
+    if(socket){
+        console.log("🚪 Logging out and disconnecting socket...");
+        socket.emit("logout", seller._id);
+        socket.disconnect(); 
+    }
+
     dispatch(logoutSeller()).then(() => {
       localStorage.removeItem('sellerRole');
     });

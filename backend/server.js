@@ -24,7 +24,9 @@ const io = new Server(server, {
         origin: allowedOrigins,
         methods: ["GET", "POST"],
         credentials: true,
-    }
+    },
+    pingTimeout: 60000,  // Disconnect after 60s of inactivity
+    pingInterval: 25000, 
 })
 
 const corsOptions = {
@@ -72,13 +74,17 @@ startApolloServer();
 
 let onlineUsers = new Map();
 global.onlineUsers = onlineUsers
+
+
 io.on("connection", (socket) => {
     console.log("New Client Connected", socket.id);
 
-    socket.on("register",({sellerId , role}) => {
-        onlineUsers.set(sellerId, {socketId : socket.id , role});
-        console.log("User registered:", onlineUsers);
-    })
+    socket.on("register", ({ sellerId, role }) => {
+        if (!sellerId) return console.error("⚠️ Missing sellerId during registration");
+
+        onlineUsers.set(sellerId, { socketId: socket.id, role });
+        console.log("✅ User registered:", onlineUsers);
+    });
 
     socket.on("sendNotification", async ({ receiverId, message, type }) => {
         try {
@@ -86,27 +92,47 @@ io.on("connection", (socket) => {
                 console.error("Invalid notification data:", { receiverId, message, type });
                 return;
             }
-            
+
             const receiver = onlineUsers.get(receiverId);
             if (receiver) {
-                io.to(receiver.socketId).emit("receiveNotification", {message , type});
+                io.to(receiver.socketId).emit("receiveNotification", { message, type });
             }
 
-            await createNotification({receiverId , message , type})
+            await createNotification({ receiverId, message, type });
         } catch (error) {
             console.error("Error saving notification:", error);
         }
     });
 
     socket.on("disconnect", () => {
-        console.log('User disconnected', socket.id);
+        console.log(`🔴 User disconnected ${socket.id}`);
+        let removedUser = null;
+        
         onlineUsers.forEach((value, key) => {
             if (value.socketId === socket.id) {
+                removedUser = key;
                 onlineUsers.delete(key);
             }
         });
-    })
-})
+    
+        console.log(`❌ Removed user: ${removedUser || "None"}`);
+        console.log("Updated online users:", onlineUsers);
+    });
+
+    socket.on("logout", (sellerId) => {
+        console.log(`🔴 Logging out user: ${sellerId}`);
+    
+        if (sellerId && onlineUsers.has(sellerId)) {
+            onlineUsers.delete(sellerId);
+            console.log(`❌ User removed from online users: ${sellerId}`);
+        }
+    
+        socket.disconnect(); // Ensure disconnection
+        console.log("🔌 Socket forcefully disconnected.");
+    });    
+    
+});
+
 
 
 // Start the server
