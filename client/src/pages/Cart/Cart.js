@@ -30,6 +30,7 @@ const Cart = () => {
     show: false,
   });
   const [totalAmt, setTotalAmt] = useState(0);
+  const [discountAmt, setDiscountAmt] = useState(0);
   const [shippingCharge, setShippingCharge] = useState(0);
   useEffect(() => {
     const fetchCartItems = async () => {
@@ -101,9 +102,10 @@ const Cart = () => {
 
       if (response.data.success) {
         setTotalAmt(response.data.finalAmount);
+        setDiscountAmt(response.data.discountAmount);
         setCouponApplied(true);
         setPopup({
-          message: `Coupon applied! You saved $${response.data.discountAmount}`,
+          message: `Coupon applied! You saved $${response.data.discountAmount.toFixed(2)}`,
           type: "success",
           show: true,
         });
@@ -235,6 +237,7 @@ const Cart = () => {
       <ShippingAddress 
       cartItems={cartItems}
       totalPrice={totalPrice}
+      discount={discountAmt}
       clearCart={clearCart}
       />
     );
@@ -273,8 +276,8 @@ const Cart = () => {
               defaultValue=""
             >
               <option value="" disabled>Select a Coupon</option>
-              {coupons.map((coupon) => (
-                <option key={coupon.id} value={coupon.code}>
+              {coupons.map((coupon, index) => (
+                <option key={index} value={coupon.code}>
                   {coupon.code} ({coupon.type === "flat" ? `$${coupon.discount}` : `${coupon.discount}%`}) (Min: ${coupon.minPurchase})
                 </option>
               ))}
@@ -323,7 +326,7 @@ const Cart = () => {
                 <p className="flex items-center justify-between border-[1px] border-gray-400 border-b-0 py-1.5 text-lg px-4 font-medium">
                   Subtotal
                   <span className="font-semibold tracking-wide font-titleFont">
-                    ${totalAmt}
+                    ${totalAmt.toFixed(2)}
                   </span>
                 </p>
                 <p className="flex items-center justify-between border-[1px] border-gray-400 border-b-0 py-1.5 text-lg px-4 font-medium">
