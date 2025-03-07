@@ -194,31 +194,33 @@ const sendOrderConfirmationEmail = async (email, order, payment) => {
 };
 
 exports.createPayment = async (req, res) => {
-  const { userId, products, paymentMethod, totalPrice, shippingAddress } =
-    req.body;
+  const { userId, products, paymentMethod, totalPrice, shippingAddress, discount } = req.body;
 
   try {
-    // Check if all required fields are present
-    if (
-      !userId ||
-      !products ||
-      products.length === 0 ||
-      !paymentMethod ||
-      !shippingAddress
-    ) {
+    // Validate required fields
+    if (!userId || !products || products.length === 0 || !paymentMethod || !shippingAddress) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const shippingCharge = 500;
+    const shippingCharge = 500; // Shipping charge in cents
 
-    // Map the products into Stripe line items
+    console.log("Total Price (After Discount):", totalPrice);
+
+    // Calculate the total price of products before discount
+    const originalTotal = products.reduce((sum, product) => sum + product.price * product.quantity, 0);
+
+    const finalTotalPrice = discount > 0 ? totalPrice : originalTotal
+
+
+    // Map products into Stripe line items with adjusted unit prices
     const lineItems = products.map((product) => ({
       price_data: {
         currency: "usd",
         product_data: {
           name: product.title,
         },
-        unit_amount: Math.round(product.price * 100), // Convert to cents for Stripe
+        // Distribute totalPrice proportionally based on original price
+        unit_amount: Math.round(((product.price / originalTotal) * finalTotalPrice) * 100), 
       },
       quantity: product.quantity,
     }));
@@ -227,7 +229,7 @@ exports.createPayment = async (req, res) => {
       return res.status(400).json({ message: "No valid products in the cart" });
     }
 
-    // Add shipping charge as an extra line item
+    // // Add shipping charge as a separate line item
     lineItems.push({
       price_data: {
         currency: "usd",
@@ -248,7 +250,7 @@ exports.createPayment = async (req, res) => {
       cancel_url: "http://localhost:3000/cancel",
     });
 
-    // Prepare the cart data to be saved in the database
+    // Prepare cart data for the database
     const carts = products.map((product) => ({
       productId: product.productId,
       title: product.title,
@@ -266,7 +268,7 @@ exports.createPayment = async (req, res) => {
       sessionId: session.id,
       transactionId: uuidv4(),
       paymentMethod,
-      totalPrice,
+      totalPrice: totalPrice, // Store the correct total
       status: "pending",
       shippingAddress: {
         address: shippingAddress.address,
@@ -284,7 +286,7 @@ exports.createPayment = async (req, res) => {
 
     // Assign the generated ID to `paymentId`
     payment.paymentId = payment._id.toString();
-    await payment.save(); // Save the updated document with `paymentId`
+    await payment.save();
 
     // Respond with the session ID and payment details
     res.status(200).json({ sessionId: session.id, paymentId: payment._id });
