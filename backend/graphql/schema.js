@@ -19,6 +19,7 @@ const typeDefs = gql`
     totalProductsBySeller(sellerId: ID!): Int
     totalAdminIncome: Float
     sellers: [Seller]
+    bestSellingProducts: [Product]
   }
 
   type Seller {
@@ -26,6 +27,12 @@ const typeDefs = gql`
     name: String!
     orders: [Order]
     totalSales: Float!
+  }
+
+  type Product {
+    _id: ID!
+    title: String!
+    sales: Int!
   }
 `;
 
