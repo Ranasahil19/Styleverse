@@ -8,10 +8,12 @@ const stripePromise = loadStripe(
   "pk_test_51QYRRtKgiwXQrp00vZiyMntCEv4VM66zASx94cI9qK7T5eMVUnPeys4CSfmIHdPLprOn2zHKE4H1Cf7AWdB9ZEBA00R8j7T7xo"
 );
 
-const ShippingAddress = ({ cartItems, totalPrice, clearCart }) => {
+const ShippingAddress = ({ cartItems, totalPrice, clearCart, discount }) => {
   const { state } = useContext(AuthContext);
   const { user } = state;
   const userId = user.userId;
+
+  // console.log("Discount:", discount);
 
   const [shippingAddress, setShippingAddress] = useState({
     address: "",
@@ -121,6 +123,7 @@ totalPrice = Number(totalPrice) + Number(shippingCharge);
           userId,
           products: cartItems,
           paymentMethod: "Visa",
+          discount,
           totalPrice: finalPrice,
           shippingAddress,
         }
