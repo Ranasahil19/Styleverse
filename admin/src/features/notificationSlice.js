@@ -82,8 +82,8 @@ const notificationSlice = createSlice({
             state.notification = [];
         })
         .addCase(markAsRead.fulfilled, (state, action) => {
-            state.notification = state.notification.map((notification) =>
-                notification._id === action.payload ? { ...notification, isRead: true } : notification
+            state.notification = state.notification.filter(
+                (notification) => notification._id !== action.payload
             );
         })        
         .addCase(deleteNotification.fulfilled, (state , action) => {
@@ -91,7 +91,7 @@ const notificationSlice = createSlice({
             state.notification = state.notification.filter((notification) => notification._id !== action.payload);
         })
         .addCase(markAsAllRead.fulfilled, (state ) => {
-            state.notification = state.notification.map(n => ({...n , isRead : true}));
+            state.notification = [];
         })
     }
 })

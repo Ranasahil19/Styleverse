@@ -49,6 +49,11 @@ const markAsRead = async (req, res) => {
     try {
         const {notificationId} = req.params;
         await Notification.findByIdAndUpdate(notificationId , {isRead : true})
+
+        await Notification.findByIdAndDelete(notificationId);
+
+        await Notification.deleteMany({ isRead: true });
+        
         res.status(200).json({message : "Notification marked as Read"})
     } catch (error) {
         console.error("Error Marking notifications:", error);
