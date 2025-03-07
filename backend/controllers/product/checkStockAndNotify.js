@@ -23,6 +23,7 @@ const checkStockAndNotify = async (productId, sellerId) => {
       // Check if the seller is online before sending WebSocket notification
       if (global.onlineUsers && global.onlineUsers.has(sellerId.toString())) {
         const sellerSocket = global.onlineUsers.get(sellerId.toString());
+        console.log(sellerSocket)
         if (sellerSocket) {
           io.to(sellerSocket.socketId).emit("receiveNotification", {
             receiverId: sellerId.toString(),
