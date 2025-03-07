@@ -1,8 +1,14 @@
 import { motion } from "framer-motion";
+import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
+import { useState } from "react";
+import { useLocation } from "react-router-dom";
 
 const AboutPage = () => {
+  const location = useLocation();
+  const [prevLocation, setPrevLocation] = useState("");
   return (
     <div className="bg-white min-h-screen py-12 px-8 text-gray-800">
+      <Breadcrumbs title="About Us" prevLocation={prevLocation} />
       {/* Header Section */}
       <motion.div
         initial={{ opacity: 0, y: -50 }}
