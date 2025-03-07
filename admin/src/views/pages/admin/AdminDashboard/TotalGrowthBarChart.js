@@ -1,92 +1,44 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-
-// material-ui
-import { useTheme } from '@mui/material/styles';
-import { Grid, MenuItem, TextField, Typography } from '@mui/material';
-
-// third-party
-import ApexCharts from 'apexcharts';
-import Chart from 'react-apexcharts';
-
-// project imports
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { Grid, Typography } from '@mui/material';
+import { gql, useQuery } from '@apollo/client';
 import SkeletonTotalGrowthBarChart from 'ui-component/cards/Skeleton/TotalGrowthBarChart';
 import MainCard from 'ui-component/cards/MainCard';
 import { gridSpacing } from 'store/constant';
 
-// chart data
-import chartData from './chart-data/total-growth-bar-chart';
-
-const status = [
-  {
-    value: 'today',
-    label: 'Today'
-  },
-  {
-    value: 'month',
-    label: 'This Month'
-  },
-  {
-    value: 'year',
-    label: 'This Year'
+const ADMIN_DASHBOARD_CHART = gql`
+  query {
+    totalAdminIncome
+    sellers {
+      _id
+      name
+      totalSales
+      orders {
+        _id
+        totalPrice
+        createdAt
+      }
+    }
   }
-];
-
-// ==============================|| DASHBOARD DEFAULT - TOTAL GROWTH BAR CHART ||============================== //
+`;
 
 const TotalGrowthBarChart = ({ isLoading }) => {
-  const [value, setValue] = useState('today');
-  const theme = useTheme();
-  const customization = useSelector((state) => state.customization);
+  const { loading, error, data } = useQuery(ADMIN_DASHBOARD_CHART, {
+    fetchPolicy: 'no-cache'
+  });
 
-  const { navType } = customization;
-  const { primary } = theme.palette.text;
-  const darkLight = theme.palette.dark.light;
-  const grey200 = theme.palette.grey[200];
-  const grey500 = theme.palette.grey[500];
+  if (loading) return <SkeletonTotalGrowthBarChart />;
+  if (error)
+    return (
+      <Typography variant="h4" color="error">
+        Error: {error.message}
+      </Typography>
+    );
 
-  const primary200 = theme.palette.primary[200];
-  const primaryDark = theme.palette.primary.dark;
-  const secondaryMain = theme.palette.secondary.main;
-  const secondaryLight = theme.palette.secondary.light;
-
-  useEffect(() => {
-    const newChartData = {
-      ...chartData.options,
-      colors: [primary200, primaryDark, secondaryMain, secondaryLight],
-      xaxis: {
-        labels: {
-          style: {
-            colors: [primary, primary, primary, primary, primary, primary, primary, primary, primary, primary, primary, primary]
-          }
-        }
-      },
-      yaxis: {
-        labels: {
-          style: {
-            colors: [primary]
-          }
-        }
-      },
-      grid: {
-        borderColor: grey200
-      },
-      tooltip: {
-        theme: 'light'
-      },
-      legend: {
-        labels: {
-          colors: grey500
-        }
-      }
-    };
-
-    // do not load chart when loading
-    if (!isLoading) {
-      ApexCharts.exec(`bar-chart`, 'updateOptions', newChartData);
-    }
-  }, [navType, primary200, primaryDark, secondaryMain, secondaryLight, primary, darkLight, grey200, isLoading, grey500]);
+  const sellerRevenueData = data.sellers.map((seller) => ({
+    name: seller.name,
+    revenue: seller.totalSales
+  }));
 
   return (
     <>
@@ -96,30 +48,26 @@ const TotalGrowthBarChart = ({ isLoading }) => {
         <MainCard>
           <Grid container spacing={gridSpacing}>
             <Grid item xs={12}>
-              <Grid container alignItems="center" justifyContent="space-between">
-                <Grid item>
-                  <Grid container direction="column" spacing={1}>
-                    <Grid item>
-                      <Typography variant="subtitle2">Total Growth</Typography>
-                    </Grid>
-                    <Grid item>
-                      <Typography variant="h3">$2,324.00</Typography>
-                    </Grid>
-                  </Grid>
-                </Grid>
-                <Grid item>
-                  <TextField id="standard-select-currency" select value={value} onChange={(e) => setValue(e.target.value)}>
-                    {status.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-              </Grid>
+              <Typography variant="h5" sx={{ textAlign: 'center', mb: 2, fontWeight: 'bold', color: '#4B5563' }}>
+                Seller Revenue Overview
+              </Typography>
             </Grid>
             <Grid item xs={12}>
-              <Chart {...chartData} />
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={sellerRevenueData} margin={{ top: 10, right: 30, left: 0, bottom: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.5} />
+                  <XAxis dataKey="name" tick={{ fill: '#6B7280', fontSize: 14 }} />
+                  <YAxis tick={{ fill: '#6B7280', fontSize: 14 }} />
+                  <Tooltip cursor={{ fill: '#E5E7EB' }} />
+                  <Bar dataKey="revenue" fill="url(#colorUv)" barSize={45} radius={[10, 10, 0, 0]} />
+                  <defs>
+                    <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.9} />
+                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.9} />
+                    </linearGradient>
+                  </defs>
+                </BarChart>
+              </ResponsiveContainer>
             </Grid>
           </Grid>
         </MainCard>

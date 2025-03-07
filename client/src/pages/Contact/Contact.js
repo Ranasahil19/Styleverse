@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import { FaPhoneAlt, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
+import { useLocation } from "react-router-dom";
+import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 
 const ContactUs = () => {
+  const location = useLocation();
+  const [prevLocation, setPrevLocation] = useState("");
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
 
   const handleChange = (e) => {
@@ -15,6 +19,7 @@ const ContactUs = () => {
 
   return (
     <div className="min-h-screen bg-white p-10">
+      <Breadcrumbs title="Contact Us" prevLocation={prevLocation} />
       {/* Hero Section */}
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold text-gray-800">Contact Us</h1>
