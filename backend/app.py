@@ -6,6 +6,7 @@ import base64
 from flask_cors import CORS
 import traceback
 import math
+from rembg import remove
 from flask_socketio import SocketIO, emit
 
 # Initialize Flask app and Socket.IO
@@ -30,18 +31,10 @@ def image_to_base64(image):
     _, buffer = cv2.imencode('.jpg', image)
     return "data:image/jpeg;base64," + base64.b64encode(buffer).decode('utf-8')
 
-def remove_background(image):
-    """Remove background using GrabCut algorithm."""
-    mask = np.zeros(image.shape[:2], np.uint8)
-    bgdModel = np.zeros((1, 65), np.float64)
-    fgdModel = np.zeros((1, 65), np.float64)
-
-    height, width = image.shape[:2]
-    rect = (10, 10, width - 10, height - 10)
-    cv2.grabCut(image, mask, rect, bgdModel, fgdModel, 5, cv2.GC_INIT_WITH_RECT)
-    mask = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
-    result = image * mask[:, :, np.newaxis]
-    return result
+def remove_bg(image):
+    """Remove background from an image using rembg, ensuring non-empty output."""
+    img = remove(image)
+    return img if img is not None and img.size > 0 else image  # Return original if empty
 
 def rotate_image(image, angle):
     """Rotate image by angle in degrees."""
@@ -73,8 +66,8 @@ def overlay_glasses(user_image, glasses_image, scale_factor=1.5):
         new_right_x = int((right_eye_outer.x * iw) + (eye_width * (scale_factor - 1) / 2))
 
         # Compute glasses height based on eye and nose position
-        top_y = int(min(left_eye_top.y, right_eye_top.y) * ih - 15)
-        bottom_y = int(nose_bridge.y * ih + 20)
+        top_y = int(min(left_eye_top.y, right_eye_top.y) * ih - 40)
+        bottom_y = int(nose_bridge.y * ih + 45)
 
         # Resize glasses to fit
         glasses_width = new_right_x - new_left_x
@@ -141,55 +134,64 @@ def overlay_shirt(user_image, shirt_image, scale_factor=1.4, height_adjust=0.1):
         right_shoulder = landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER]
         left_hip = landmarks[mp_pose.PoseLandmark.LEFT_HIP]
         right_hip = landmarks[mp_pose.PoseLandmark.RIGHT_HIP]
-
+        
         # Calculate positions
         ih, iw, _ = user_image.shape
         shoulder_distance = (right_shoulder.x - left_shoulder.x) * iw
         new_left_x = (left_shoulder.x * iw) - (shoulder_distance * (scale_factor - 1) / 2)
         new_right_x = (right_shoulder.x * iw) + (shoulder_distance * (scale_factor - 1) / 2)
-
+        
         mid_shoulder = ((left_shoulder.x + right_shoulder.x) / 2, (left_shoulder.y + right_shoulder.y) / 2)
         mid_hip = ((left_hip.x + right_hip.x) / 2, (left_hip.y + right_hip.y) / 2)
-        third_point = (mid_shoulder[0] * iw, (mid_hip[1] + height_adjust) * ih)  # Bottom center of the shirt
+        third_point = (mid_shoulder[0], mid_hip[1] + height_adjust)
 
-        # Define source points for affine transformation
         src_points = np.array([
-            [0, 0],  # Top-left corner of the shirt
-            [shirt_image.shape[1], 0],  # Top-right corner of the shirt
-            [shirt_image.shape[1] // 2, shirt_image.shape[0]]  # Bottom center of the shirt
+            [0, 0],
+            [shirt_image.shape[1], 0],
+            [shirt_image.shape[1] // 2, shirt_image.shape[0]]
         ], dtype=np.float32)
 
-        # Define destination points for affine transformation
         dst_points = np.array([
-            [new_left_x, left_shoulder.y * ih - (height_adjust * ih)],  # Top-left destination
-            [new_right_x, right_shoulder.y * ih - (height_adjust * ih)],  # Top-right destination
-            [third_point[0], third_point[1]]  # Bottom center destination
+            [new_left_x, left_shoulder.y * ih - (height_adjust * ih)],
+            [new_right_x, right_shoulder.y * ih - (height_adjust * ih)],
+            [third_point[0] * iw, third_point[1] * ih]
         ], dtype=np.float32)
 
-        # Compute affine transformation matrix
+        # Transform shirt image
         M = cv2.getAffineTransform(src_points, dst_points)
-
-        # Apply affine transformation to the shirt image
         warped_shirt = cv2.warpAffine(shirt_image, M, (iw, ih), flags=cv2.INTER_LINEAR)
+        
+        # Resize warped shirt to match user image dimensions
+        warped_shirt = cv2.resize(warped_shirt, (iw, ih))
 
         # Convert warped shirt to grayscale and create a mask
         gray = cv2.cvtColor(warped_shirt, cv2.COLOR_BGR2GRAY)
         _, mask = cv2.threshold(gray, 1, 255, cv2.THRESH_BINARY)
 
-        # Invert mask
+        # Resize mask to ensure consistency
+        mask = cv2.resize(mask, (iw, ih))
         mask_inv = cv2.bitwise_not(mask)
 
+        # Ensure the user image has the correct number of channels
+        if user_image.shape[-1] == 4:
+            user_image = cv2.cvtColor(user_image, cv2.COLOR_BGRA2BGR)
+        
         # Extract regions
         user_bg = cv2.bitwise_and(user_image, user_image, mask=mask_inv)  # Keep user image
         shirt_fg = cv2.bitwise_and(warped_shirt, warped_shirt, mask=mask)  # Keep only shirt
 
-        # Merge images
+        # Ensure same number of channels before merging
+        if user_bg.shape[-1] != 3:
+            user_bg = cv2.cvtColor(user_bg, cv2.COLOR_BGRA2BGR)
+        if shirt_fg.shape[-1] != 3:
+            shirt_fg = cv2.cvtColor(shirt_fg, cv2.COLOR_BGRA2BGR)
+
+        # Merge images safely
         result = cv2.add(user_bg, shirt_fg)
 
         return result
 
     return user_image
-
 
 @app.route('/tryon', methods=['POST'])
 def try_on():
@@ -201,7 +203,7 @@ def try_on():
 
         user_image = base64_to_image(data['userImage'])
         product_image = base64_to_image(data['productImage'])
-        product_image = remove_background(product_image)
+        product_image = remove_bg(product_image)
 
         if data['category'] == "glasses":
             result_image = overlay_glasses(user_image, product_image)
@@ -224,11 +226,11 @@ def handle_tryon_request(data):
     try:
         user_image = base64_to_image(data['userImage'])
         product_image = base64_to_image(data['productImage'])
-        product_image = remove_background(product_image)
+        product_image = remove_bg(product_image)
 
         if data['category'] == "glasses":
             result_image = overlay_glasses(user_image, product_image)
-        elif data['category'] == "men":
+        elif data['category'] == "men" or data['category'] == "women":
             result_image = overlay_shirt(user_image, product_image)
         else:
             emit('tryon_error', {'error': 'Invalid category'})

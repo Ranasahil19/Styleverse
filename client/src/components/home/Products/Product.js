@@ -240,6 +240,7 @@ import { addToCart } from "../../../redux/orebiSlice";
 import axios from "axios";
 import { AuthContext } from "../../../context/AuthContext";
 import { CartPopup } from "../../popup/PopupMsg";
+import { io } from "socket.io-client";
 
 const Product = (props) => {
   const dispatch = useDispatch();
@@ -253,7 +254,7 @@ const Product = (props) => {
   const canvasRef = useRef(null);
   const productInfo = props;
   const [showPopup, setShowPopup] = useState(false);
-  
+  const socket = io("http://127.0.0.1:5000");
 
   const handleProductDetails = () => {
     navigate(`/products/${props._id}`, {
@@ -355,19 +356,21 @@ const Product = (props) => {
 
     try {
       const productImageBase64 = await getBase64FromUrl(props.image);
-      const response = await axios.post(
-        "http://127.0.0.1:5000/tryon",
-        {
-          userImage: userImageBase64,
-          productImage: productImageBase64,
-          category: props.category,
-        },
-        { headers: { "Content-Type": "application/json" } }
-      );
+      socket.emit("tryon_request", {
+        userImage: userImageBase64,
+        productImage: productImageBase64,
+        category: props.category,
+      });
 
-      if (response.data.resultImage) {
-        setTryOnImage(response.data.resultImage);
-      }
+      socket.on("tryon_result", (data) => {
+        if (data.resultImage) {
+          setTryOnImage(data.resultImage);
+        }
+      })
+      
+      socket.on("tryon_error", (error) => {
+        console.error("Try-on error:", error);
+      });
     } catch (error) {
       console.error("Error with virtual try-on:", error);
     }
