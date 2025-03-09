@@ -3,6 +3,7 @@ const { gql } = require("apollo-server-express");
 const typeDefs = gql`
   type Order {
     _id: ID!
+    title: String!
     totalPrice: Float!
     createdAt: String!
     sellerId: ID!
@@ -10,6 +11,7 @@ const typeDefs = gql`
 
   type Query {
     seller(sellerId: ID!): [Order]
+    orders(sellerId: ID!): [Order]
     totalOrders: Int
     totalRevenue: Float
     totalProduct: Int
