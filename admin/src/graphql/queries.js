@@ -9,5 +9,11 @@ export const GET_SELLER_DASHBOARD = gql`
             totalPrice
             createdAt
         }
+        orders(sellerId: $sellerId) {
+            _id
+            title
+            totalPrice
+            createdAt
+        }
     }
 `;
