@@ -50,6 +50,7 @@ const endpointSecret =
           userId,
           carts,
           totalPrice,
+          discount,
           _id: paymentId,
           shippingAddress,
         } = payment;
@@ -67,6 +68,7 @@ const endpointSecret =
           userId,
           cartItems: carts,
           totalPrice,
+          discount,
           shippingAddress,
           paymentId,
           createdAt: new Date(),
@@ -211,7 +213,6 @@ exports.createPayment = async (req, res) => {
 
     const finalTotalPrice = discount > 0 ? totalPrice : originalTotal
 
-
     // Map products into Stripe line items with adjusted unit prices
     const lineItems = products.map((product) => ({
       price_data: {
@@ -268,7 +269,8 @@ exports.createPayment = async (req, res) => {
       sessionId: session.id,
       transactionId: uuidv4(),
       paymentMethod,
-      totalPrice: totalPrice, // Store the correct total
+      totalPrice: finalTotalPrice, // Store the correct total
+      discount,
       status: "pending",
       shippingAddress: {
         address: shippingAddress.address,
