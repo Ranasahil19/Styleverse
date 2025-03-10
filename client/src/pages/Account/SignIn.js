@@ -6,6 +6,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { logoLight } from "../../assets/images";
 import { PopupMsg } from "../../components/popup/PopupMsg";
 import CryptoJS from "crypto-js";
+import { secretKey } from "../../index";
 
 const SignIn = () => {
   const { state, dispatch } = useContext(AuthContext); // Get user from context
@@ -27,7 +28,7 @@ const SignIn = () => {
   });
   const [failedAttempts, setFailedAttempts] = useState(0); // Track failed login attempts
   const [hasAttemptedLogin, setHasAttemptedLogin] = useState(false); // Tracks login attempts
-  const secretKey = "011942a9f721c4f4487bf8893a76c3e2c604c0c20ca28dba9b66e426dfa82b73";
+  const secret_Key = `${secretKey}`;
 
   useEffect(() => {
     // Redirect if user is already logged in
@@ -44,7 +45,7 @@ const SignIn = () => {
       setUsername(storedUsername);
       const decryptedBytes = CryptoJS.AES.decrypt(
         storedEncryptedPassword,
-        secretKey
+        secret_Key
       );
       const decryptedPassword = decryptedBytes.toString(CryptoJS.enc.Utf8);
 
@@ -94,7 +95,7 @@ const SignIn = () => {
         if (rememberMe) {
           const encryptedPassword = CryptoJS.AES.encrypt(
             password,
-            secretKey
+            secret_Key
           ).toString();
           localStorage.setItem("rememberedUsername", username);
           localStorage.setItem("rememberedPassword", encryptedPassword);
