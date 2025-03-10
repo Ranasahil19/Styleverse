@@ -120,6 +120,7 @@ const authSlice = createSlice({
             })
             .addCase(refreshAccessToken.fulfilled, (state, action) => {
                 state.accessToken = action.payload;
+                state.loading = false;
                 state.isAuthenticated = true; // Set authenticated to true
             })
             .addCase(refreshAccessToken.rejected, (state) => {
