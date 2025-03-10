@@ -34,7 +34,7 @@ const FirebaseLogin = ({ ...others }) => {
   const [openSnackbar , setOpenSnackbar] = useState(false);
   const [snackbarMessage , setSnackbarMessage] = useState('');
   const [snackbarSeverity , setSnackbarSeverity] = useState('success');
-  const SECRET_KEY = '011942a9f721c4f4487bf8893a76c3e2c604c0c20ca28dba9b66e426dasama1';
+  const SECRET_KEY = process.env.REACT_APP_SECRET_KEY;
 
   useEffect(() => {
     const savedUsername = localStorage.getItem('rememberedUsername');
