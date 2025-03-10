@@ -208,7 +208,7 @@ exports.downloadOrder = async (req, res) => {
 };
 
 exports.placeOrder = async (orderDetails) => {
-  const { userId, cartItems, totalPrice, shippingAddress, paymentId } = orderDetails;
+  const { userId, cartItems, totalPrice, shippingAddress, paymentId, discount } = orderDetails;
 
   try {
     if (!userId || !cartItems || !cartItems.length || !totalPrice) {
@@ -248,9 +248,10 @@ exports.placeOrder = async (orderDetails) => {
         category: item.category,
       })),
       totalPrice,
+      discount,
       paymentId,
       shippingAddress,
-      status: "Pending",
+      status: "Processing",
       deliveryDate: new Date(new Date().setDate(new Date().getDate() + 5)), // Estimated delivery
     });
 

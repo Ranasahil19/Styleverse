@@ -16,6 +16,7 @@ const paymentSchema = new mongoose.Schema({
   sessionId: { type: String, required: true },
   paymentId: { type: String },
   totalPrice: { type: Number, required: true },
+  discount: { type: Number },
   transactionId: { type: String, required: true },
   paymentMethod: { type: String, required: true },
   cardHolderName: { type: String },
