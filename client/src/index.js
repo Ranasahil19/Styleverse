@@ -7,6 +7,8 @@ import { store, persistor } from "./redux/store";
 import "./index.css";
 import App from "./App";
 
+export const secretKey = process.env.SECRET_KEY;
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Provider store={store}>

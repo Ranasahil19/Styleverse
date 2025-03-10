@@ -17,6 +17,7 @@ const orderSchema = new mongoose.Schema({
   totalPrice: Number,
   orderId: { type: String, unique: true }, 
   paymentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment', required: true },
+  discount: Number,
   shippingAddress: {
     address: { type: String },
     city: { type: String },

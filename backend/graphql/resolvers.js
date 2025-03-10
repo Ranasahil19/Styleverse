@@ -17,14 +17,14 @@ const resolvers = {
     
           const sellerTitle = sellerItems.map((item) => item.title).join(", "); // Convert array to string
           
-          const sellerTotalPrice = sellerItems.reduce(
-            (sum, item) => sum + item.price * item.quantity,
-            0
-          );
+          // const sellerTotalPrice = sellerItems.reduce(
+          //   (sum, item) => sum + item.price * item.quantity,
+          //   0
+          // );
     
           return {
             _id: order._id,
-            totalPrice: sellerTotalPrice, // Only sum up this seller's products
+            totalPrice: order.totalPrice, // Only sum up this seller's products
             createdAt: order.createdAt,
             title: sellerTitle, // Now a string
           };
