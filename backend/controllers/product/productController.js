@@ -144,9 +144,7 @@ const updateProductById = async (req, res) => {
 
     // If a new image is uploaded, update the image field
     if (req.file) {
-      updatedData.image = `${req.protocol}://${req.get("host")}/uploads/${
-        req.file.filename
-      }`;
+      updatedData.image = req.file.path;
     }
 
     // Fetch the existing product details
