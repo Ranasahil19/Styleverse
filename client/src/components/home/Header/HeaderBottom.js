@@ -8,16 +8,18 @@ import {
   FaSignOutAlt,
   FaBox,
   FaSignInAlt,
+  FaMicrophone,
   FaUserPlus,
+  FaCamera,
 } from "react-icons/fa";
 import Flex from "../../designLayouts/Flex";
 import { Link, useNavigate } from "react-router-dom";
-// import { useSelector } from "react-redux";
-import axios from "axios"; // Import axios for API calls
+import axios from "axios";
 import { AuthContext } from "../../../context/AuthContext";
+import * as tf from "@tensorflow/tfjs";
+import * as mobilenet from "@tensorflow-models/mobilenet";
 
 const HeaderBottom = () => {
-  // const products = useSelector((state) => state.orebiReducer.products);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
@@ -27,13 +29,34 @@ const HeaderBottom = () => {
   const userId = user?.userId;
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [allProducts, setAllProducts] = useState([]); // State to store all products from API
+  const [allProducts, setAllProducts] = useState([]);
   const [showSearchBar, setShowSearchBar] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const avatarRef = useRef(null);
+  const searchDropdownRef = useRef(null); // Ref for dropdown
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // If the click is outside the dropdown and avatar, close the dropdown
+      if (
+        searchDropdownRef.current &&
+        !searchDropdownRef.current.contains(event.target)
+      ) {
+        setFilteredProducts([]);
+        setSearchQuery("");
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target) &&
@@ -55,19 +78,55 @@ const HeaderBottom = () => {
   };
 
   const handleLogout = () => {
-    // localStorage.removeItem("user");
     dispatch({
       type: "LOGOUT",
     });
     navigate("/signin");
   };
 
-  // Fetch products from the API
+  const handleVoiceSearch = () => {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      alert("Your browser does not support Speech Recognition. Try Chrome!");
+      return;
+    }
+
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognitionRef.current = recognition;
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      console.log("Voice recognition started...");
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setSearchQuery(transcript);
+      console.log("Recognized:", transcript);
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Voice recognition error:", event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      console.log("Voice recognition ended.");
+    };
+
+    recognition.start();
+  };
+
+  
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/products"); // Replace with your API endpoint
-        setAllProducts(response.data); // Set the fetched products
+        const response = await axios.get("http://localhost:5000/api/products");
+        setAllProducts(response.data);
       } catch (error) {
         console.error("Error fetching products:", error);
       }
@@ -92,16 +151,34 @@ const HeaderBottom = () => {
       if (userId) {
         fetchCartCount();
       }
-    }, 1000); // Fetch every 5 seconds
+    }, 1000);
 
-    return () => clearInterval(intervalId); // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
   }, [userId]);
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
   };
 
-  // Filter products based on the search query
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+  
+    setImagePreview(URL.createObjectURL(file)); 
+    setFilteredProducts([]); // Show preview
+    
+    try {
+        let vector = null
+        // Send vector to backend
+        const response = await axios.post("http://localhost:5000/search-product", { vector });
+        
+        console.log(response.data)
+        setFilteredProducts(response.data);
+    } catch (error) {
+      console.error("Error processing image:", error);
+    }
+  };
+
   useEffect(() => {
     const filtered = allProducts.filter((item) =>
       item.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -113,14 +190,6 @@ const HeaderBottom = () => {
     <div className="w-full bg-[#F5F5F3] relative">
       <div className="max-w-container mx-auto">
         <Flex className="flex flex-col lg:flex-row items-start lg:items-center justify-between w-full px-4 pb-4 lg:pb-0 h-full lg:h-24">
-          {/* <div
-            onClick={toggleDropdown}
-            ref={dropdownRef}
-            className="flex h-14 cursor-pointer items-center gap-2 text-primeColor"
-          >
-            <HiOutlineMenuAlt4 className="w-5 h-5" />
-            <p className="text-[14px] font-normal">Shop by Category</p>
-          </div> */}
           <div className="relative w-full lg:w-[600px] h-[50px] text-base text-primeColor bg-white flex items-center gap-2 justify-between px-6 rounded-xl">
             <input
               className="flex-1 h-full outline-none placeholder:text-[#C4C4C4] placeholder:text-[14px]"
@@ -130,10 +199,48 @@ const HeaderBottom = () => {
               placeholder="Search your products here"
             />
             <FaSearch className="w-5 h-5" />
-            {searchQuery && (
-              <div
-                className={`w-full mx-auto h-96 bg-white top-16 absolute left-0 z-50 overflow-y-scroll shadow-2xl scrollbar-hide cursor-pointer`}
-              >
+            <div className="relative">
+              <FaMicrophone 
+                className={`w-5 h-5 cursor-pointer transition-all ${
+                  isListening ? "text-red-500 animate-pulse" : "text-blue-500"
+                }`} 
+                onClick={handleVoiceSearch}
+              />
+              {isListening && (
+                <motion.div 
+                  className="absolute top-0 left-0 transform -translate-x-1/2 w-8 h-8 bg-red-500 rounded-full opacity-50"
+                  animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0.1, 0.5] }}
+                  transition={{ repeat: Infinity, duration: 1.2 }}
+                />
+              )}
+            </div>
+            <label htmlFor="file-upload" className="cursor-pointer">
+              <FaCamera className="w-5 h-5 text-gray-500" />
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+            {(searchQuery.trim() !== "" || (imagePreview && filteredProducts.length > 0))  && (
+               <div
+               ref={searchDropdownRef} // Add ref here
+               className="w-full mx-auto h-96 bg-white top-16 absolute left-0 z-50 overflow-y-scroll shadow-2xl scrollbar-hide cursor-pointer"
+             >
+               {/* Close Button */}
+               <div className="flex justify-end p-2">
+                 <button
+                   onClick={() => {
+                     setFilteredProducts([]);
+                     setSearchQuery("");
+                   }}
+                   className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-700"
+                 >
+                   Close
+                 </button>
+               </div>
                 {filteredProducts.map((item) => (
                   <div
                     onClick={() =>
@@ -147,7 +254,7 @@ const HeaderBottom = () => {
                             item: item,
                           },
                         }
-                      ) & setSearchQuery("")
+                      ) & setSearchQuery("") & setFilteredProducts([])
                     }
                     key={item._id}
                     className="max-w-[600px] h-28 bg-gray-100 mb-3 flex items-center gap-3"
@@ -169,12 +276,7 @@ const HeaderBottom = () => {
             )}
           </div>
           <div className="flex gap-4 mt-2 lg:mt-0 items-center pr-6 cursor-pointer relative">
-            {/* <div onClick={() => setShowUser(!showUser)} className="flex">
-              <FaUser />
-              <FaCaretDown />
-            </div> */}
             <div className="relative">
-              {/* Avatar Button */}
               <div
                 ref={avatarRef}
                 className="flex items-center cursor-pointer space-x-2"
@@ -187,17 +289,15 @@ const HeaderBottom = () => {
                       : "bg-gray-400 text-gray-800"
                   } rounded-full w-10 h-10 flex items-center justify-center text-lg uppercase`}
                 >
-                  {/* Display the first character of the username or "G" */}
                   {isLoggedIn && user?.username ? user.username.charAt(0) : "G"}
                 </div>
               </div>
-              {/* Dropdown Menu */}
               {isDropdownOpen && (
                 <div
-                ref={dropdownRef}
-                className="absolute mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50 
-                  w-56 sm:w-48 lg:w-56 lg:right-5 left-1/2 transform -translate-x-1/2 sm:left-auto sm:translate-x-0 
-                  overflow-hidden"
+                  ref={dropdownRef}
+                  className="absolute mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50 
+                    w-56 sm:w-48 lg:w-56 lg:right-5 left-1/2 transform -translate-x-1/2 sm:left-auto sm:translate-x-0 
+                    overflow-hidden"
                 >
                   <div className="px-4 py-4">
                     <h3 className="font-bold text-base text-gray-800 border-b pb-2">
