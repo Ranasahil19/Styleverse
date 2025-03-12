@@ -1,7 +1,7 @@
 // /routes/productRoutes.js
 
 const express = require('express');
-const { insertProducts, getAllProduct, getAllProducts, fetchProductById, getFilters, addProduct, updateProductById, deleteProductById , uploadProducts } = require('../../controllers/product/productController');
+const { insertProducts, getAllProduct, getAllProducts, recommendationProduct, fetchProductById, getFilters, addProduct, updateProductById, deleteProductById , uploadProducts } = require('../../controllers/product/productController');
 const { getBadges} = require('../../controllers/product/badgeController')
 const { uploadImage, uploadCsv } = require("../../Middleware/multerMiddleware");
 const { sellerAuthMiddleware } = require('../../Middleware/authMiddleware');
@@ -22,6 +22,8 @@ router.post('/api/insert', insertProducts);
 
 // GET route to fetch all products
 router.get('/api/products/:category', getAllProduct);
+
+router.get('/api/product/recommendations', recommendationProduct);
 
 router.get('/api/products', getAllProducts);
 
