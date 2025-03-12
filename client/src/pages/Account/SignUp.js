@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import axios from "axios";
 import { BsCheckCircleFill } from "react-icons/bs";
 import { Link, useNavigate } from "react-router-dom";
-import { FaUser, FaEnvelope, FaLock, FaCheck } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaLock, FaCheck, FaTimes } from "react-icons/fa";
 import { logoLight } from "../../assets/images";
 import { PopupMsg } from "../../components/popup/PopupMsg";
+import zxcvbn from "zxcvbn";
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -20,6 +21,39 @@ const SignUp = () => {
     type: "",
     show: false,
   });
+  const [suggestedPassword , setSuggestedPassword] = useState("")
+  const [showPasswordDialog , setShowPasswordDialog] = useState(false);
+  const [isPasswordPrompted, setIsPasswordPrompted] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+
+  const generateStrongPassword = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*_+";
+    let pwd = "";
+    for (let i = 0; i < 12; i++) {
+      pwd += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return zxcvbn(pwd).score >= 3 ? pwd : generateStrongPassword();
+  };
+
+  const handlePasswordTyping = (e) => {
+    setPassword(e.target.value);
+    setIsTyping(true);
+
+    if (!isPasswordPrompted && e.target.value.length === 1) {
+      const strongPwd = generateStrongPassword();
+      setSuggestedPassword(strongPwd);
+      setShowPasswordDialog(true);
+      setIsPasswordPrompted(true); // Ensure prompt appears only once
+    }
+  };
+
+  const handleConfirmPassword = () => {
+    setPassword(suggestedPassword);
+    setConfirmPassword(suggestedPassword);
+    navigator.clipboard.writeText(suggestedPassword); // Copy to clipboard
+    setShowPasswordDialog(false);
+    setPopup({ message: "Password copied to clipboard!", type: "success", show: true });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -170,11 +204,12 @@ const SignUp = () => {
                 type="password"
                 placeholder="Password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={handlePasswordTyping}
                 required
                 className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400"
               />
             </div>
+
             <div className="relative">
               <FaCheck className="absolute left-3 top-3 text-gray-400" />
               <input
@@ -201,6 +236,22 @@ const SignUp = () => {
           </p>
         </div>
       </div>
+      {showPasswordDialog && (
+        <div className="absolute mt-2 left-50 bg-white border shadow-md rounded-md p-3 w-64">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium text-gray-700">Try a Strong Password</span>
+            <button onClick={() => setShowPasswordDialog(false)} className="text-gray-500 hover:text-gray-700">
+              <FaTimes />
+            </button>
+          </div>
+          <div className="text-sm bg-gray-100 p-2 rounded-md text-gray-800 font-mono select-all">
+            {suggestedPassword}
+          </div>
+          <button onClick={handleConfirmPassword} className="mt-2 w-full bg-purple-600 text-white text-sm py-1.5 rounded-md hover:bg-purple-700">
+            Use
+          </button>
+        </div>
+      )}
     </div>
   );
 };
