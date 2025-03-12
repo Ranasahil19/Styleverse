@@ -50,8 +50,7 @@ const Footer = () => {
           <FooterListTitle title=" More about StyleVerse Shop" />
           <div className="flex flex-col gap-6">
             <p className="text-base w-full xl:w-[80%]">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Enim sint
-              ab ullam, numquam nesciunt in.
+              StyleVerse is a trendy online fashion store offering stylish apparel, accessories, and footwear for every occasion. Stay fashionable with the latest trends and premium-quality products! ✨🛍️
             </p>
             <ul className="flex items-center gap-2">
               <a
