@@ -16,6 +16,7 @@ import Flex from "../../designLayouts/Flex";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../../../context/AuthContext";
+import Fuse from "fuse.js";
 import * as tf from "@tensorflow/tfjs";
 import * as mobilenet from "@tensorflow-models/mobilenet";
 
@@ -32,6 +33,7 @@ const HeaderBottom = () => {
   const [allProducts, setAllProducts] = useState([]);
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [suggestedWords, setSuggestedWords] = useState([]);
   const recognitionRef = useRef(null);
   const [imagePreview, setImagePreview] = useState(null);
   const avatarRef = useRef(null);
@@ -156,8 +158,39 @@ const HeaderBottom = () => {
     return () => clearInterval(intervalId);
   }, [userId]);
 
+  const fuse = new Fuse(allProducts, {
+    keys: ["title"],
+    includeScore: true,
+    threshold: 0.3, 
+  });
+
   const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
+    const inputValue = e.target.value;
+    setSearchQuery(inputValue);
+
+    if (inputValue.trim() === "") {
+      setFilteredProducts([]);
+      setSuggestedWords([]);
+      return;
+    }
+
+    const productResults = fuse.search(inputValue).map((result) => result.item);
+    setFilteredProducts(productResults);
+
+    const matchingTitles = allProducts
+      .map((product) => product.title)
+      .filter((title) => title.toLowerCase().startsWith(inputValue.toLowerCase()));
+
+    setSuggestedWords(matchingTitles.slice(0, 5));
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && suggestedWords.length > 0) {
+      const selectedWord = suggestedWords[0];
+      setSearchQuery(selectedWord);
+      setFilteredProducts(fuse.search(selectedWord).map((result) => result.item));
+      setSuggestedWords([]);
+    }
   };
 
   const handleImageUpload = async (e) => {
@@ -191,13 +224,27 @@ const HeaderBottom = () => {
       <div className="max-w-container mx-auto">
         <Flex className="flex flex-col lg:flex-row items-start lg:items-center justify-between w-full px-4 pb-4 lg:pb-0 h-full lg:h-24">
           <div className="relative w-full lg:w-[600px] h-[50px] text-base text-primeColor bg-white flex items-center gap-2 justify-between px-6 rounded-xl">
+          <div className="relative flex-1 h-full">
+            {/* Ghost Text (Positioned Behind) */}
+            {suggestedWords.length > 0 && searchQuery && (
+              <span className="absolute top-1/2 left-0 transform -translate-y-1/2 text-gray-300 select-none pointer-events-none w-full truncate">
+                {searchQuery}
+                <span className="text-gray-200">
+                  {suggestedWords[0]?.slice(searchQuery.length)}
+                </span>
+              </span>
+            )}
+
+            {/* Input Field */}
             <input
-              className="flex-1 h-full outline-none placeholder:text-[#C4C4C4] placeholder:text-[14px]"
+              className="absolute w-full h-full outline-none bg-transparent placeholder:text-[#C4C4C4] placeholder:text-[14px] text-black z-10"
               type="text"
               onChange={handleSearch}
               value={searchQuery}
+              onKeyDown={handleKeyDown}
               placeholder="Search your products here"
             />
+          </div>
             <FaSearch className="w-5 h-5" />
             <div className="relative">
               <FaMicrophone 
@@ -225,22 +272,23 @@ const HeaderBottom = () => {
               className="hidden"
             />
             {(searchQuery.trim() !== "" || (imagePreview && filteredProducts.length > 0))  && (
-               <div
-               ref={searchDropdownRef} // Add ref here
-               className="w-full mx-auto h-96 bg-white top-16 absolute left-0 z-50 overflow-y-scroll shadow-2xl scrollbar-hide cursor-pointer"
-             >
-               {/* Close Button */}
-               <div className="flex justify-end p-2">
-                 <button
-                   onClick={() => {
-                     setFilteredProducts([]);
-                     setSearchQuery("");
-                   }}
-                   className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-700"
-                 >
-                   Close
-                 </button>
-               </div>
+                <div
+                ref={searchDropdownRef} // Add ref here
+                className="w-full mx-auto h-96 bg-white top-16 absolute left-0 z-50 overflow-y-scroll shadow-2xl scrollbar-hide cursor-pointer"
+              >
+                {/* Close Button */}
+                <div className="flex justify-end p-2">
+                  <button
+                    onClick={() => {
+                      setFilteredProducts([]);
+                      setFilteredProducts([]);
+                      setSearchQuery("");
+                    }}
+                    className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-700"
+                  >
+                    Close
+                  </button>
+                </div>
                 {filteredProducts.map((item) => (
                   <div
                     onClick={() =>
