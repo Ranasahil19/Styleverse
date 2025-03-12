@@ -7,7 +7,7 @@ import { logo } from "../../../assets/images";
 import Image from "../../designLayouts/Image";
 import { navBarList } from "../../../constants";
 import Flex from "../../designLayouts/Flex";
-import Logo from "../../../assets/images/Style_logo-Photoroom.png"
+import Logo from "../../../assets/images/LOGO.png"
 
 const Header = () => {
   const [showMenu, setShowMenu] = useState(true);

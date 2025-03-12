@@ -17,9 +17,9 @@ const addProduct = async (req, res) => {
       return res.status(400).json({ message: "Seller ID is required!" });
     }
 
-    const existingProduct = await Product.findOne({title})
-    if(existingProduct){
-      return res.status(400).json({message : "Product Already Exist"});
+    const existingProduct = await Product.findOne({ title });
+    if (existingProduct) {
+      return res.status(400).json({ message: "Product Already Exist" });
     }
 
     // Ensure an image is uploaded
@@ -82,15 +82,15 @@ const uploadProducts = async (req, res) => {
       try {
         let imageUrl = row.imageUrl;
 
-// <<<<<<< feature-branch-7
-//         // if (isBase64Image(row.imageUrl)) {
-//         //   // Upload Base64 image to Cloudinary
-//         //   const uploadResult = await uploadBase64ToCloudinary(row.imageUrl);
-//         //   imageUrl = uploadResult.secure_url;
-//         // }
+        // <<<<<<< feature-branch-7
+        //         // if (isBase64Image(row.imageUrl)) {
+        //         //   // Upload Base64 image to Cloudinary
+        //         //   const uploadResult = await uploadBase64ToCloudinary(row.imageUrl);
+        //         //   imageUrl = uploadResult.secure_url;
+        //         // }
 
-// =======
-// >>>>>>> main
+        // =======
+        // >>>>>>> main
         const product = new Product({
           sellerId: req.seller._id,
           title: row.name,
@@ -123,7 +123,12 @@ const uploadProducts = async (req, res) => {
       return res.status(404).json({ message: "Seller not found" });
     }
 
-    res.status(201).json({ message: "Products uploaded successfully", product: insertedProducts });
+    res
+      .status(201)
+      .json({
+        message: "Products uploaded successfully",
+        product: insertedProducts,
+      });
   } catch (error) {
     console.error("CSV Upload Error:", error);
     res.status(500).json({ message: "Server error" });
@@ -161,7 +166,9 @@ const updateProductById = async (req, res) => {
       });
 
       if (duplicateProduct) {
-        return res.status(400).json({ message: "Product with this title already exists" });
+        return res
+          .status(400)
+          .json({ message: "Product with this title already exists" });
       }
     }
 
@@ -228,6 +235,26 @@ const getAllProduct = async (req, res) => {
   }
 };
 
+const recommendationProduct = async (req, res) => {
+  try {
+    const { productId, category } = req.query; // ✅ Read from query params
+
+    if (!productId || !category) {
+      return res.status(400).json({ success: false, message: "Missing parameters" });
+    }
+
+    const recommendedProducts = await Product.find({
+      category: category,
+      _id: { $ne: productId } // Exclude the selected product
+    }).limit(5);
+
+    res.json({ success: true, recommendedProducts });
+  } catch (error) {
+    console.error("Error fetching recommendations:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 const getFilters = async (req, res) => {
   try {
     const categories = await Category.find();
@@ -289,6 +316,7 @@ module.exports = {
   getAllProducts,
   fetchProductById,
   getFilters,
+  recommendationProduct,
   addProduct,
   updateProductById,
   deleteProductById,
