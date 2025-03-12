@@ -16,6 +16,10 @@ import {
   Typography,
   useMediaQuery,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  DialogContent,
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
@@ -24,6 +28,7 @@ import { strengthColor, strengthIndicator } from 'utils/password-strength';
 import { useDispatch, useSelector } from 'react-redux';
 import { signSeller, resetRegistration } from 'features/registerSlice';
 import CustomSnackbar from 'component/CustomSnackbar';
+import zxcvbn from "zxcvbn";
 
 const FirebaseRegister = ({ ...others }) => {
   const theme = useTheme();
@@ -40,6 +45,9 @@ const FirebaseRegister = ({ ...others }) => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [openDialog, setOpenDialog] = useState(false); // Controls the suggestion dialog
+  const [suggestedPassword, setSuggestedPassword] = useState(''); 
+  const [dismissedWeakPassword, setDismissedWeakPassword] = useState(false);// Stores generated password
 
   const [formData, setFormData] = useState({
     userName: '',
@@ -82,17 +90,38 @@ const FirebaseRegister = ({ ...others }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-
+  
     if (name === 'password') {
       const temp = strengthIndicator(value);
       setStrength(temp);
       setLevel(strengthColor(temp));
+  
+      // Only suggest if password is at least 6 characters and still weak
+      if (value.length >= 6 && temp < 3 && !dismissedWeakPassword) {
+        const strongPwd = generateStrongPassword();
+        setSuggestedPassword(strongPwd);
+        setOpenDialog(true);
+      }
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     dispatch(signSeller(formData));
+  };
+
+  const generateStrongPassword = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*_+";
+    let pwd = "";
+    for (let i = 0; i < 12; i++) {
+      pwd += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return zxcvbn(pwd).score >= 3 ? pwd : generateStrongPassword();
+  };
+  
+  const handleCancelSuggestion = () => {
+    setDismissedWeakPassword(true); // Prevent future suggestions
+    setOpenDialog(false);
   };
 
   return (
@@ -152,6 +181,7 @@ const FirebaseRegister = ({ ...others }) => {
                 <IconButton onClick={handleClickShowPassword} onMouseDown={handleMouseDownPassword}>
                   {showPassword ? <Visibility /> : <VisibilityOff />}
                 </IconButton>
+
               </InputAdornment>
             }
           />
@@ -185,6 +215,31 @@ const FirebaseRegister = ({ ...others }) => {
 
       {/* Snackbar Notification */}
 
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Weak Password Detected</DialogTitle>
+        <DialogContent>
+          <Typography>Your password is weak. Try this strong password:</Typography>
+          <Typography sx={{ fontWeight: 'bold', mt: 1, color: 'green' }}>
+            {suggestedPassword}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelSuggestion} color="error">Cancel</Button>
+          <Button
+            onClick={() => {
+              setFormData({ ...formData, password: suggestedPassword });
+              setOpenDialog(false);
+
+              const temp = strengthIndicator(suggestedPassword);
+              setStrength(temp);
+              setLevel(strengthColor(temp));
+            }}
+            color="primary"
+          >
+            Use Suggested Password
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <CustomSnackbar open={openSnackbar} onClose={handleCloseSnackbar} severity={snackbarSeverity} message={snackbarMessage}/>
     </>
