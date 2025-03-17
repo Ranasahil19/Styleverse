@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addCategories, deleteCategories, fetchCategories, updateCategory } from 'features/categorySlice';
 import { Box, List, ListItem, ListItemText, Grid , Typography, IconButton, Button, useTheme, useMediaQuery, Dialog, DialogContent, DialogTitle, TextField, DialogActions } from "@mui/material";
-import { Add, Delete, ModeEdit, Print } from '@mui/icons-material';
+import { Add, Delete, ModeEdit } from '@mui/icons-material';
 import CustomSnackbar from 'component/CustomSnackbar';
 import { useState } from 'react';
 
@@ -101,10 +101,10 @@ const CategoriesList = () => {
         <Box sx={{ maxWidth: "auto", mx: "auto", p: 2 }}>
             
             {/* Header with Add & Print Buttons */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                <IconButton sx={{ color: '#333', '&:hover': { color: '#444' } }} onClick={() => console.log("Print Categories")}>
+            <Box sx={{ display: 'flex', justifyContent:'flex-end', mb: 2 }}>
+                {/* <IconButton sx={{ color: '#333', '&:hover': { color: '#444' } }} onClick={() => console.log("Print Categories")}>
                     <Print />
-                </IconButton>
+                </IconButton> */}
                 <Button
                     variant="contained"
                     sx={{ backgroundColor: '#333', color: 'white', '&:hover': { backgroundColor: '#444' } }}
