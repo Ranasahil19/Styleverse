@@ -187,13 +187,13 @@ const SignIn = () => {
               <p>
                 <span className="font-semibold">Feature Title {i + 1}</span>
                 <br />
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                StyleVerse is a trendy online fashion store offering stylish apparel, accessories, and footwear for every occasion. Stay fashionable with the latest trends and premium-quality products! ✨🛍️
               </p>
             </div>
           ))}
           <div className="flex items-center justify-between mt-4 w-full text-sm">
             <Link to="/" className="hover:underline">
-              © OREBI
+              © StyleVerse
             </Link>
             <Link to="#" className="hover:underline">
               Terms
