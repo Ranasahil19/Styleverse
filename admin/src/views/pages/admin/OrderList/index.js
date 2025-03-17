@@ -144,8 +144,8 @@ const OrderList = () => {
     },    
 
     {
-      field: 'actions',
-      headerName: 'Actions',
+      field: 'view',
+      headerName: 'View',
       width: 120,
       renderCell: (params) => (
         <IconButton color="primary" onClick={() => handleView(params.row)}>
