@@ -7,7 +7,7 @@ const AboutPage = () => {
   const location = useLocation();
   const [prevLocation, setPrevLocation] = useState("");
   return (
-    <div className="bg-white min-h-screen py-12 px-8 text-gray-800">
+    <div className="bg-white min-h-screen p-4 text-gray-800">
       <Breadcrumbs title="About Us" prevLocation={prevLocation} />
       {/* Header Section */}
       <motion.div

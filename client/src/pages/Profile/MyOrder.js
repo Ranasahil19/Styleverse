@@ -147,7 +147,7 @@ function MyOrder() {
   ).sort((a, b) => b - a);
 
   return (
-    <div className={`min-h-screen max-w-container mx-auto`}>
+    <div className={`min-h-screen max-w-container mx-auto p-4`}>
       <Breadcrumbs title="MyOrders" prevLocation={prevLocation} />
       <div className="max-w-6xl mx-auto px-6">
         <header className="my-2">

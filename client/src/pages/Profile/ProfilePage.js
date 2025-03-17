@@ -6,7 +6,7 @@ const ProfilePage = () => {
     const location = useLocation();
     const [prevLocation, setPrevLocation] = useState("");
   return (
-    <div className="min-h-screen max-w-container mx-auto">
+    <div className="min-h-screen max-w-container mx-auto p-4">
         <Breadcrumbs title="Profile Page" prevLocation={prevLocation} />
       <div className="max-w-7xl mx-auto px-2 py-2">
         {/* <h1 className="text-4xl font-bold text-center mb-10">Profile Page</h1> */}

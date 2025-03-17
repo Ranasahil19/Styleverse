@@ -117,7 +117,7 @@ const MyAccount = () => {
   };
 
   return (
-    <div className="min-h-screen max-w-container flex flex-col items-center justify-center mx-auto">
+    <div className="min-h-screen max-w-container flex flex-col items-center justify-center mx-auto p-4">
       <Breadcrumbs title="My Account" prevLocation={prevLocation} />
       {popup.show && <PopupMsg message={popup.message} type={popup.type} />}
       

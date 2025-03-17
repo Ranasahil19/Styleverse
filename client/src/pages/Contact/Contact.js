@@ -18,7 +18,7 @@ const ContactUs = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white p-10">
+    <div className="min-h-screen bg-white p-4">
       <Breadcrumbs title="Contact Us" prevLocation={prevLocation} />
       {/* Hero Section */}
       <div className="text-center mb-10">
