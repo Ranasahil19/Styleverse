@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { Box, Button, IconButton, useMediaQuery, Dialog, DialogTitle, DialogContent, DialogActions, Typography, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import { Visibility, Add, Print , Replay } from '@mui/icons-material';
+import { Visibility, Print , Replay } from '@mui/icons-material';
 import AddProductDialog from '../../../../component/AddProductDialog';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllProducts } from 'features/productSlice';
@@ -24,7 +24,6 @@ const ProductList = () => {
     dispatch(fetchAllProducts()); // Fetch new seller's products
   }, [dispatch]);
 
-  const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
   };
@@ -166,8 +165,8 @@ const ProductList = () => {
       )
     },
     {
-      field: 'actions',
-      headerName: 'Actions',
+      field: 'view',
+      headerName: 'View',
       width: isMobile ? 120 : 150,
       renderCell: (params) => (
         <Box>
@@ -231,21 +230,6 @@ const ProductList = () => {
           }}
         >
           <Replay />Reset
-        </Button>
-
-        <Button
-          variant="contained"
-          sx={{
-            backgroundColor: '#333',
-            color: 'white',
-            '&:hover': { backgroundColor: '#444' },
-            fontSize: '0.9rem',
-            px: 2,
-            minWidth: 150,
-          }}
-          onClick={handleOpen}
-        >
-          <Add fontSize="small" />Add product
         </Button>
       </Box>
 

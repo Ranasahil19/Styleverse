@@ -113,7 +113,7 @@ const SignUp = () => {
             <img src={logoLight} alt="Logo" className="w-32 mb-4" />
           </Link>
           <h2 className="text-2xl font-semibold mb-4">
-            Welcome to OREBI!
+            Welcome to StyleVerse!
           </h2>
           <p className="text-base mb-6">
             Create your account to explore our services and get started.
