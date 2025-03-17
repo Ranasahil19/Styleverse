@@ -275,7 +275,7 @@ const Cart = () => {
               onChange={handleCouponChange}
               defaultValue=""
             >
-              <option value="" disabled>Select a Coupon</option>
+              <option value="">Select a Coupon</option>
               {coupons.map((coupon, index) => (
                 <option key={index} value={coupon.code}>
                   {coupon.code} ({coupon.type === "flat" ? `$${coupon.discount}` : `${coupon.discount}%`}) (Min: ${coupon.minPurchase})
