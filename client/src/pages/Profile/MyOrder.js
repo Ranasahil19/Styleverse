@@ -163,7 +163,7 @@ function MyOrder() {
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="px-4 py-2 border rounded-lg shadow-sm bg-white text-gray-700 focus:ring focus:outline-none"
+            className="px-4 py-2 hover:cursor-pointer border rounded-lg shadow-sm bg-white text-gray-700 focus:ring focus:outline-none"
           >
             <option value="last 30 days">Last 30 Days</option>
             <option value="past 3 months">Past 3 Months</option>
@@ -195,7 +195,9 @@ function MyOrder() {
                       </p>
                       <p className="text-sm text-gray-500">
                         Total:{" "}
-                        <span className="font-medium">${(order.totalPrice).toFixed(2)}</span>
+                        <span className="font-medium">
+                          ${order.totalPrice.toFixed(2)}
+                        </span>
                       </p>
                       <p className="text-sm text-gray-500">
                         Ship To: {user.username}
@@ -231,12 +233,19 @@ function MyOrder() {
                         </Link>
                       </div>
                       <div className="relative">
-                        <button
-                          className="text-blue-600 hover:underline text-sm focus:outline-none"
-                          onClick={() => handleInvoiceClick(order._id)}
-                        >
-                          Invoice ▼
-                        </button>
+                        {order.status === "Delivered" ? (
+                          <button
+                            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
+                            onClick={() => handleInvoiceClick(order._id)}
+                          >
+                            Invoice ▼
+                          </button>
+                        ) : (
+                          <p className="text-red-500 text-sm">
+                            Invoice available after delivery
+                          </p>
+                        )}
+
                         {activeDropdown === order._id && (
                           <div className="absolute right-0 mt-2 w-32 bg-white border rounded-lg shadow-lg text-gray-700">
                             {loadingInvoice === order._id ? (

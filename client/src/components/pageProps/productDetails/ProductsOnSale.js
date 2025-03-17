@@ -1,23 +1,24 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 const ProductsOnSale = ({ productInfo }) => {
   const [recommendedProducts, setRecommendedProducts] = useState([]);
 
-  
   const fetchRecommendedProducts = async () => {
     try {
       const response = await axios.get(
         `http://localhost:5000/api/product/recommendations`,
         {
-          params: { // ✅ Send as query parameters
+          params: {
+            // ✅ Send as query parameters
             productId: productInfo._id,
-            category: productInfo.category
-          }
+            category: productInfo.category,
+          },
         }
       );
-      console.log("Product on Sale", response.data)
-      
+      console.log("Product on Sale", response.data);
+
       if (response.data.success) {
         setRecommendedProducts(response.data.recommendedProducts);
       }
@@ -31,7 +32,7 @@ const ProductsOnSale = ({ productInfo }) => {
       fetchRecommendedProducts();
     }
   }, [productInfo]);
-  
+
   return (
     <div className="overflow-hidden">
       <h3 className="font-titleFont text-xl font-semibold mb-6 underline underline-offset-4 decoration-[1px]">
@@ -42,14 +43,31 @@ const ProductsOnSale = ({ productInfo }) => {
           recommendedProducts.map((item) => (
             <div
               key={item._id}
-              className="flex items-center gap-4 h-28 border-b-[1px] border-b-gray-300 py-2"
+              className="flex items-center gap-4 h-32 border-b border-gray-300 py-2"
             >
-              <div>
-                <img className="w-24" src={item.image} alt={item.title} />
+              {/* Product Image */}
+              <div className="w-24 h-24">
+                <img
+                  className="w-full h-full object-cover rounded-md"
+                  src={item.image}
+                  alt={item.title}
+                />
               </div>
-              <div className="flex flex-col gap-2 font-titleFont">
+
+              {/* Product Details */}
+              <div className="flex flex-col justify-between h-full">
                 <p className="text-base font-medium">{item.title}</p>
-                <p className="text-sm font-semibold">${item.price}</p>
+                <p className="text-sm font-semibold text-green-600">
+                  ${item.price}
+                </p>
+
+                {/* View Details Button */}
+                <Link
+                  to={`/products/${item._id}`}
+                  className="bg-blue-500 text-white px-4 py-1 rounded-md hover:bg-blue-600 transition duration-300 text-center w-fit"
+                >
+                  View Details
+                </Link>
               </div>
             </div>
           ))
