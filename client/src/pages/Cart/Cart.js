@@ -326,7 +326,7 @@ const Cart = () => {
                 <p className="flex items-center justify-between border-[1px] border-gray-400 border-b-0 py-1.5 text-lg px-4 font-medium">
                   Subtotal
                   <span className="font-semibold tracking-wide font-titleFont">
-                    ${totalAmt.toFixed(2)}
+                    ${originalTotalAmt.toFixed(2)}
                   </span>
                 </p>
                 {couponApplied && (<p className="flex items-center justify-between border-[1px] border-gray-400 border-b-0 py-1.5 text-lg px-4 font-medium">
