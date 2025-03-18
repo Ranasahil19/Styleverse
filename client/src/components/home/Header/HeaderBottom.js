@@ -35,7 +35,7 @@ const HeaderBottom = () => {
   const [isListening, setIsListening] = useState(false);
   const [suggestedWords, setSuggestedWords] = useState([]);
   const recognitionRef = useRef(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  // const [imagePreview, setImagePreview] = useState(null);
   const avatarRef = useRef(null);
   const searchDropdownRef = useRef(null); // Ref for dropdown
 
@@ -193,24 +193,24 @@ const HeaderBottom = () => {
     }
   };
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // const handleImageUpload = async (e) => {
+  //   const file = e.target.files[0];
+  //   if (!file) return;
   
-    setImagePreview(URL.createObjectURL(file)); 
-    setFilteredProducts([]); // Show preview
+  //   setImagePreview(URL.createObjectURL(file)); 
+  //   setFilteredProducts([]); // Show preview
     
-    try {
-        let vector = null
-        // Send vector to backend
-        const response = await axios.post("http://localhost:5000/search-product", { vector });
+  //   try {
+  //       let vector = null
+  //       // Send vector to backend
+  //       const response = await axios.post("http://localhost:5000/search-product", { vector });
         
-        console.log(response.data)
-        setFilteredProducts(response.data);
-    } catch (error) {
-      console.error("Error processing image:", error);
-    }
-  };
+  //       console.log(response.data)
+  //       setFilteredProducts(response.data);
+  //   } catch (error) {
+  //     console.error("Error processing image:", error);
+  //   }
+  // };
 
   useEffect(() => {
     const filtered = allProducts.filter((item) =>
@@ -261,7 +261,7 @@ const HeaderBottom = () => {
                 />
               )}
             </div>
-            <label htmlFor="file-upload" className="cursor-pointer">
+            {/* <label htmlFor="file-upload" className="cursor-pointer">
               <FaCamera className="w-5 h-5 text-gray-500" />
             </label>
             <input
@@ -270,8 +270,8 @@ const HeaderBottom = () => {
               accept="image/*"
               onChange={handleImageUpload}
               className="hidden"
-            />
-            {(searchQuery.trim() !== "" || (imagePreview && filteredProducts.length > 0))  && (
+            /> */}
+            {(searchQuery.trim() !== "" ) && (
                 <div
                 ref={searchDropdownRef} // Add ref here
                 className="w-full mx-auto h-96 bg-white top-16 absolute left-0 z-50 overflow-y-scroll shadow-2xl scrollbar-hide cursor-pointer"
