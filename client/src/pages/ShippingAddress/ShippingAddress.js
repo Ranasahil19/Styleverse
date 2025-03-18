@@ -130,19 +130,7 @@ totalPrice = Number(totalPrice) + Number(shippingCharge);
       );
 
       const { sessionId, paymentId } = stripeResponse.data;
-
-      // Save the order data after payment session is created
-      // await axios.post("http://localhost:5000/api/checkout", {
-      //   userId,
-      //   cartItems,
-      //   totalPrice,
-      //   shippingAddress,
-      //   paymentId,
-      // });
-
-      // Clear the cart
-      clearCart();
-
+      
       // Finalize payment
       await axios.post("http://localhost:5000/api/finalize-payment", {
         sessionId: sessionId,

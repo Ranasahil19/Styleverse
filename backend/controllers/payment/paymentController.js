@@ -1,4 +1,5 @@
 const Payment = require("../../models/payment");
+const Cart = require("../../models/cart");
 const stripe = require("stripe")(
   "sk_test_51QYRRtKgiwXQrp00BdABYu1SFipnpTtxYt8dV8BLALhh9SlndFOFiZG75bxEqzP02smfjk0svjmKsoS8fhQnLJb100BntIVL6Y"
 );
@@ -77,6 +78,10 @@ const endpointSecret =
         });
   
         console.log("Order placed successfully after payment");
+
+        // Clear the cart
+        await Cart.deleteMany({ userId });
+        console.log("Cart cleared successfully for user:", userId);
   
         // Send Email Notification to User
         await sendOrderConfirmationEmail(
@@ -211,7 +216,9 @@ exports.createPayment = async (req, res) => {
     // Calculate the total price of products before discount
     const originalTotal = products.reduce((sum, product) => sum + product.price * product.quantity, 0);
 
-    const finalTotalPrice = discount > 0 ? totalPrice : originalTotal
+    const withoutShippingCharge = totalPrice - shippingCharge/100;
+
+    const finalTotalPrice = discount > 0 ? withoutShippingCharge : originalTotal
 
     // Map products into Stripe line items with adjusted unit prices
     const lineItems = products.map((product) => ({
@@ -269,7 +276,7 @@ exports.createPayment = async (req, res) => {
       sessionId: session.id,
       transactionId: uuidv4(),
       paymentMethod,
-      totalPrice: finalTotalPrice, // Store the correct total
+      totalPrice: finalTotalPrice+(shippingCharge/100), // Store the correct total
       discount,
       status: "pending",
       shippingAddress: {
