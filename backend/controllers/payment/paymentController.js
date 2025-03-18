@@ -1,4 +1,5 @@
 const Payment = require("../../models/payment");
+const Cart = require("../../models/cart");
 const stripe = require("stripe")(
   "sk_test_51QYRRtKgiwXQrp00BdABYu1SFipnpTtxYt8dV8BLALhh9SlndFOFiZG75bxEqzP02smfjk0svjmKsoS8fhQnLJb100BntIVL6Y"
 );
@@ -77,6 +78,10 @@ const endpointSecret =
         });
   
         console.log("Order placed successfully after payment");
+
+        // Clear the cart
+        await Cart.deleteMany({ userId });
+        console.log("Cart cleared successfully for user:", userId);
   
         // Send Email Notification to User
         await sendOrderConfirmationEmail(
@@ -269,7 +274,7 @@ exports.createPayment = async (req, res) => {
       sessionId: session.id,
       transactionId: uuidv4(),
       paymentMethod,
-      totalPrice: finalTotalPrice, // Store the correct total
+      totalPrice: finalTotalPrice+shippingCharge, // Store the correct total
       discount,
       status: "pending",
       shippingAddress: {
