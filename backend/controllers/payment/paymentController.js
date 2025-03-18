@@ -216,7 +216,9 @@ exports.createPayment = async (req, res) => {
     // Calculate the total price of products before discount
     const originalTotal = products.reduce((sum, product) => sum + product.price * product.quantity, 0);
 
-    const finalTotalPrice = discount > 0 ? totalPrice : originalTotal
+    const withoutShippingCharge = totalPrice - shippingCharge/100;
+
+    const finalTotalPrice = discount > 0 ? withoutShippingCharge : originalTotal
 
     // Map products into Stripe line items with adjusted unit prices
     const lineItems = products.map((product) => ({
@@ -274,7 +276,7 @@ exports.createPayment = async (req, res) => {
       sessionId: session.id,
       transactionId: uuidv4(),
       paymentMethod,
-      totalPrice: finalTotalPrice+shippingCharge, // Store the correct total
+      totalPrice: finalTotalPrice+(shippingCharge/100), // Store the correct total
       discount,
       status: "pending",
       shippingAddress: {
