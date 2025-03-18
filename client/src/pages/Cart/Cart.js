@@ -271,7 +271,7 @@ const Cart = () => {
           <div className="flex flex-col md:flex-row items-center gap-4 w-full p-4 border border-gray-300 rounded-md bg-white">
             {/* Dropdown List */}
             <select
-              className="w-full md:w-52 h-10 px-4 border text-primeColor text-sm outline-none border-gray-400 rounded-md"
+              className="w-full md:w-52 sm:w-50 h-10 px-4 border text-primeColor text-sm outline-none border-gray-400 rounded-md"
               onChange={handleCouponChange}
               defaultValue=""
             >
@@ -285,13 +285,13 @@ const Cart = () => {
 
             {/* Coupon Details Card (Responsive) */}
             {selectedCoupon && (
-              <div className="border p-3 rounded-lg bg-gray-100 text-gray-700 w-full md:w-60 flex flex-col items-center">
-                <h3 className="font-bold text-xs text-primeColor border border-dashed border-gray-500 px-4 py-1">
+              <div className="border p-3 rounded-lg bg-gray-100 text-gray-700 w-full md:w-80 flex flex-col items-center">
+                <h3 className="font-bold text-lg text-primeColor border border-dashed bg-white border-gray-500 px-4 py-1 w-full text-center">
                   {selectedCoupon.code}
                 </h3>
-                <p className="text-xs"><strong>Discount:</strong> {selectedCoupon.type === "flat" ? `$${selectedCoupon.discount}` : `${selectedCoupon.discount}%`}</p>
-                <p className="text-xs"><strong>Min Purchase:</strong> ${selectedCoupon.minPurchase}</p>
-                <p className="text-xs"><strong>Max Discounts:</strong>${selectedCoupon.maxDiscount}</p>
+                <p className="text-sm mt-2"><strong>Discount:</strong> {selectedCoupon.type === "flat" ? `$${selectedCoupon.discount}` : `${selectedCoupon.discount}%`}</p>
+                <p className="text-sm"><strong>Min Purchase:</strong> ${selectedCoupon.minPurchase}</p>
+                <p className="text-sm"><strong>Max Discounts:</strong>${selectedCoupon.maxDiscount}</p>
               </div>
             )}
 
@@ -329,6 +329,12 @@ const Cart = () => {
                     ${totalAmt.toFixed(2)}
                   </span>
                 </p>
+                {couponApplied && (<p className="flex items-center justify-between border-[1px] border-gray-400 border-b-0 py-1.5 text-lg px-4 font-medium">
+                  discount Amount
+                  <span className="font-semibold tracking-wide font-titleFont">
+                    ${discountAmt.toFixed(2)}
+                  </span>
+                </p>)}
                 <p className="flex items-center justify-between border-[1px] border-gray-400 border-b-0 py-1.5 text-lg px-4 font-medium">
                   Shipping Charge
                   <span className="font-semibold tracking-wide font-titleFont">
