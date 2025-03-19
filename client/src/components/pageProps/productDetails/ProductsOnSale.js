@@ -58,7 +58,7 @@ const ProductsOnSale = ({ productInfo }) => {
               {/* ✅ Product Details (Aligned to Right) */}
               <div className="flex flex-col justify-center flex-grow">
                 <p className="text-base font-medium truncate sm:truncate sm:w-[200px] w-[100px]">
-                  {item.title}
+                  {`${item.title.slice(0,10)}...`}
                 </p>
                 <p className="text-sm font-semibold text-green-600 mt-1">
                   ${item.price}
