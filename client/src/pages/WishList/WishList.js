@@ -64,7 +64,7 @@ function WishList() {
               <Link to={`/products/${product._id}`}>
                 <img src={product.image} alt={product.title} className="w-full h-44 object-contain rounded-md" />
                 <h3 className="text-lg font-semibold mt-2">{`${product.title.slice(0, 20)}...`}</h3>
-                <p className="text-gray-600">₹{product.price}</p>
+                <p className="text-gray-600">${product.price}</p>
               </Link>
 
               <button
