@@ -30,6 +30,7 @@ import MyOrder from "./pages/Profile/MyOrder";
 import OrderDetails from "./pages/OrderDetails/OrderDetails";
 import ForgotPassword from "./pages/Account/ForgotPassword";
 import ResetPassword from "./pages/Account/ResetPassword";
+import WishList from "./pages/WishList/WishList";
 
 const Layout = () => {
   return (
@@ -63,6 +64,7 @@ const router = createBrowserRouter(
         <Route path="/products/:id" element={<ProductDetails />}></Route>
         <Route path="/orders-details/:orderId" element={<OrderDetails />}></Route>
         <Route path="/cart" element={<Cart />}></Route>
+        <Route path="/wishlist" element={<WishList />}></Route>
         {/* <Route path="/paymentgateway" element={<Payment />}></Route> */}
       </Route>
       <Route path="/signup" element={<SignUp />}></Route>
