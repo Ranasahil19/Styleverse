@@ -37,7 +37,6 @@ const HeaderBottom = () => {
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [suggestedWords, setSuggestedWords] = useState([]);
-  const wishlistProducts = useSelector((state) => state.orebiReducer?.wishlistProducts || []);
   const recognitionRef = useRef(null);
   // const [imagePreview, setImagePreview] = useState(null);
   const avatarRef = useRef(null);
@@ -419,9 +418,6 @@ const HeaderBottom = () => {
             <Link to="/wishlist">
               <div className="relative">
                 <FaHeart />
-                <span className="absolute font-titleFont top-3 -right-2 text-xs w-4 h-4 flex items-center justify-center rounded-full bg-primeColor text-white">
-                  {wishlistProducts.length}
-                </span>
               </div>
             </Link>
             <Link to="/cart">
