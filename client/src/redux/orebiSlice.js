@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   userInfo: [],
   products: [],
+  wishlistProducts: [],
 };
 
 export const orebiSlice = createSlice({
@@ -47,6 +48,21 @@ export const orebiSlice = createSlice({
     resetCart: (state) => {
       state.products = [];
     },
+    setWishlist: (state, action) => {
+      state.wishlistProducts = action.payload;
+    },
+    addToWishlist : (state , action)=> {
+      const exists = state.wishlistProducts.find((item) => item._id === action.payload._id);
+      if(!exists){
+        state.wishlistProducts.push(action.payload);
+      }
+    },
+    removeFromWishList : (state , action) => {
+      state.wishlistProducts = state.wishlistProducts.filter((item) => item._id !== action.payload)
+    },
+    resetWishlist: (state) => {
+      state.wishlistProducts = [];
+    },
   },
 });
 
@@ -56,5 +72,9 @@ export const {
   drecreaseQuantity,
   deleteItem,
   resetCart,
+  addToWishlist,
+  removeFromWishList,
+  resetWishlist,
+  setWishlist,
 } = orebiSlice.actions;
 export default orebiSlice.reducer;
