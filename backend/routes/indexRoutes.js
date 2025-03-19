@@ -11,6 +11,7 @@ const adminRoutes = require('./admin/adminRoutes');
 const sellerRoutes = require('./seller/sellerAuthRoutes')
 const notificationRoutes = require('./notification/notificationRoutes')
 const couponRoutes = require('./coupon/couponRoutes')
+const wishlistRoutes = require('./wishlist/wishlistRoutes')
 
 
 const router = express.Router();
@@ -28,5 +29,6 @@ router.use('/', adminRoutes);
 router.use('/', sellerRoutes);
 router.use('/api/notifications',notificationRoutes);
 router.use('/', couponRoutes);
+router.use('/' , wishlistRoutes)
 
 module.exports = router
