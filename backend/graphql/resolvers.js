@@ -35,7 +35,34 @@ const resolvers = {
         console.error("Error fetching orders:", error);
         throw new Error("Error fetching orders");
       }
-    },    
+    },   
+    
+    order: async (_, { sellerId }) => {
+      try {
+        const orders = await Order.find({ "items.sellerId": sellerId });
+        const sellerOrders = orders.map((order) => {
+          const sellerItems = order.items.filter(
+            (item) => item.sellerId.toString() === sellerId
+          );
+          
+          const sellerTotalPrice = sellerItems.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+          );
+    
+          return {
+            _id: order._id,
+            totalPrice: sellerTotalPrice, // Only sum up this seller's products
+            createdAt: order.createdAt,// Now a string
+          };
+        });
+    
+        return sellerOrders;
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        throw new Error("Error fetching orders");
+      }
+    },
     // Get Seller Orders
     seller: async (_, { sellerId }) => {
       try {
