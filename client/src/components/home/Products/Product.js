@@ -235,8 +235,8 @@ import { MdOutlineLabelImportant } from "react-icons/md";
 import Image from "../../designLayouts/Image";
 import Badge from "./Badge";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { addToCart } from "../../../redux/orebiSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { addToCart, addToWishlist, removeFromWishList } from "../../../redux/orebiSlice";
 import axios from "axios";
 import { AuthContext } from "../../../context/AuthContext";
 import { CartPopup } from "../../popup/PopupMsg";
@@ -254,14 +254,20 @@ const Product = (props) => {
   const canvasRef = useRef(null);
   const productInfo = props;
   const [showPopup, setShowPopup] = useState(false);
-  const socket = io("http://127.0.0.1:5000");
+  const wishlistProducts = useSelector((state) => state.orebiReducer?.wishlistProducts || []);
+  let tryOnSocket;
+  const startTryOnSocket = () => {
+    if (!tryOnSocket) {
+      tryOnSocket = io("http://127.0.0.1:5000");
+    }
+  };
 
   const handleProductDetails = () => {
     navigate(`/products/${props._id}`, {
       state: { item: productInfo },
     });
   };
-
+  
   const handleAddToCart = async () => {
     try {
       const response = await axios.post("http://localhost:5000/api/cart", {
@@ -355,20 +361,21 @@ const Product = (props) => {
     }
 
     try {
+      startTryOnSocket()
       const productImageBase64 = await getBase64FromUrl(props.image);
-      socket.emit("tryon_request", {
+      tryOnSocket.emit("tryon_request", {
         userImage: userImageBase64,
         productImage: productImageBase64,
         category: props.category,
       });
 
-      socket.on("tryon_result", (data) => {
+      tryOnSocket.on("tryon_result", (data) => {
         if (data.resultImage) {
           setTryOnImage(data.resultImage);
         }
       })
       
-      socket.on("tryon_error", (error) => {
+      tryOnSocket.on("tryon_error", (error) => {
         console.error("Try-on error:", error);
       });
     } catch (error) {
@@ -386,7 +393,44 @@ const Product = (props) => {
     };
   }, [videoStream]);
 
+  const handleAddToWishList = async () => {
+    if(!isLoggedIn){
+      return alert("Please log in to add items to the wishlist.");
+    }
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/wishlist/add",
+        { 
+          productId: props._id ,
+          userId: user.userId
+        },
+        { withCredentials: true } // Ensure cookies are sent for authentication
+      );
+      if (response.data.success) {
+        dispatch(addToWishlist(props));
+      }
+    } catch (error) {
+      console.error("Error adding to wishlist:", error);
+    }
+  }
 
+  const handleRemoveFromWishList =async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/wishlist/remove",
+        { 
+          productId: props._id,
+          userId: user.userId
+        },
+        { withCredentials: true }
+      );
+      if (response.data.success) {
+        dispatch(removeFromWishList(props._id));
+      }
+    } catch (error) {
+      console.error("Error removing from wishlist:", error);
+    }
+  }
   return (
     <div className="w-full relative group border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-xl transition duration-300">
       <div className="max-w-80 relative overflow-hidden">
@@ -410,11 +454,15 @@ const Product = (props) => {
           <button onClick={handleProductDetails} className="flex items-center gap-2 text-sm text-gray-700 hover:text-purple-600 transition duration-300">
             View Details <MdOutlineLabelImportant />
           </button>
-          <button className="flex items-center gap-2 text-sm text-gray-700 hover:text-pink-600 transition duration-300">
-            Add to Wish List <BsSuitHeartFill />
+          <button
+            onClick={wishlistProducts.some((item) => item._id === props._id) ? handleRemoveFromWishList : handleAddToWishList}
+            className="flex items-center gap-2 text-sm text-gray-700 hover:text-pink-600 transition duration-300"
+          >
+            {wishlistProducts.some((item) => item._id === props._id) ? "Remove from Wishlist" : "Add to Wishlist"}
+            <BsSuitHeartFill />
           </button>
         </div>
-      </div>
+      </div>  
 
       {/* Product Info */}
       <div className="py-4 text-center">
