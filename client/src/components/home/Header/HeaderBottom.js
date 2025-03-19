@@ -11,6 +11,7 @@ import {
   FaMicrophone,
   FaUserPlus,
   FaCamera,
+  FaHeart,
 } from "react-icons/fa";
 import Flex from "../../designLayouts/Flex";
 import { Link, useNavigate } from "react-router-dom";
@@ -19,6 +20,8 @@ import { AuthContext } from "../../../context/AuthContext";
 import Fuse from "fuse.js";
 import * as tf from "@tensorflow/tfjs";
 import * as mobilenet from "@tensorflow-models/mobilenet";
+import { useDispatch, useSelector } from "react-redux";
+import { resetWishlist } from "../../../redux/orebiSlice";
 
 const HeaderBottom = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -34,11 +37,12 @@ const HeaderBottom = () => {
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [suggestedWords, setSuggestedWords] = useState([]);
+  const wishlistProducts = useSelector((state) => state.orebiReducer?.wishlistProducts || []);
   const recognitionRef = useRef(null);
   // const [imagePreview, setImagePreview] = useState(null);
   const avatarRef = useRef(null);
   const searchDropdownRef = useRef(null); // Ref for dropdown
-
+  const dispatchh = useDispatch();
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -80,6 +84,7 @@ const HeaderBottom = () => {
   };
 
   const handleLogout = () => {
+    dispatchh(resetWishlist())
     dispatch({
       type: "LOGOUT",
     });
@@ -411,7 +416,14 @@ const HeaderBottom = () => {
                 </div>
               )}
             </div>
-
+            <Link to="/wishlist">
+              <div className="relative">
+                <FaHeart />
+                <span className="absolute font-titleFont top-3 -right-2 text-xs w-4 h-4 flex items-center justify-center rounded-full bg-primeColor text-white">
+                  {wishlistProducts.length}
+                </span>
+              </div>
+            </Link>
             <Link to="/cart">
               <div className="relative">
                 <FaShoppingCart />
@@ -420,6 +432,7 @@ const HeaderBottom = () => {
                 </span>
               </div>
             </Link>
+            
           </div>
         </Flex>
       </div>
