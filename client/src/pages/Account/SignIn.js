@@ -179,7 +179,7 @@ const SignIn = () => {
           </Link>
           <h1 className="text-2xl font-bold mb-2">Stay signed in for more</h1>
           <p className="text-sm mb-6">When you sign in, you are with us!</p>
-          {[...Array(3)].map((_, i) => (
+          {[...Array(1)].map((_, i) => (
             <div key={i} className="flex items-start gap-3 mb-4">
               <span className="text-green-500">
                 <BsCheckCircleFill />
