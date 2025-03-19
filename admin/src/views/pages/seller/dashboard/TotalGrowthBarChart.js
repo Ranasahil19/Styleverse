@@ -25,8 +25,8 @@ const TotalGrowthBarChart = ({ isLoading }) => {
   const { loading, error, data } = useSellerDashboard(sellerId);
 
   useEffect(() => {
-    if (data && data.orders) {
-      const orders = data.orders;
+    if (data && data.order) {
+      const orders = data.order;
   
       // Initialize months with zero revenue
       const allMonths = Array.from({ length: 12 }, (_, index) => ({
