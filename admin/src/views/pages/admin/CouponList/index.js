@@ -226,7 +226,8 @@ const CouponManage = () => {
                             name="expiryDate"
                             fullWidth
                             margin="dense"
-                            value={coupon.expiryDate}
+                            InputLabelProps={{ shrink: true }}
+                            value={coupon.expiryDate || ""}
                             onChange={handleInputChange}
                             error={!!formErrors.expiryDate}
                             helperText={formErrors.expiryDate}
