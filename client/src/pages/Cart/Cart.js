@@ -17,7 +17,7 @@ const Cart = () => {
   const [originalTotalAmt, setOriginalTotalAmt] = useState(0);
   const [ cartItems, setCartItems ] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [coupons , setCoupons] = useState({});
+  const [coupons , setCoupons] = useState([]);
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [couponApplied, setCouponApplied] = useState(false);
   const { state } = useContext(AuthContext);
