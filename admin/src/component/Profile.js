@@ -21,7 +21,7 @@ const SellerProfile = () => {
                 alignItems: "center", 
                 height: "100vh", 
                 px: 2, 
-                background: "linear-gradient(to right, #1e3c72, #2a5298)",
+                
             }}
         >
             <Card sx={{ maxWidth: 500, width: "100%", borderRadius: 3, boxShadow: 3, backgroundColor: "white" }}>
