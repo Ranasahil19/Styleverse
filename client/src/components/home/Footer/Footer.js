@@ -146,7 +146,7 @@ const Footer = () => {
           <FooterListTitle title="Subscribe to our newsletter." />
           <div className="w-full">
             <p className="text-center mb-4">
-              A at pellentesque et mattis porta enim elementum.
+            Subscribe to our newsletter for the latest updates and exclusive offers!
             </p>
             {subscription ? (
               <motion.p
