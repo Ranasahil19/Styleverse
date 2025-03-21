@@ -93,7 +93,18 @@ const CouponManage = () => {
             setSnackbar({ open: true, message: "Coupon Created successfully" });
             handleClose();
         } catch (error) {
+            
             console.error("Error saving coupon", error);
+            let errorMessage = "Something went wrong";
+            if (typeof error === "string") {
+                errorMessage = error; // Direct string error
+            } else if (error?.error) {
+                errorMessage = error.error; // Your case: { error: 'Coupon code already exists' }
+            } else if (error?.message) {
+                errorMessage = error.message;
+            }
+    
+            setSnackbar({ open: true, message: errorMessage, severity: "error" });
         }
     };
 

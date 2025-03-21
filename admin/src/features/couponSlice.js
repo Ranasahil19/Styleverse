@@ -51,6 +51,9 @@ const couponSlice = createSlice({
                 state.loading = false;
                 state.coupons.push(action.payload);
             })
+            .addCase(createCoupon.rejected, (state) => {
+                state.loading = false;
+            })
             .addCase(deleteCoupon.pending, (state ) => {
                 state.loading = true;
             })
