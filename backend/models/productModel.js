@@ -13,7 +13,8 @@ const productSchema = new mongoose.Schema({
     default: "Popular",
   },
   quantity: { type: Number, required: true },
-  sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller", required: true }, // Ensure sellerId is required and correctly referenced
+  sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller", required: true },
+  vector : {type : [Number]} // Ensure sellerId is required and correctly referenced
 }, { timestamps: true }); // Add timestamps for createdAt & updatedAt
 
 // Create the Product model
