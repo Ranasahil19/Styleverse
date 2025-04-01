@@ -279,6 +279,15 @@ const SignIn = () => {
                 >
                   {canLoginAgain ? "Sign In" : "Account Locked"}
                 </button>
+                <p className="text-sm text-center mt-4">
+                    Not registered?{" "}
+                    <Link
+                      to="/signup"
+                      className="text-purple-600 hover:underline"
+                    >
+                      Sign Up
+                    </Link>
+                  </p>
               </form>
               {lockTime && hasAttemptedLogin && (
                 <p className="text-red-500 text-center mt-4">

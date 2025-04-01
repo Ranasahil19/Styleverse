@@ -197,6 +197,8 @@ const resolvers = {
             );
           }, 0);
 
+          console.log(sellerTotal);
+
           sellerTotalEarnings += sellerTotal;
         }
 
@@ -207,7 +209,7 @@ const resolvers = {
         );
 
         // Admin's income = Total Revenue - Sellers' earnings
-        const adminIncome = totalRevenue - sellerTotalEarnings;
+        const adminIncome = sellerTotalEarnings - totalRevenue;
 
         console.log("Total Revenue:", totalRevenue);
         console.log("Seller Total Earnings:", sellerTotalEarnings);
