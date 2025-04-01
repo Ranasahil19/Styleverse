@@ -11,7 +11,9 @@ const adminRoutes = require('./admin/adminRoutes');
 const sellerRoutes = require('./seller/sellerAuthRoutes')
 const notificationRoutes = require('./notification/notificationRoutes')
 const couponRoutes = require('./coupon/couponRoutes')
-const wishlistRoutes = require('./wishlist/wishlistRoutes')
+const wishlistRoutes = require('./wishlist/wishlistRoutes');
+const { searchByImage } = require('../controllers/search/searchController');
+const { uploadImage } = require('../Middleware/multerMiddleware');
 
 
 const router = express.Router();
@@ -30,5 +32,6 @@ router.use('/', sellerRoutes);
 router.use('/api/notifications',notificationRoutes);
 router.use('/', couponRoutes);
 router.use('/' , wishlistRoutes)
+router.use('/search-product', uploadImage,searchByImage)
 
 module.exports = router
