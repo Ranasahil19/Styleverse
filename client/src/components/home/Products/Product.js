@@ -451,9 +451,6 @@ const Product = (props) => {
           <button onClick={handleAddToCart} className="flex items-center gap-2 text-sm text-gray-700 hover:text-green-600 transition duration-300">
             Add to Cart <FaShoppingCart />
           </button>
-          <button onClick={handleProductDetails} className="flex items-center gap-2 text-sm text-gray-700 hover:text-purple-600 transition duration-300">
-            View Details <MdOutlineLabelImportant />
-          </button>
           <button
             onClick={wishlistProducts.some((item) => item._id === props._id) ? handleRemoveFromWishList : handleAddToWishList}
             className="flex items-center gap-2 text-sm text-gray-700 hover:text-pink-600 transition duration-300"
@@ -465,7 +462,7 @@ const Product = (props) => {
       </div>  
 
       {/* Product Info */}
-      <div className="py-4 text-center">
+      <div className="py-4 text-center cursor-pointer" onClick={handleProductDetails}>
         <h2 className="text-lg font-bold text-gray-900">{props.title.slice(0, 20)}...</h2>
         <p className="text-sm text-gray-600">${props.price}</p>
       </div>
