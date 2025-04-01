@@ -22,8 +22,9 @@ import * as tf from "@tensorflow/tfjs";
 import * as mobilenet from "@tensorflow-models/mobilenet";
 import { useDispatch, useSelector } from "react-redux";
 import { resetWishlist } from "../../../redux/orebiSlice";
+import ProductSearch from "../../AiProductSearch/productSearch";
 
-const HeaderBottom = () => {
+const HeaderBottom = ({setSearchResults}) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
@@ -38,6 +39,7 @@ const HeaderBottom = () => {
   const [isListening, setIsListening] = useState(false);
   const [suggestedWords, setSuggestedWords] = useState([]);
   const recognitionRef = useRef(null);
+  const [isSearchModalOpen , setIsSearchModalOpen] = useState(false);
   // const [imagePreview, setImagePreview] = useState(null);
   const avatarRef = useRef(null);
   const searchDropdownRef = useRef(null); // Ref for dropdown
@@ -227,7 +229,7 @@ const HeaderBottom = () => {
     <div className="w-full bg-[#F5F5F3] relative">
       <div className="max-w-container mx-auto">
         <Flex className="flex flex-col lg:flex-row items-start lg:items-center justify-between w-full px-4 pb-4 lg:pb-0 h-full lg:h-24">
-          <div className="relative w-full lg:w-[600px] h-[50px] text-base text-primeColor bg-white flex items-center gap-2 justify-between px-6 rounded-xl">
+          <div className="relative w-full lg:w-[700px] h-[50px] text-base text-primeColor bg-white flex items-center gap-2 justify-between px-6 rounded-xl">
           <div className="relative flex-1 h-full">
             {/* Ghost Text (Positioned Behind) */}
             {suggestedWords.length > 0 && searchQuery && (
@@ -327,7 +329,17 @@ const HeaderBottom = () => {
               </div>
             )}
           </div>
-          <div className="flex gap-4 mt-2 lg:mt-0 items-center pr-6 cursor-pointer relative">
+          <div className="flex justify-start w-full mt-2 ml-2 lg:mt-0">
+            <button
+            onClick={() => setIsSearchModalOpen(true)}
+            className="bg-black font-semibold rounded-md text-white px-3 py-2">
+              Search By Image
+            </button>
+          </div>
+          
+          {isSearchModalOpen && <ProductSearch close={() => setIsSearchModalOpen(false)} setSearchResults={setSearchResults} />}
+
+          <div className="flex gap-4 mt-2 ml-2 lg:mt-0 items-center pr-6 cursor-pointer relative">
             <div className="relative">
               <div
                 ref={avatarRef}
