@@ -90,40 +90,46 @@ const HeaderBottom = () => {
     navigate("/signin");
   };
 
+  // Handle voice search to work with categories as well
   const handleVoiceSearch = () => {
     if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
       alert("Your browser does not support Speech Recognition. Try Chrome!");
       return;
     }
-
+  
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognitionRef.current = recognition;
     recognition.lang = "en-US";
     recognition.continuous = false;
     recognition.interimResults = false;
-
+  
     recognition.onstart = () => {
       setIsListening(true);
       console.log("Voice recognition started...");
     };
-
+  
     recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
+      const transcript = event.results[0][0].transcript.toLowerCase();
       setSearchQuery(transcript);
       console.log("Recognized:", transcript);
+  
+      // Perform search with voice input
+      const productResults = fuse.search(transcript).map((result) => result.item);
+      setFilteredProducts(productResults);
+  
       setIsListening(false);
     };
-
+  
     recognition.onerror = (event) => {
       console.error("Voice recognition error:", event.error);
       setIsListening(false);
     };
-
+  
     recognition.onend = () => {
       setIsListening(false);
       console.log("Voice recognition ended.");
     };
-
+  
     recognition.start();
   };
 
@@ -163,30 +169,34 @@ const HeaderBottom = () => {
   }, [userId]);
 
   const fuse = new Fuse(allProducts, {
-    keys: ["title"],
+    keys: ["title", "category"],  // Now searching in both title and category
     includeScore: true,
     threshold: 0.3, 
   });
 
   const handleSearch = (e) => {
-    const inputValue = e.target.value;
+    const inputValue = e.target.value.trim().toLowerCase();
     setSearchQuery(inputValue);
-
-    if (inputValue.trim() === "") {
+  
+    if (inputValue === "") {
       setFilteredProducts([]);
       setSuggestedWords([]);
       return;
     }
-
+  
+    // Searching in both title and category
     const productResults = fuse.search(inputValue).map((result) => result.item);
     setFilteredProducts(productResults);
-
-    const matchingTitles = allProducts
+  
+    // Matching titles and categories for suggestions
+    const matchingSuggestions = allProducts
       .map((product) => product.title)
-      .filter((title) => title.toLowerCase().startsWith(inputValue.toLowerCase()));
-
-    setSuggestedWords(matchingTitles.slice(0, 5));
+      .concat(allProducts.map((product) => product.category)) // Include categories in suggestions
+      .filter((text) => text.toLowerCase().includes(inputValue));
+  
+    setSuggestedWords([...new Set(matchingSuggestions)].slice(0, 5));
   };
+  
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && suggestedWords.length > 0) {
