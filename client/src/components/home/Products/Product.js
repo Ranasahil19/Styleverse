@@ -12,6 +12,7 @@ import axios from "axios";
 import { AuthContext } from "../../../context/AuthContext";
 import { CartPopup, PopupMsg } from "../../popup/PopupMsg";
 import { io } from "socket.io-client";
+import Loader from "../../../assets/images/Virtual clothes try loader.gif";
 
 const Product = (props) => {
   const dispatch = useDispatch();
@@ -21,6 +22,7 @@ const Product = (props) => {
   const [videoStream, setVideoStream] = useState(null);
   const [tryOnImage, setTryOnImage] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const productInfo = props;
@@ -123,6 +125,7 @@ const Product = (props) => {
 
     if (video.readyState < 2) {
       console.warn("Video not ready");
+      setLoading(false);
       return;
     }
 
@@ -133,10 +136,12 @@ const Product = (props) => {
     const userImageBase64 = canvas.toDataURL("image/jpeg");
     if (userImageBase64 === "data:,") {
       console.error("Captured image is empty. Check if video is playing.");
+      setLoading(false);
       return;
     }
 
     try {
+      setLoading(true);
       startTryOnSocket()
       const productImageBase64 = await getBase64FromUrl(props.image);
       tryOnSocket.emit("tryon_request", {
@@ -149,10 +154,12 @@ const Product = (props) => {
         if (data.resultImage) {
           setTryOnImage(data.resultImage);
         }
+        setLoading(false);
       })
       
       tryOnSocket.on("tryon_error", (error) => {
         console.error("Try-on error:", error);
+        setLoading(false);
       });
     } catch (error) {
       console.error("Error with virtual try-on:", error);
@@ -244,6 +251,10 @@ const Product = (props) => {
           <button onClick={startCamera} className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 transition duration-300">
             Start Try On <GiReturnArrow />
           </button>
+
+          <button onClick={handleProductDetails} className="flex items-center gap-2 text-sm text-gray-700 hover:text-red-600 transition duration-300">
+            View Details <MdOutlineLabelImportant />
+          </button>
       
           <button onClick={handleAddToCart} className="flex items-center gap-2 text-sm text-gray-700 hover:text-green-600 transition duration-300">
             Add to Cart <FaShoppingCart />
@@ -274,6 +285,11 @@ const Product = (props) => {
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
             <h2 className="text-lg font-semibold mb-4">Virtual Try-On</h2>
             <video ref={videoRef} width="400" height="300" autoPlay playsInline className="rounded-md" />
+            {loading && !tryOnImage && (
+              <div className="flex justify-center mt-4 bg-transparent">
+                <img src={Loader} alt="Loading..." className="h-50 mt-2 bg-gray-300 w-90" />
+              </div>
+            )}
             <canvas ref={canvasRef} style={{ display: "none" }} />
             {tryOnImage && <img src={tryOnImage} alt="Try-On Result" className="mt-4 rounded-md w-94 h-auto" />}
             <div className="mt-4 flex justify-between">
