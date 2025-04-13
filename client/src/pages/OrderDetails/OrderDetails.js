@@ -74,9 +74,15 @@ function OrderDetails() {
               Order Date: {new Date(order.createdAt).toLocaleDateString()}
             </p>
             <p className="text-lg text-gray-600">
-              Delivery Date: {new Date(order.deliveryDate).toLocaleDateString()}
+              {order.status === "Delivered" ? 
+              `Delivered Date: ${new Date(order.deliveryDate).toLocaleDateString()} (Delivered)` :
+              `Expected Delivery Date: ${new Date(order.deliveryDate).toLocaleDateString()}`
+            }
             </p>
-            <p className="text-xl font-semibold text-gray-800 mt-4">
+            <p className="text-xl font-semibold text-gray-800 mt-1">
+              Discount Amt: ${order.discount ? order.discount.toFixed(2) : 0}
+            </p>
+            <p className="text-xl font-semibold text-gray-800 mt-">
               Total Price:${order.totalPrice.toFixed(2)}
             </p>
           </div>
@@ -142,7 +148,10 @@ function OrderDetails() {
             <p className="text-lg text-gray-600">
               Transaction ID: {payment.transactionId}
             </p>
-            <p className="text-xl font-semibold text-gray-800 mt-4">
+            <p className="text-xl font-semibold text-gray-800 mt-1">
+              Discount Amt: ${order.discount ? order.discount.toFixed(2) : 0}
+            </p>
+            <p className="text-xl font-semibold text-gray-800 mt-1">
               Amount Paid: ${payment.totalPrice.toFixed(2)}
             </p>
           </div>
