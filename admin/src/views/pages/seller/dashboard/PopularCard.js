@@ -41,7 +41,7 @@ const PopularCard = ({ isLoading }) => {
   useEffect(() => {
     if (data && data.orders) {
       const orders = data.orders;
-      setRecentOrders(orders.slice(0, 5));
+      setRecentOrders(orders.slice(-5).reverse());
     }
   }, [data]);
   if (loading) return <SkeletonPopularCard />;
