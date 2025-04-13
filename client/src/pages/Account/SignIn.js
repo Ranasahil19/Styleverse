@@ -187,7 +187,10 @@ const SignIn = () => {
               <p>
                 <span className="font-semibold">Feature Title {i + 1}</span>
                 <br />
-                StyleVerse is a trendy online fashion store offering stylish apparel, accessories, and footwear for every occasion. Stay fashionable with the latest trends and premium-quality products! ✨🛍️
+                StyleVerse is a trendy online fashion store offering stylish
+                apparel, accessories, and footwear for every occasion. Stay
+                fashionable with the latest trends and premium-quality products!
+                ✨🛍️
               </p>
             </div>
           ))}
@@ -280,14 +283,14 @@ const SignIn = () => {
                   {canLoginAgain ? "Sign In" : "Account Locked"}
                 </button>
                 <p className="text-sm text-center mt-4">
-                    Not registered?{" "}
-                    <Link
-                      to="/signup"
-                      className="text-purple-600 hover:underline"
-                    >
-                      Sign Up
-                    </Link>
-                  </p>
+                  Not registered?{" "}
+                  <Link
+                    to="/signup"
+                    className="text-purple-600 hover:underline"
+                  >
+                    Sign Up
+                  </Link>
+                </p>
               </form>
               {lockTime && hasAttemptedLogin && (
                 <p className="text-red-500 text-center mt-4">
@@ -295,26 +298,15 @@ const SignIn = () => {
                 </p>
               )}
               {!isUserExist && (
-                <>
-                  <p className="text-sm text-center mt-4">
-                    User does not exist.{" "}
-                    <Link
-                      to="/signup"
-                      className="text-purple-600 hover:underline"
-                    >
-                      Sign up
-                    </Link>
-                  </p>
-                  <p className="text-sm text-center mt-4">
-                    Not registered?{" "}
-                    <Link
-                      to="/signup"
-                      className="text-purple-600 hover:underline"
-                    >
-                      Sign Up
-                    </Link>
-                  </p>
-                </>
+                <p className="text-sm text-center mt-4">
+                  User does not exist.{" "}
+                  <Link
+                    to="/signup"
+                    className="text-purple-600 hover:underline"
+                  >
+                    Sign up
+                  </Link>
+                </p>
               )}
             </>
           )}
