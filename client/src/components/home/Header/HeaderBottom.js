@@ -177,7 +177,7 @@ const HeaderBottom = ({setSearchResults}) => {
   });
 
   const handleSearch = (e) => {
-    const inputValue = e.target.value.trim().toLowerCase();
+    const inputValue = e.target.value.toLowerCase();
     setSearchQuery(inputValue);
   
     if (inputValue === "") {
@@ -209,25 +209,6 @@ const HeaderBottom = ({setSearchResults}) => {
     }
   };
 
-  // const handleImageUpload = async (e) => {
-  //   const file = e.target.files[0];
-  //   if (!file) return;
-  
-  //   setImagePreview(URL.createObjectURL(file)); 
-  //   setFilteredProducts([]); // Show preview
-    
-  //   try {
-  //       let vector = null
-  //       // Send vector to backend
-  //       const response = await axios.post("http://localhost:5000/search-product", { vector });
-        
-  //       console.log(response.data)
-  //       setFilteredProducts(response.data);
-  //   } catch (error) {
-  //     console.error("Error processing image:", error);
-  //   }
-  // };
-
   useEffect(() => {
     const filtered = allProducts.filter((item) =>
       item.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -242,14 +223,14 @@ const HeaderBottom = ({setSearchResults}) => {
           <div className="relative w-full lg:w-[700px] h-[50px] text-base text-primeColor bg-white flex items-center gap-2 justify-between px-6 rounded-xl">
           <div className="relative flex-1 h-full">
             {/* Ghost Text (Positioned Behind) */}
-            {suggestedWords.length > 0 && searchQuery && (
+            {/* {suggestedWords.length > 0 && searchQuery && (
               <span className="absolute top-1/2 left-0 transform -translate-y-1/2 text-gray-300 select-none pointer-events-none w-full truncate">
                 {searchQuery}
                 <span className="text-gray-200">
                   {suggestedWords[0]?.slice(searchQuery.length)}
                 </span>
               </span>
-            )}
+            )} */}
 
             {/* Input Field */}
             <input
