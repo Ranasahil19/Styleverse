@@ -95,6 +95,12 @@ const VerifyEmail = () => {
     }
   };
 
+  const handleKeyDown = (index, e) => {
+    if (e.key === "Backspace" && otp[index] === "" && index > 0) {
+      document.getElementById(`otp-${index - 1}`).focus();
+    }
+  };  
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="bg-white p-6 rounded-lg shadow-md w-96">
@@ -114,6 +120,7 @@ const VerifyEmail = () => {
                 maxLength="1"
                 value={digit}
                 onChange={(e) => handleChange(index, e)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
                 className="w-12 h-12 text-center text-xl border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
             ))}
