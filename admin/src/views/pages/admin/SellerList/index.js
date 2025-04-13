@@ -5,6 +5,7 @@ import { Notifications } from "@mui/icons-material";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchSellers, updateSellerStatus } from "features/sellerSlice";
 import SellerRequestDialog from "../../../../component/SellerRequestDialog";
+import CustomSnackbar from "component/CustomSnackbar";
 
 const SellerList = () => {
     const dispatch = useDispatch();
@@ -17,16 +18,31 @@ const SellerList = () => {
 
     // Dialog state
     const [openDialog, setOpenDialog] = useState(false);
-
+    const [openSnackbar , setOpenSnackbar] = useState(false);
+    const [snackbarMessage , setSnackbarMessage] = useState('');
+    const [snackbarSeverity , setSnackbarSeverity] = useState('success');
+    
     useEffect(() => {
         dispatch(fetchSellers());
     }, [dispatch]);
 
     const handleStatusChange = (seller) => {
         const newAction = seller.status === "approved" ? "reject" : "approve";
+        if(seller.status === "approved"){
+            setOpenSnackbar(true);
+            setSnackbarMessage(`Seller ${seller.status === "rejected" ? "approved" : "rejected"} successfully`);
+            setSnackbarSeverity('success');
+        }else{
+            setOpenSnackbar(true);
+            setSnackbarMessage(`Seller ${seller.status === "approved" ? "rejected" : "approved"} successfully`);
+            setSnackbarSeverity('success');
+        }
         dispatch(updateSellerStatus({ sellerId: seller._id, action: newAction }));
     };
     
+    const handleCloseSnackbar= () => {
+        setOpenSnackbar(false);
+    }
 
     const columns = [
         { field: "index", headerName: "No", width: 70, renderCell: (params) => params.api.getRowIndexRelativeToVisibleRows(params.id) + 1 },
@@ -94,7 +110,7 @@ const SellerList = () => {
 
             {/* Seller Data Table */}
             <DataGrid
-                rows={sellers.map((seller) => ({ ...seller, id: seller._id }))}
+                rows={sellers.filter((seller) => seller.status === "approved" || seller.status === "rejected").map((seller) => ({ ...seller, id: seller._id }))}
                 columns={columns}
                 pageSize={5}
                 getRowId={(row) => row._id}
@@ -116,6 +132,7 @@ const SellerList = () => {
 
             {/* Seller Request Dialog */}
             <SellerRequestDialog open={openDialog} onClose={() => setOpenDialog(false)} />
+                <CustomSnackbar open={openSnackbar} onClose={handleCloseSnackbar} severity={snackbarSeverity} message={snackbarMessage} />
         </Box>
     );
 };
