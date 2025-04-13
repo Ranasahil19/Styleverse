@@ -148,12 +148,12 @@ const resolvers = {
     // Get Total number of Sellers
     totalSellers: async () => {
       try {
-        return await Seller.countDocuments();
+        return await Seller.countDocuments({ role: 1, status: 'approved' });
       } catch (err) {
         console.log(err);
         throw new Error(err.message);
       }
-    },
+    },    
 
     // Get Total Revenue
     totalRevenue: async () => {
