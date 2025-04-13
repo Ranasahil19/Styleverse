@@ -7,7 +7,7 @@ const PendingVerificationSchema = new mongoose.Schema({
   lastname: { type: String, required: true },
   password: { type: String, required: true }, // Hashed password
   verificationCode: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now, expires: 600 }, // Auto-delete after 10 minutes
+  createdAt: { type: Date, default: Date.now },
 });
 
 module.exports = mongoose.model("PendingVerification", PendingVerificationSchema, "PendingRegister");
