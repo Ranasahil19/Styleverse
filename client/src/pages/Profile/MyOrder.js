@@ -4,6 +4,7 @@ import { AuthContext } from "../../context/AuthContext";
 import axios from "axios";
 import SearchOrders from "./SearchOrders";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
+import { PopupMsg } from "../../components/popup/PopupMsg";
 // import Spinner from "../Spinner";
 
 function MyOrder() {
@@ -20,6 +21,11 @@ function MyOrder() {
 
   const [loadingInvoice, setLoadingInvoice] = useState(null);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [popup, setPopup] = useState({
+    message: "",
+    type: "",
+    show: false,
+  });
 
   useEffect(() => {
     const fetchOrderData = async () => {
@@ -112,10 +118,18 @@ function MyOrder() {
       const response = await axios.post(
         `http://localhost:5000/api/orders/invoice/email/${orderId}`
       );
-      alert("Invoice has been sent to your email!");
+      setPopup({
+        message: "Invoice Has Sent to Your Email Address",
+        type: "success",
+        show: true,
+      })
     } catch (error) {
       console.error("Error sending email:", error);
-      alert("Failed to send invoice.");
+      setPopup({
+        message: "Error sending email. Please try again later.",
+        type: "error",
+        show: true,
+      })
     }
   };
 
@@ -148,6 +162,7 @@ function MyOrder() {
 
   return (
     <div className={`min-h-screen max-w-container mx-auto p-4`}>
+      {popup.show && <PopupMsg message={popup.message} type={popup.type} />}
       <Breadcrumbs title="MyOrders" prevLocation={prevLocation} />
       <div className="max-w-6xl mx-auto px-6">
         <header className="my-2">
