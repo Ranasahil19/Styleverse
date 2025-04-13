@@ -2,6 +2,8 @@ import { motion } from "framer-motion";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
+import Member1 from "../../assets/audit-client.png"
+import Member2 from "../../assets/images.jpg"
 
 const AboutPage = () => {
   const location = useLocation();
@@ -120,17 +122,17 @@ const teamData = [
   {
     name: "Alice Johnson",
     role: "CEO",
-    image: "https://via.placeholder.com/100",
+    image: Member1,
   },
   {
     name: "Mark Wilson",
     role: "CTO",
-    image: "https://via.placeholder.com/100",
+    image: Member2,
   },
   {
-    name: "Emma Brown",
+    name: "Emice Brown",
     role: "Marketing Head",
-    image: "https://via.placeholder.com/100",
+    image: Member1,
   },
 ];
 
