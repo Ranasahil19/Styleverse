@@ -6,14 +6,18 @@ import { motion } from "framer-motion";
 import Image from "../../designLayouts/Image";
 import { navBarList } from "../../../constants";
 import Flex from "../../designLayouts/Flex";
-import Logo from "../../../assets/images/LOGO.png"
-import logoLight from "../../../assets/images/logoLight.png"
+import Logo from "../../../assets/images/LOGO.png";
+import axios from "axios";
+// import { logo } from "../../../assets/images";
+import { API_BASE_URL } from "../../../config/ApiConfig";
 
 const Header = () => {
   const [showMenu, setShowMenu] = useState(true);
   const [sidenav, setSidenav] = useState(false);
-  const [category, setCategory] = useState(false);
-  const [brand, setBrand] = useState(false);
+  const [showCategory, setShowCategory] = useState(false);
+  const [showBadges, setShowBadges] = useState(false);
+  const [category, setCategory] = useState([]);
+  const [badges, setBadges] = useState([]);
   const location = useLocation();
   useEffect(() => {
     let ResponsiveMenu = () => {
@@ -25,6 +29,33 @@ const Header = () => {
     };
     ResponsiveMenu();
     window.addEventListener("resize", ResponsiveMenu);
+  }, []);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/api/filters`);
+        setCategory(response.data.categories);
+        console.log(response.data.categories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchBadges = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/api/badge`);
+        setBadges(response.data);
+      } catch (error) {
+        console.error("Error fetching badges:", error);
+      }
+    };
+
+    fetchBadges();
   }, []);
 
   return (
@@ -63,23 +94,23 @@ const Header = () => {
               className="inline-block md:hidden cursor-pointer w-8 h-6 absolute top-6 right-4"
             />
             {sidenav && (
-              <div className="fixed top-0 left-0 w-full h-screen bg-black text-gray-200 bg-opacity-80 z-50">
+              <div className="fixed top-0 left-0 w-full h-screen bg-white text-gray-600 bg-opacity-80 z-50">
                 <motion.div
                   initial={{ x: -300, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.5 }}
                   className="w-[80%] h-full relative"
                 >
-                  <div className="w-full h-full bg-primeColor p-6">
+                  <div className="w-full h-full bg-white p-6">
                     <img
-                      className="w-40 mb-6"
-                      src={logoLight}
-                      alt="logoLight"
+                      className="w-40 h-20 mb-6 object-cover"
+                      src={Logo}
+                      alt="TryNBuy"
                     />
-                    <ul className="text-gray-200 flex flex-col gap-2">
+                    <ul className="text-gray-600 flex flex-col gap-2">
                       {navBarList.map((item) => (
                         <li
-                          className="font-normal hover:font-bold items-center text-lg text-gray-200 hover:underline underline-offset-[4px] decoration-[1px] hover:text-white md:border-r-[2px] border-r-gray-300 hoverEffect last:border-r-0"
+                          className="font-normal hover:font-bold items-center text-lg text-gray-600 hover:underline underline-offset-[4px] decoration-[1px] hover:text-gray-800 md:border-r-[2px] border-r-gray-300 hoverEffect last:border-r-0"
                           key={item._id}
                         >
                           <NavLink
@@ -94,47 +125,47 @@ const Header = () => {
                     </ul>
                     <div className="mt-4">
                       <h1
-                        onClick={() => setCategory(!category)}
+                        onClick={() => setShowCategory(!showCategory)}
                         className="flex justify-between text-base cursor-pointer items-center font-titleFont mb-2"
                       >
                         Shop by Category{" "}
-                        <span className="text-lg">{category ? "-" : "+"}</span>
+                        <span className="text-lg">{showCategory ? "-" : "+"}</span>
                       </h1>
-                      {category && (
+                      {showCategory && (
                         <motion.ul
                           initial={{ y: 15, opacity: 0 }}
                           animate={{ y: 0, opacity: 1 }}
                           transition={{ duration: 0.4 }}
                           className="text-sm flex flex-col gap-1"
                         >
-                          <li className="headerSedenavLi">New Arrivals</li>
-                          <li className="headerSedenavLi">Gudgets</li>
-                          <li className="headerSedenavLi">Accessories</li>
-                          <li className="headerSedenavLi">Electronics</li>
-                          <li className="headerSedenavLi">Others</li>
+                          {category.map(({ name, index }) => (
+                            <li key={index} className="headerSedenavLi">
+                              {name}
+                            </li>
+                          ))}
                         </motion.ul>
                       )}
                     </div>
                     <div className="mt-4">
                       <h1
-                        onClick={() => setBrand(!brand)}
+                        onClick={() => setShowBadges(!showBadges)}
                         className="flex justify-between text-base cursor-pointer items-center font-titleFont mb-2"
                       >
-                        Shop by Brand
-                        <span className="text-lg">{brand ? "-" : "+"}</span>
+                        Shop by Badge
+                        <span className="text-lg">{showBadges ? "-" : "+"}</span>
                       </h1>
-                      {brand && (
+                      {showBadges && (
                         <motion.ul
                           initial={{ y: 15, opacity: 0 }}
                           animate={{ y: 0, opacity: 1 }}
                           transition={{ duration: 0.4 }}
                           className="text-sm flex flex-col gap-1"
                         >
-                          <li className="headerSedenavLi">New Arrivals</li>
-                          <li className="headerSedenavLi">Gudgets</li>
-                          <li className="headerSedenavLi">Accessories</li>
-                          <li className="headerSedenavLi">Electronics</li>
-                          <li className="headerSedenavLi">Others</li>
+                          {badges.map((badge, index) => (
+                            <li key={index} className="headerSedenavLi">
+                              {badge}
+                            </li>
+                          ))}
                         </motion.ul>
                       )}
                     </div>

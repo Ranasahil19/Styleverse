@@ -3,7 +3,6 @@ import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import ProductBanner from "../../components/pageProps/shopPage/ProductBanner";
 import ShopSideNav from "../../components/pageProps/shopPage/ShopSideNav";
 import Pagination from "../../components/pageProps/shopPage/Pagination";
-import { useLocation } from "react-router-dom";
 
 const Shop = () => {
   const [itemsPerPage, setItemsPerPage] = useState(12);
@@ -12,7 +11,6 @@ const Shop = () => {
   const [selectedPriceRange, setSelectedPriceRange] = useState(null); // For price filter
   const [clearFilters, setClearFilters] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const location = useLocation();
 
   const [prevLocation, setPrevLocation] = useState("");
 

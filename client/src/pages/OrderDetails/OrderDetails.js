@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
+import { API_BASE_URL } from "../../config/ApiConfig";
+import OrderDetailsSkeleton from "../../skeletons/orderDetailsSkeletonCard";
 
 function OrderDetails() {
   const { orderId } = useParams();
-  const location = useLocation();
   const [order, setOrder] = useState(null);
   const [payment, setPayment] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -15,13 +16,13 @@ function OrderDetails() {
     const fetchOrderDetails = async () => {
       try {
         const orderResponse = await axios.get(
-          `http://localhost:5000/api/orders/${orderId}`
+          `${API_BASE_URL}/api/orders/${orderId}`
         );
         setOrder(orderResponse.data);
 
         if (orderResponse.data.paymentId) {
           const paymentResponse = await axios.get(
-            `http://localhost:5000/api/payments/${orderResponse.data.paymentId}`
+            `${API_BASE_URL}/api/payments/${orderResponse.data.paymentId}`
           );
           setPayment(paymentResponse.data);
         }
@@ -37,11 +38,7 @@ function OrderDetails() {
   }, [orderId]);
 
   if (isLoading) {
-    return (
-      <p className="text-center text-gray-500 text-xl">
-        Loading order details...
-      </p>
-    );
+    return <OrderDetailsSkeleton />;
   }
 
   if (error) {
@@ -74,10 +71,13 @@ function OrderDetails() {
               Order Date: {new Date(order.createdAt).toLocaleDateString()}
             </p>
             <p className="text-lg text-gray-600">
-              {order.status === "Delivered" ? 
-              `Delivered Date: ${new Date(order.deliveryDate).toLocaleDateString()} (Delivered)` :
-              `Expected Delivery Date: ${new Date(order.deliveryDate).toLocaleDateString()}`
-            }
+              {order.status === "Delivered"
+                ? `Delivered Date: ${new Date(
+                    order.deliveryDate
+                  ).toLocaleDateString()} (Delivered)`
+                : `Expected Delivery Date: ${new Date(
+                    order.deliveryDate
+                  ).toLocaleDateString()}`}
             </p>
             <p className="text-xl font-semibold text-gray-800 mt-1">
               Discount Amt: ${order.discount ? order.discount.toFixed(2) : 0}

@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { PopupMsg } from "../../components/popup/PopupMsg";
+import { API_BASE_URL } from "../../config/ApiConfig";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
   const { id, token } = useParams();
   const [popup, setPopup] = useState({
     message: "",
@@ -28,7 +28,7 @@ const ResetPassword = () => {
 
     try {
       const res = await axios.post(
-        `http://localhost:5000/reset-password/${id}/${token}`,
+        `${API_BASE_URL}/reset-password/${id}/${token}`,
         { password }
       );
       if (res.status === 200) {

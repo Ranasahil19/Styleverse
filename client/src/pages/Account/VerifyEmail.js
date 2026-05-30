@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { PopupMsg } from "../../components/popup/PopupMsg";
 import { useNavigate, useLocation } from "react-router-dom";
+import { API_BASE_URL } from "../../config/ApiConfig";
 
 const VerifyEmail = () => {
   const location = useLocation();
@@ -64,7 +65,7 @@ const VerifyEmail = () => {
     console.log("Sending:", { email, code });
 
     try {
-      const res = await axios.post("http://localhost:5000/api/verify-email", { email, code });
+      const res = await axios.post(`${API_BASE_URL}/api/verify-email`, { email, code });
       console.log("Response:", res.data);
 
       setPopup({ message: "Email Verified Successfully!", type: "success", show: true });
@@ -83,7 +84,7 @@ const VerifyEmail = () => {
   const handleResend = async () => {
     setLoading(true);
     try {
-      await axios.post("http://localhost:5000/api/resend-code", { email });
+      await axios.post(`${API_BASE_URL}/api/resend-code`, { email });
       setPopup({ message: "A new verification code has been sent to your email.", type: "success", show: true });
       setTimer(60);  // Reset timer to 60 seconds
       setCanResend(false); // Disable resend button

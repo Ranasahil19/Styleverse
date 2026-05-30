@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { PopupMsg } from "../../components/popup/PopupMsg";
 import { Link } from "react-router-dom";
+import { API_BASE_URL } from "../../config/ApiConfig";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -25,7 +26,7 @@ const ForgotPassword = () => {
     if (!validateForm()) return;
 
     try {
-      const res = await axios.post("http://localhost:5000/forgot-password", {
+      const res = await axios.post(`${API_BASE_URL}/forgot-password`, {
         email,
       });
       if (res.status === 200) {

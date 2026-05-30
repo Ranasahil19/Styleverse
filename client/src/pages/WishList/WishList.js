@@ -7,6 +7,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { useDispatch, useSelector } from "react-redux";
 import { setWishlist } from "../../redux/orebiSlice";
 import { PopupMsg } from "../../components/popup/PopupMsg";
+import { API_BASE_URL } from "../../config/ApiConfig";
 
 function WishList() {
   const { state } = useContext(AuthContext);
@@ -28,7 +29,7 @@ function WishList() {
 
     setLoading(true);
     axios
-      .get(`http://localhost:5000/wishlist/${user.userId}`)
+      .get(`${API_BASE_URL}/wishlist/${user.userId}`)
       .then((response) => {
         dispatch(setWishlist(response.data.wishlist)); // Store products in Redux
         setLoading(false);
@@ -43,7 +44,7 @@ function WishList() {
   const removeFromWishlist = async (productId) => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/wishlist/remove`,
+        `${API_BASE_URL}/wishlist/remove`,
         {
           userId: user?.userId, // Ensure `userId` is available
           productId,

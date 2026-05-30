@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useLocation } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import axios from "axios";
 import { HiOutlineMail, HiUser, HiPencilAlt } from "react-icons/hi";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import AddressForm from "../Address/AddressForm";
 import { PopupMsg } from "../../components/popup/PopupMsg";
+import { API_BASE_URL } from "../../config/ApiConfig";
 
 const MyAccount = () => {
-  const location = useLocation();
   const [prevLocation, setPrevLocation] = useState("");
   const { state } = useContext(AuthContext);
   const { isLoggedIn, user } = state;
@@ -35,7 +34,7 @@ const MyAccount = () => {
       if (isLoggedIn && userId) {
         try {
           const userResponse = await axios.get(
-            `http://localhost:5000/api/user/${userId}`
+            `${API_BASE_URL}/api/user/${userId}`
           );
           setUserDetails(userResponse.data);
           if (userResponse.data?.address) {
@@ -69,8 +68,8 @@ const MyAccount = () => {
     }
     try {
       const apiUrl = userDetails?.address
-        ? `http://localhost:5000/api/user/update-address/${userId}`
-        : `http://localhost:5000/api/user/add-address/${userId}`;
+        ? `${API_BASE_URL}/api/user/update-address/${userId}`
+        : `${API_BASE_URL}/api/user/add-address/${userId}`;
       const method = userDetails?.address ? "PUT" : "POST";
       const response = await axios({
         url: apiUrl,

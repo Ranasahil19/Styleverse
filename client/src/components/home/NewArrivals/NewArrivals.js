@@ -5,6 +5,8 @@ import Product from "../Products/Product";
 import axios from "axios";
 import SampleNextArrow from "./SampleNextArrow";
 import SamplePrevArrow from "./SamplePrevArrow";
+import { API_BASE_URL } from "../../../config/ApiConfig";
+import SkeletonCard from "../../../skeletons/productSkeletonCard";
 
 const NewArrivals = () => {
   const [newArrival, setNewArrival] = useState([]);
@@ -14,7 +16,7 @@ const NewArrivals = () => {
     const fetchNewArrival = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/products/glasses"
+          `${API_BASE_URL}/api/products/glasses`
         ); // Replace with your backend API URL
         setNewArrival(response.data); // Set the fetched data to state
         setLoading(false);
@@ -27,7 +29,7 @@ const NewArrivals = () => {
   }, []);
 
   const settings = {
-    infinite: false, // Change to false to test
+    infinite: true, // Change to false to test
     speed: 500,
     slidesToShow: 4,
     slidesToScroll: 1,
@@ -46,7 +48,7 @@ const NewArrivals = () => {
         breakpoint: 769,
         settings: {
           slidesToShow: 2,
-          slidesToScroll: 2,
+          slidesToScroll: 1,
           infinite: true,
         },
       },
@@ -60,29 +62,30 @@ const NewArrivals = () => {
       },
     ],
   };
-  
 
   return (
     <div className="w-full pb-16">
       <Heading heading="New Arrivals" />
       <Slider {...settings}>
-        {loading ? (
-          <div>Loading...</div>
-        ) : (
-          newArrival.map((product) => (
-            <div className="px-2" key={product.id}>
-              <Product
-                _id={product._id}
-                image={product.image}
-                title={product.title}
-                price={product.price}
-                badge={product.badge}
-                des={product.description}
-                category={product.category}
-              />
-            </div>
-          ))
-        )}
+        {loading
+          ? [...Array(4)].map((_, index) => (
+              <div key={index} className="px-2">
+                <SkeletonCard />
+              </div>
+            ))
+          : newArrival.map((product) => (
+              <div className="px-2" key={product.id}>
+                <Product
+                  _id={product._id}
+                  image={product.image}
+                  title={product.title}
+                  price={product.price}
+                  badge={product.badge}
+                  des={product.description}
+                  category={product.category}
+                />
+              </div>
+            ))}
       </Slider>
     </div>
   );

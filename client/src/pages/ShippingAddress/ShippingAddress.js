@@ -3,10 +3,10 @@ import axios from "axios";
 import { loadStripe } from "@stripe/stripe-js";
 import { AuthContext } from "../../context/AuthContext";
 import { PopupMsg } from "../../components/popup/PopupMsg";
+import { stripeKey } from "../../config/ApiConfig";
+import { API_BASE_URL } from "../../config/ApiConfig";
 
-const stripePromise = loadStripe(
-  "pk_test_51QYRRtKgiwXQrp00vZiyMntCEv4VM66zASx94cI9qK7T5eMVUnPeys4CSfmIHdPLprOn2zHKE4H1Cf7AWdB9ZEBA00R8j7T7xo"
-);
+const stripePromise = loadStripe(stripeKey);
 
 const ShippingAddress = ({ cartItems, totalPrice, clearCart, discount }) => {
   const { state } = useContext(AuthContext);
@@ -36,7 +36,7 @@ const [shippingCharge, setShippingCharge] = useState(0);
     const fetchShippingAddress = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/user/${userId}`
+          `${API_BASE_URL}/api/user/${userId}`
         );
         if (response.data?.address) {
           setShippingAddress(response.data.address);
@@ -71,8 +71,8 @@ const [shippingCharge, setShippingCharge] = useState(0);
 
     try {
       const apiUrl = isUpdating
-        ? `http://localhost:5000/api/user/update-address/${userId}`
-        : `http://localhost:5000/api/user/add-address/${userId}`;
+        ? `${API_BASE_URL}/api/user/update-address/${userId}`
+        : `${API_BASE_URL}/api/user/add-address/${userId}`;
       const method = isUpdating ? "PUT" : "POST";
 
       await axios({
@@ -118,7 +118,7 @@ totalPrice = Number(totalPrice) + Number(shippingCharge);
 
       // Create payment session
       const stripeResponse = await axios.post(
-        "http://localhost:5000/api/create-payment",
+        `${API_BASE_URL}/api/create-payment`,
         {
           userId,
           products: cartItems,
@@ -129,10 +129,10 @@ totalPrice = Number(totalPrice) + Number(shippingCharge);
         }
       );
 
-      const { sessionId, paymentId } = stripeResponse.data;
+      const { sessionId } = stripeResponse.data;
       
       // Finalize payment
-      await axios.post("http://localhost:5000/api/finalize-payment", {
+      await axios.post(`${API_BASE_URL}/api/finalize-payment`, {
         sessionId: sessionId,
       });
 

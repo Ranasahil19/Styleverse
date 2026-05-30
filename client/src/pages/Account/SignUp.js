@@ -6,6 +6,7 @@ import { FaUser, FaEnvelope, FaLock, FaCheck, FaTimes } from "react-icons/fa";
 import { logoLight } from "../../assets/images";
 import { PopupMsg } from "../../components/popup/PopupMsg";
 import zxcvbn from "zxcvbn";
+import { API_BASE_URL } from "../../config/ApiConfig";
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ const SignUp = () => {
     }
 
     try {
-      await axios.post("http://localhost:5000/register", {
+      await axios.post(`${API_BASE_URL}/register`, {
         username,
         password,
         confirmPassword,

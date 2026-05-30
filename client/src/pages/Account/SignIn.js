@@ -7,6 +7,7 @@ import { logoLight } from "../../assets/images";
 import { PopupMsg } from "../../components/popup/PopupMsg";
 import CryptoJS from "crypto-js";
 import { secretKey } from "../../index";
+import { API_BASE_URL } from "../../config/ApiConfig";
 
 const SignIn = () => {
   const { state, dispatch } = useContext(AuthContext); // Get user from context
@@ -14,7 +15,6 @@ const SignIn = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-  const [message, setMessage] = useState("");
   const [isUserExist, setIsUserExist] = useState(true);
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
@@ -75,7 +75,7 @@ const SignIn = () => {
     setHasAttemptedLogin(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/login", {
+      const res = await axios.post(`${API_BASE_URL}/login`, {
         username,
         password,
       });

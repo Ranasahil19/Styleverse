@@ -5,13 +5,14 @@ import { useNavigate } from "react-router-dom";
 import { PopupMsg } from "../../components/popup/PopupMsg";
 import { FaCheckCircle } from "react-icons/fa";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
+import { API_BASE_URL } from "../../config/ApiConfig";
 
 const SuccessPage = () => {
   const [orderDetails, setOrderDetails] = useState(null);
   const { state } = useContext(AuthContext);
   const { user } = state;
   const userId = user?.userId;
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(true);
   const [popup, setPopup] = useState({ message: "", type: "", show: false });
   const shippingCharge = 5;
@@ -25,7 +26,7 @@ const SuccessPage = () => {
   const fetchOrderDetails = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/order/${userId}`
+        `${API_BASE_URL}/api/order/${userId}`
       );
       setOrderDetails(response.data);
 

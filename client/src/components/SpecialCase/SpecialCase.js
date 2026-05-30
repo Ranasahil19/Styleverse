@@ -4,6 +4,7 @@ import { RiShoppingCart2Fill } from "react-icons/ri";
 import { MdSwitchAccount } from "react-icons/md";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
+import { API_BASE_URL } from "../../config/ApiConfig";
 
 const SpecialCase = () => {
   const [cartCount, setCartCount] = useState(0);
@@ -16,7 +17,7 @@ const SpecialCase = () => {
 
     const fetchCartCount = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/cart/count/${userId}`);
+        const response = await axios.get(`${API_BASE_URL}/api/cart/count/${userId}`);
         setCartCount(response.data.count);
       } catch (error) {
         console.error("Failed to fetch cart count:", error);

@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
-import { useLocation } from "react-router-dom";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import ProductInfo from "../../components/pageProps/productDetails/ProductInfo";
 import ProductsOnSale from "../../components/pageProps/productDetails/ProductsOnSale";
+import { API_BASE_URL } from "../../config/ApiConfig";
 
 const ProductDetails = () => {
   const { id } = useParams();
-  const location = useLocation();
   const [prevLocation, setPrevLocation] = useState("");
   const [productInfo, setProductInfo] = useState({});
   const [mainImage, setMainImage] = useState("");
@@ -16,7 +15,7 @@ const ProductDetails = () => {
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/products/${id}`);
+        const response = await axios.get(`${API_BASE_URL}/products/${id}`);
         console.log("Fetched Product:", response.data);
         setProductInfo(response.data);
 
