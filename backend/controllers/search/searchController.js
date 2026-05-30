@@ -55,7 +55,7 @@ const searchByImage = async (req, res) => {
         }
         
         // Compute similarity for only valid products
-        const results = products.map(product => {
+        const results = products.filter(product => Array.isArray(product.vector) && product.vector.length === searchVector.length).map(product => {
             const similarity = cosineSimilarity(searchVector, product.vector);
             return { ...product._doc, similarity };
         });

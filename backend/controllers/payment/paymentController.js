@@ -1,16 +1,13 @@
 const Payment = require("../../models/payment");
 const Cart = require("../../models/cart");
-const stripe = require("stripe")(
-  "sk_test_51QYRRtKgiwXQrp00BdABYu1SFipnpTtxYt8dV8BLALhh9SlndFOFiZG75bxEqzP02smfjk0svjmKsoS8fhQnLJb100BntIVL6Y"
-);
 const { v4: uuidv4 } = require("uuid");
 const { placeOrder } = require("../order/orderController");
 const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
 dotenv.config();
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
-const endpointSecret =
-  "whsec_b6e51c8b744b6b7cf54d1e7be26cf1043cf46acfb9a49f7ac9488eb4d36720c6";
+const endpointSecret =process.env.STRIPE_WEBHOOK_KEY;
 
   exports.stripeWebhook = async (req, res) => {
     const sig = req.headers["stripe-signature"];
@@ -182,7 +179,7 @@ const sendOrderConfirmationEmail = async (email, order, payment) => {
           </div>
 
           <div style="text-align: center; margin-top: 20px;">
-            <a href="http://localhost/profile/myorders" style="background: #28a745; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">View Order</a>
+            <a href="https://major-project-three-beta.vercel.app/profile/myorders" style="background: #28a745; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">View Order</a>
           </div>
 
           <div style="text-align: center; font-size: 12px; color: #999; margin-top: 20px;">
@@ -254,8 +251,8 @@ exports.createPayment = async (req, res) => {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `http://localhost:3000/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: "http://localhost:3000/cancel",
+      success_url: `https://major-project-three-beta.vercel.app/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: "https://major-project-three-beta.vercel.app/cancel",
     });
 
     // Prepare cart data for the database

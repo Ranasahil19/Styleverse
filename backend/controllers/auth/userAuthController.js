@@ -5,7 +5,7 @@ const PendingVerification = require("../../models/PendingVerification");
 const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
 dotenv.config();
-// const crypto = require("crypto");
+const crypto = require("crypto");
 const {
   Verification_Email_Template,
 } = require("../../Middleware/EmailTemplate");
@@ -199,12 +199,12 @@ exports.resendCode = async (req, res) => {
     }
 
     const elapsedTime = Date.now() - new Date(pendingUser.expiresAt).getTime();
-    if (elapsedTime < 60000) {  // Check if less than 1 minute has passed
+    if (elapsedTime < 60000) {
       return res.status(400).json({ message: "You can only request a new code after 1 minute." });
     }
 
-    // Generate new verification code
-    const newCode = crypto.randomBytes(3).toString("hex").toUpperCase();
+    // Generate 6-digit numeric code
+    const newCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     // Update the code and reset the timer
     pendingUser.verificationCode = newCode;
@@ -212,8 +212,12 @@ exports.resendCode = async (req, res) => {
     await pendingUser.save();
 
     // Send email with new code
-    const emailSubject = "Your new verification code";
-    const emailContent = `Your new verification code is: ${newCode}`;
+    const emailSubject = "Welcome to Our Platform StyleVerse!";
+    const emailContent = `
+      <h1>Welcome, ${pendingUser.firstname} ${pendingUser.lastname}!</h1>
+      <p>Your new verification code is: ${newCode}</p>
+      <p>If you have any questions, feel free to reach out to our support team.</p>
+      <p>Best regards,<br>The StyleVerse Team</p>`;
     await sendEmail(email, emailSubject, emailContent);
 
     res.status(200).json({ message: "A new verification code has been sent." });
@@ -222,6 +226,7 @@ exports.resendCode = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // Login Controller
 const MAX_LOGIN_ATTEMPTS = 3;

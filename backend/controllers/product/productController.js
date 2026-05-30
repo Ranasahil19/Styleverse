@@ -66,7 +66,7 @@ const addProduct = async (req, res) => {
 
     const updatedSeller = await Seller.findByIdAndUpdate(
       sellerId,
-      { $push: { products: newProduct._id } }, // Push new product ID into seller's products array
+      { $push: { Products: newProduct._id } }, // Push new product ID into seller's products array
       { new: true } // Return updated document
     );
 

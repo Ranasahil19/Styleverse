@@ -15,94 +15,94 @@ const generateInvoicePDF = async (orderId, order, filePath) => {
   const writeStream = fs.createWriteStream(filePath);
   doc.pipe(writeStream);
 
-  const address = order.userId.address
-    ? `
-      ${order.userId.address.address || "N/A"},
-      ${order.userId.address.city || "N/A"},
-      ${order.userId.address.state || "N/A"},
-      ${order.userId.address.pincode || "N/A"},
-      ${order.userId.address.country || "N/A"},
-      Phone: ${order.userId.address.mobileno || "N/A"}
-    `.replace(/\s+/g, " ").trim()
-    : "Address not available";
+  // Company Info & Logo (Top Right)
+  const logoPath = path.join(__dirname, "LOGO.png");
+  if (fs.existsSync(logoPath)) {
+    doc.image(logoPath, 400, 0, { width: 120 });
+  } else {
+    console.error("Logo file not found:", logoPath);
+  }
 
-  // Header Section
-  doc.fontSize(20).text("Your Company Name", 110, 50);
-  doc.fontSize(10).text("Your Company Address", 110, 70);
-  doc.fontSize(12).text("Invoice", { align: "center" }).moveDown();
+  // Company Name & Address (Top Left)
+  doc.fontSize(18).text("TryNBuy", 50, 30);
+  doc.fontSize(10).text("76876 Aashritha Glens,", 50, 50);
+  doc.text("Pillaborough, Daman and Diu", 50, 65);
+  doc.text("Phone: +91-XXXXXXXXXX", 50, 80);
 
-  // Invoice Details
-  doc.text(`Invoice Number: ${order._id}`, 50, 180);
-  doc.text(`Address:`, 300, 200).text(address, { width: 250, align: "left" });
-  doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 50, 200);
-  doc.text(`Total: $${order.totalPrice.toFixed(2)}`, 50, 220);
+  // Invoice Title (Centered Below Header)
+  doc.moveDown(2).fontSize(16).text("INVOICE", { align: "center", underline: true });
 
-  doc.text(`Billed To: ${order.userId.username}`, 300, 180);
-  doc.moveDown();
+  // Invoice Details Section
+  doc.fontSize(10);
+  doc.text(`Invoice Number: ${order._id}`, 50, 140);
+  doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 50, 155);
+  
+  doc.text(`Billed To: ${order.paymentId.cardHolderName}`, 400, 140);
+  doc.text("Address:", 400, 155);
+  doc.text(`${order.userId.address.address || "N/A"},`, 400, 170);
+  doc.text(`${order.userId.address.city || "N/A"}, ${order.userId.address.state || "N/A"}`, 400, 190);
+  doc.text(`${order.userId.address.pincode || "N/A"}, ${order.userId.address.country || "N/A"}`, 400, 200);
+  doc.text(`Phone: ${order.userId.address.mobileno || "N/A"}`, 400, 215);
 
-  const tableTop = 260;
+  // Draw Line Separator
+  doc.moveTo(50, 230).lineTo(570, 230).stroke();
+
+  // Table Headers
+  const tableTop = 250;
   doc.fontSize(10).text("S.No", 50, tableTop)
-    .text("Title", 100, tableTop)
-    .text("Description", 200, tableTop)
-    .text("Quantity", 350, tableTop)
+    .text("Title", 90, tableTop, { width: 120 })
+    .text("Description", 220, tableTop, { width: 150 })
+    .text("Quantity", 380, tableTop)
     .text("Unit Price", 450, tableTop)
     .text("Total", 520, tableTop);
-
+  
   doc.moveTo(50, tableTop + 15).lineTo(570, tableTop + 15).stroke();
 
   // Table Rows
   let currentY = tableTop + 30;
   let serialNumber = 1;
-
+  
   order.items.forEach((item) => {
-    const title = item.title || "N/A";
     const description = item.productId?.description || "-";
-    const titleWidth = 90;
-    const descriptionWidth = 140;
-    const rowHeight = 20;
-
-    // Wrap text for title and description
-    const wrappedTitle = doc.heightOfString(title, { width: titleWidth, align: "left" });
-    const wrappedDescription = doc.heightOfString(description, { width: descriptionWidth, align: "left" });
-    const dynamicHeight = Math.max(rowHeight, wrappedTitle, wrappedDescription);
-
-    // Check for page overflow
-    if (currentY + dynamicHeight > 750) {
+    if (currentY > 720) {
       doc.addPage();
-      currentY = 50; // Reset to top of the new page
-
-      // Re-add table headers
-      const newTableTop = currentY;
-      doc.fontSize(10).text("S.No", 50, newTableTop)
-        .text("Title", 100, newTableTop)
-        .text("Description", 200, newTableTop)
-        .text("Quantity", 350, newTableTop)
-        .text("Unit Price", 450, newTableTop)
-        .text("Total", 520, newTableTop);
-
-      doc.moveTo(50, newTableTop + 15).lineTo(570, newTableTop + 15).stroke();
-      currentY = newTableTop + 30;
+      currentY = 50;
+      
+      doc.fontSize(10).text("S.No", 50, currentY)
+      .text("Title", 90, currentY, { width: 120 })
+        .text("Description", 220, currentY, { width: 150 })
+        .text("Quantity", 380, currentY)
+        .text("Unit Price", 450, currentY)
+        .text("Total", 520, currentY);
+      
+        doc.moveTo(50, currentY + 15).lineTo(570, currentY + 15).stroke();
+      currentY += 30;
     }
 
-    // Draw the table row
     doc.fontSize(10)
       .text(serialNumber, 50, currentY)
-      .text(title, 100, currentY, { width: titleWidth })
-      .text(description, 200, currentY, { width: descriptionWidth })
-      .text(item.quantity.toString(), 350, currentY)
+      .text(item.title || "N/A", 90, currentY, { width: 120 })
+      .text(description, 220, currentY, { width: 150 })
+      .text(item.quantity.toString(), 380, currentY)
       .text(`$${item.price.toFixed(2)}`, 450, currentY)
       .text(`$${(item.price * item.quantity).toFixed(2)}`, 520, currentY);
-
-    currentY += dynamicHeight + 10; // Add extra space between rows
+    
+    currentY += 40;
     serialNumber++;
   });
 
-  // Footer Section
-  doc.moveTo(50, currentY).lineTo(570, currentY).stroke();
-  currentY += 20;
+  // Draw Line Separator before Total Section
+  doc.moveTo(50, currentY + 10).lineTo(570, currentY + 10).stroke();
+  currentY += 30;
 
-  doc.fontSize(12).text("Thank you for your order!", 50, currentY, { align: "center" })
-    .text("We hope to serve you again soon.", { align: "center" });
+  // Total Amount
+  doc.fontSize(12).text("Grand Total:", 400, currentY + 10);
+  doc.fontSize(12).text(`$${order.totalPrice.toFixed(2)}`, 500, currentY);
+
+  // Footer Message
+  doc.moveDown(5);
+  doc.fontSize(12).text("Thank you for your order!", 50, currentY + 70, { align: "center" })
+  .text("We hope to serve you again soon.", { align: "center" });
 
   doc.end();
   return new Promise((resolve, reject) => {
@@ -110,6 +110,7 @@ const generateInvoicePDF = async (orderId, order, filePath) => {
     writeStream.on("error", reject);
   });
 };
+
 
 exports.sendInvoiceEmail = async (req, res) => {
   const { orderId } = req.params;
@@ -177,7 +178,8 @@ exports.downloadOrder = async (req, res) => {
     // Fetch the order details by orderId
     const order = await Order.findById(orderId)
       .populate("items.productId", "description")
-      .populate("userId", "username address firstname lastname");
+      .populate("userId", "username address firstname lastname")
+      .populate("paymentId", "cardHolderName");
 
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
