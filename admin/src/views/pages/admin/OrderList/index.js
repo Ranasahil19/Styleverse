@@ -124,7 +124,7 @@ const OrderList = () => {
       field: 'totalPrice',
       headerName: 'Total ($)',
       width: isMobile ? 80 : 120,
-      renderCell: (params) => `$${params.value}`
+      renderCell: (params) => `$${params.value.toFixed(2)}`,
     },
     { field: 'status', headerName: 'Status', width: 150 },
 

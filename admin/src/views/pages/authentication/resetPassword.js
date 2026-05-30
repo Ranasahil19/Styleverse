@@ -105,7 +105,7 @@ const ResetPassword = () => {
                 <Box sx={{ mt: 2 }}>
                         <AnimateButton>
                             <Button fullWidth size="large" type="submit" variant="contained" color="secondary" onClick={handleSubmit}>
-                                {loading ? <CircularProgress/> : "Send Reset Link" }
+                                {loading ? <CircularProgress/> : "Reset" }
                             </Button>
                         </AnimateButton>
                 </Box>
