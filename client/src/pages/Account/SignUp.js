@@ -16,7 +16,6 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isUserExist, setIsUserExist] = useState(true);
   const [popup, setPopup] = useState({
     message: "",
     type: "",
@@ -25,7 +24,6 @@ const SignUp = () => {
   const [suggestedPassword , setSuggestedPassword] = useState("")
   const [showPasswordDialog , setShowPasswordDialog] = useState(false);
   const [isPasswordPrompted, setIsPasswordPrompted] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
 
   const generateStrongPassword = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*_+";
@@ -38,7 +36,6 @@ const SignUp = () => {
 
   const handlePasswordTyping = (e) => {
     setPassword(e.target.value);
-    setIsTyping(true);
 
     if (!isPasswordPrompted && e.target.value.length === 1) {
       const strongPwd = generateStrongPassword();
@@ -101,22 +98,21 @@ const SignUp = () => {
         type: "error",
         show: true,
       });
-      setIsUserExist(false);
     }
   }    
 
   return (
-    <div className="w-full h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white shadow-lg rounded-lg flex overflow-hidden w-full max-w-4xl">
+    <div className="w-full min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="bg-white shadow-xl rounded-lg flex overflow-hidden w-full max-w-5xl border border-gray-200">
         {/* Left Side */}
-        <div className="hidden md:flex flex-col w-1/2 bg-purple-600 text-white p-8">
+        <div className="hidden md:flex flex-col w-1/2 bg-primeColor text-white p-10">
           <Link to="/">
             <img src={logoLight} alt="Logo" className="w-32 mb-4" />
           </Link>
-          <h2 className="text-2xl font-semibold mb-4">
+          <h2 className="text-3xl font-bold mb-4">
             Welcome to StyleVerse!
           </h2>
-          <p className="text-base mb-6">
+          <p className="text-base mb-6 text-gray-300">
             Create your account to explore our services and get started.
           </p>
           <ul className="space-y-4">
@@ -147,14 +143,15 @@ const SignUp = () => {
         </div>
 
         {/* Right Side */}
-        <div className="w-full md:w-1/2 flex flex-col justify-center p-8">
+        <div className="w-full md:w-1/2 flex flex-col justify-center p-6 md:p-10">
           {popup.show && (
             <PopupMsg message={popup.message} type={popup.type} />
           )}
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+          <h2 className="text-3xl font-bold text-gray-950 mb-2 text-center">
             Sign Up
           </h2>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <p className="mb-6 text-center text-sm text-gray-500">Create your StyleVerse customer account.</p>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="relative">
               <FaUser className="absolute left-3 top-3 text-gray-400" />
               <input
@@ -163,7 +160,7 @@ const SignUp = () => {
                 value={firstname}
                 onChange={(e) => setFirstname(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full h-12 pl-10 pr-4 border border-gray-200 rounded-md focus:outline-none focus:border-primeColor"
               />
             </div>
             <div className="relative">
@@ -174,7 +171,7 @@ const SignUp = () => {
                 value={lastname}
                 onChange={(e) => setLastname(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full h-12 pl-10 pr-4 border border-gray-200 rounded-md focus:outline-none focus:border-primeColor"
               />
             </div>
             <div className="relative">
@@ -185,7 +182,7 @@ const SignUp = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full h-12 pl-10 pr-4 border border-gray-200 rounded-md focus:outline-none focus:border-primeColor"
               />
             </div>
             <div className="relative">
@@ -196,7 +193,7 @@ const SignUp = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full h-12 pl-10 pr-4 border border-gray-200 rounded-md focus:outline-none focus:border-primeColor"
               />
             </div>
             <div className="relative">
@@ -207,7 +204,7 @@ const SignUp = () => {
                 value={password}
                 onChange={handlePasswordTyping}
                 required
-                className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full h-12 pl-10 pr-4 border border-gray-200 rounded-md focus:outline-none focus:border-primeColor"
               />
             </div>
 
@@ -219,26 +216,26 @@ const SignUp = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full h-12 pl-10 pr-4 border border-gray-200 rounded-md focus:outline-none focus:border-primeColor"
               />
             </div>
             <button
               type="submit"
-              className="w-full py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition"
+              className="w-full py-3 bg-primeColor text-white rounded-md font-bold hover:bg-black transition"
             >
               Sign Up
             </button>
           </form>
           <p className="text-center text-sm mt-4">
             Already have an account?{" "}
-            <Link to="/signin" className="text-purple-600 hover:underline">
+            <Link to="/signin" className="text-primeColor font-semibold hover:underline">
               Sign In
             </Link>
           </p>
         </div>
       </div>
       {showPasswordDialog && (
-        <div className="absolute mt-2 left-50 bg-white border shadow-md rounded-md p-3 w-64">
+        <div className="absolute mt-2 bg-white border border-gray-200 shadow-xl rounded-md p-3 w-64">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-medium text-gray-700">Try a Strong Password</span>
             <button onClick={() => setShowPasswordDialog(false)} className="text-gray-500 hover:text-gray-700">
@@ -248,7 +245,7 @@ const SignUp = () => {
           <div className="text-sm bg-gray-100 p-2 rounded-md text-gray-800 font-mono select-all">
             {suggestedPassword}
           </div>
-          <button onClick={handleConfirmPassword} className="mt-2 w-full bg-purple-600 text-white text-sm py-1.5 rounded-md hover:bg-purple-700">
+          <button onClick={handleConfirmPassword} className="mt-2 w-full bg-primeColor text-white text-sm py-1.5 rounded-md hover:bg-black">
             Use
           </button>
         </div>

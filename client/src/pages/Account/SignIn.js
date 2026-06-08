@@ -18,7 +18,6 @@ const SignIn = () => {
   const [isUserExist, setIsUserExist] = useState(true);
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
-  const [successMsg, setSuccessMsg] = useState("");
   const [lockTime, setLockTime] = useState(null); // Lock duration in minutes
   const [canLoginAgain, setCanLoginAgain] = useState(true); // Track login status
   const [popup, setPopup] = useState({
@@ -169,16 +168,16 @@ const SignIn = () => {
   }, [lockTime]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
       {popup.show && <PopupMsg type={popup.type} message={popup.message} />}
-      <div className="flex flex-col lg:flex-row bg-white shadow-lg rounded-lg overflow-hidden w-full lg:max-w-4xl">
+      <div className="flex flex-col lg:flex-row bg-white shadow-xl rounded-lg overflow-hidden w-full lg:max-w-5xl border border-gray-200">
         {/* Left Section */}
-        <div className="hidden lg:flex flex-col items-start justify-center bg-purple-700 text-white p-8 lg:w-1/2">
+        <div className="hidden lg:flex flex-col items-start justify-center bg-primeColor text-white p-10 lg:w-1/2">
           <Link to="/">
             <img src={logoLight} alt="logoImg" className="w-32 mb-4" />
           </Link>
-          <h1 className="text-2xl font-bold mb-2">Stay signed in for more</h1>
-          <p className="text-sm mb-6">When you sign in, you are with us!</p>
+          <h1 className="text-3xl font-bold mb-2">Welcome back</h1>
+          <p className="text-sm mb-6 text-gray-300">Sign in to continue shopping with StyleVerse.</p>
           {[...Array(1)].map((_, i) => (
             <div key={i} className="flex items-start gap-3 mb-4">
               <span className="text-green-500">
@@ -194,7 +193,7 @@ const SignIn = () => {
               </p>
             </div>
           ))}
-          <div className="flex items-center justify-between mt-4 w-full text-sm">
+          <div className="flex items-center justify-between mt-4 w-full text-sm text-gray-300">
             <Link to="/" className="hover:underline">
               © StyleVerse
             </Link>
@@ -210,21 +209,12 @@ const SignIn = () => {
           </div>
         </div>
 
-        <div className="flex flex-col justify-center items-center w-full lg:w-1/2 p-6">
-          {successMsg ? (
-            <div className="text-center">
-              <p className="text-green-600 mb-4">{successMsg}</p>
-              <Link to="/signup">
-                <button className="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700">
-                  Sign Up
-                </button>
-              </Link>
-            </div>
-          ) : (
-            <>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+        <div className="flex flex-col justify-center items-center w-full lg:w-1/2 p-6 md:p-10">
+          <>
+              <h2 className="text-3xl font-bold text-gray-950 mb-2">
                 Sign In to Your Account
               </h2>
+              <p className="mb-6 text-sm text-gray-500">Use your account credentials to continue.</p>
               <form onSubmit={handleSubmit} className="w-full max-w-sm">
                 <div className="mb-4">
                   <input
@@ -232,7 +222,7 @@ const SignIn = () => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="Username"
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                    className="w-full h-12 px-4 border border-gray-200 rounded-md outline-none focus:border-primeColor"
                   />
                   {errors.username && (
                     <p className="text-red-500 text-sm mt-1">
@@ -246,7 +236,7 @@ const SignIn = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Password"
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                    className="w-full h-12 px-4 border border-gray-200 rounded-md outline-none focus:border-primeColor"
                   />
                   {errors.password && (
                     <p className="text-red-500 text-sm mt-1">
@@ -266,7 +256,7 @@ const SignIn = () => {
                   </label>
                   <Link
                     to="/forgot-password"
-                    className="text-sm text-purple-600 hover:underline"
+                    className="text-sm font-semibold text-primeColor hover:underline"
                   >
                     Forgot Password?
                   </Link>
@@ -275,7 +265,7 @@ const SignIn = () => {
                   type="submit"
                   className={`w-full py-2 rounded ${
                     canLoginAgain
-                      ? "bg-purple-600 text-white hover:bg-purple-700"
+                      ? "bg-primeColor text-white hover:bg-black"
                       : "bg-gray-400 text-gray-700 cursor-not-allowed"
                   }`}
                   disabled={!canLoginAgain}
@@ -286,7 +276,7 @@ const SignIn = () => {
                   Not registered?{" "}
                   <Link
                     to="/signup"
-                    className="text-purple-600 hover:underline"
+                  className="text-primeColor font-semibold hover:underline"
                   >
                     Sign Up
                   </Link>
@@ -302,14 +292,13 @@ const SignIn = () => {
                   User does not exist.{" "}
                   <Link
                     to="/signup"
-                    className="text-purple-600 hover:underline"
+                    className="text-primeColor font-semibold hover:underline"
                   >
                     Sign up
                   </Link>
                 </p>
               )}
-            </>
-          )}
+          </>
         </div>
       </div>
     </div>

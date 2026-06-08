@@ -2,13 +2,13 @@ import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import axios from "axios";
 import { HiOutlineMail, HiUser, HiPencilAlt } from "react-icons/hi";
-import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
+import { FiMapPin, FiPhone, FiUserCheck } from "react-icons/fi";
 import AddressForm from "../Address/AddressForm";
 import { PopupMsg } from "../../components/popup/PopupMsg";
 import { API_BASE_URL } from "../../config/ApiConfig";
+import AccountLayout from "./AccountLayout";
 
 const MyAccount = () => {
-  const [prevLocation, setPrevLocation] = useState("");
   const { state } = useContext(AuthContext);
   const { isLoggedIn, user } = state;
   const [userDetails, setUserDetails] = useState(null);
@@ -116,68 +116,85 @@ const MyAccount = () => {
   };
 
   return (
-    <div className="min-h-screen max-w-container flex flex-col items-center justify-center mx-auto p-4">
-      <Breadcrumbs title="My Account" prevLocation={prevLocation} />
+    <AccountLayout
+      title="My Account"
+      description="Review your account details and manage your saved delivery address."
+    >
       {popup.show && <PopupMsg message={popup.message} type={popup.type} />}
-      
-      <div className="w-full max-w-5xl bg-white shadow-2xl rounded-lg p-8">
-        {/* Profile Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-extrabold text-gray-800">
-            Your Account
-          </h1>
-          <p className="text-lg text-gray-600 mt-2">
-            Manage your account and orders
-          </p>
+
+      {isLoading ? (
+        <div className="space-y-5">
+          <div className="h-40 rounded-lg bg-gray-100 shimmer" />
+          <div className="h-72 rounded-lg bg-gray-100 shimmer" />
         </div>
-
-        {/* User Details Section */}
-        <div className="space-y-8">
-          <div className="border-b pb-6">
-            <h2 className="text-2xl font-semibold text-gray-700">
-              User Details
-            </h2>
-            <div className="mt-4 space-y-2">
-              <p className="flex items-center text-gray-700">
-                <HiUser className="mr-2 text-indigo-600" />
-                <strong>Name:</strong> {userDetails?.firstname}{" "}
-                {userDetails?.lastname}
-              </p>
-              <p className="flex items-center text-gray-700">
-                <HiOutlineMail className="mr-2 text-indigo-600" />
-                <strong>Email:</strong> {userDetails?.email}
-              </p>
-              <p className="flex items-center text-gray-700">
-                <strong>Username:</strong> {userDetails?.username}
-              </p>
+      ) : (
+        <div className="space-y-6">
+          <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primeColor text-2xl font-bold uppercase text-white">
+                  {(userDetails?.firstname || userDetails?.username || "U").charAt(0)}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-wide text-violet-600">
+                    Customer Profile
+                  </p>
+                  <h2 className="mt-1 text-2xl font-bold text-gray-950">
+                    {userDetails?.firstname} {userDetails?.lastname}
+                  </h2>
+                  <p className="text-sm text-gray-500">@{userDetails?.username}</p>
+                </div>
+              </div>
+              <span className="inline-flex w-fit items-center gap-2 rounded-full bg-green-50 px-4 py-2 text-sm font-bold text-green-700">
+                <FiUserCheck /> Active Account
+              </span>
             </div>
-          </div>
 
-          {/* Address Section */}
-          <div className="space-y-6">
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <InfoTile
+                icon={HiUser}
+                label="Full Name"
+                value={`${userDetails?.firstname || ""} ${userDetails?.lastname || ""}`.trim() || "Not provided"}
+              />
+              <InfoTile
+                icon={HiOutlineMail}
+                label="Email"
+                value={userDetails?.email || "Not provided"}
+              />
+            </div>
+          </section>
+
+          <section className="space-y-5">
             {userDetails?.address && !isEditing ? (
-              <div className="bg-indigo-50 p-6 rounded-lg shadow-md mt-6 relative">
-                <h2 className="text-2xl font-semibold text-indigo-700">
-                  Saved Address
-                </h2>
+              <div className="relative rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                 <button
-                  className="absolute top-4 right-4 text-gray-600 hover:text-indigo-700"
+                  className="absolute right-5 top-5 inline-flex h-10 w-10 items-center justify-center rounded-md border border-gray-200 text-gray-600 transition hover:bg-gray-50 hover:text-gray-950"
                   onClick={() => setIsEditing(true)}
+                  aria-label="Edit address"
                 >
                   <HiPencilAlt size={20} />
                 </button>
-                <p><strong>Address:</strong> {userDetails.address.address}</p>
-                <p><strong>City:</strong> {userDetails.address.city}</p>
-                <p><strong>State:</strong> {userDetails.address.state}</p>
-                <p><strong>Pincode:</strong> {userDetails.address.pincode}</p>
-                <p><strong>Country:</strong> {userDetails.address.country}</p>
-                <p><strong>Mobile No:</strong> {userDetails.address.mobileno}</p>
+                <div className="mb-5 flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-md bg-violet-50 text-violet-600">
+                    <FiMapPin />
+                  </span>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-950">Saved Address</h2>
+                    <p className="text-sm text-gray-500">Used during checkout.</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
+                  <AddressDetail label="Address" value={userDetails.address.address} wide />
+                  <AddressDetail label="City" value={userDetails.address.city} />
+                  <AddressDetail label="State" value={userDetails.address.state} />
+                  <AddressDetail label="Pincode" value={userDetails.address.pincode} />
+                  <AddressDetail label="Country" value={userDetails.address.country} />
+                  <AddressDetail label="Mobile" value={userDetails.address.mobileno} icon={FiPhone} wide />
+                </div>
               </div>
             ) : (
               <div>
-                <h2 className="text-2xl font-semibold text-gray-700">
-                  {userDetails?.address ? "Update Address" : "Add Address"}
-                </h2>
                 <AddressForm
                   address={address}
                   handleAddressChange={handleAddressChange}
@@ -187,18 +204,38 @@ const MyAccount = () => {
                 {isEditing && (
                   <button
                     onClick={handleCancelUpdate}
-                    className="mt-4 px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-800"
+                    className="mt-4 rounded-md border border-gray-200 px-5 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
                   >
                     Cancel
                   </button>
                 )}
               </div>
             )}
-          </div>
+          </section>
         </div>
-      </div>
-    </div>
+      )}
+    </AccountLayout>
   );
 };
+
+const InfoTile = ({ icon: Icon, label, value }) => (
+  <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+    <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-500">
+      <Icon className="text-violet-600" />
+      {label}
+    </div>
+    <p className="font-bold text-gray-950">{value}</p>
+  </div>
+);
+
+const AddressDetail = ({ label, value, icon: Icon, wide }) => (
+  <div className={`rounded-lg border border-gray-100 bg-gray-50 p-4 ${wide ? "md:col-span-2" : ""}`}>
+    <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-gray-500">
+      {Icon && <Icon />}
+      {label}
+    </p>
+    <p className="font-semibold text-gray-950">{value || "Not provided"}</p>
+  </div>
+);
 
 export default MyAccount;

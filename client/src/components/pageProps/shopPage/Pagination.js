@@ -109,10 +109,10 @@ const Pagination = ({
   }, [items, itemOffset, itemsPerPage]);
 
   return (
-    <div>
+    <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
       {/* Product Grid */}
       <div
-        className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10 mdl:gap-4 lg:gap-10 transition-opacity duration-700 ease-in-out
+        className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 transition-opacity duration-700 ease-in-out
     ${loading ? "opacity-60 pointer-events-none" : "opacity-100"}`}
       >
         {loading
@@ -144,18 +144,18 @@ const Pagination = ({
         marginPagesDisplayed={2}
         pageCount={pageCount}
         forcePage={currentPage}
-        containerClassName="flex items-center justify-center gap-4 mt-6"
-        pageLinkClassName="w-10 h-10 flex justify-center items-center border border-gray-300 rounded-full shadow-md text-gray-700 bg-white transition-all duration-300 hover:shadow-lg hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600"
-        activeClassName="bg-gradient-to-r from-blue-600 to-purple-700 text-white rounded-full shadow-lg border border-transparent"
-        previousClassName="w-10 h-10 flex justify-center items-center border border-gray-300 rounded-full shadow-md text-gray-700 bg-white transition-all duration-300 hover:shadow-lg hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600"
-        nextClassName="w-10 h-10 flex justify-center items-center border border-gray-300 rounded-full shadow-md text-gray-700 bg-white transition-all duration-300 hover:shadow-lg hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600"
+        containerClassName="flex items-center justify-center gap-2 mt-8 flex-wrap"
+        pageLinkClassName="w-10 h-10 flex justify-center items-center border border-gray-200 rounded-md text-gray-700 bg-white transition-all duration-300 hover:text-white hover:bg-primeColor"
+        activeClassName="bg-primeColor text-white rounded-md"
+        previousClassName="h-10 px-4 flex justify-center items-center border border-gray-200 rounded-md text-gray-700 bg-white transition-all duration-300 hover:text-white hover:bg-primeColor"
+        nextClassName="h-10 px-4 flex justify-center items-center border border-gray-200 rounded-md text-gray-700 bg-white transition-all duration-300 hover:text-white hover:bg-primeColor"
         disabledClassName="opacity-50 cursor-not-allowed pointer-events-none bg-gray-100 border-gray-200 text-gray-400"
         breakLabel="..."
         breakClassName="text-gray-500"
       />
 
       {/* Page Status */}
-      <p className="text-base font-normal text-lightText mt-4 text-center">
+      <p className="text-sm font-medium text-lightText mt-4 text-center">
         {items.length === 0 && !loading
           ? "No products found."
           : loading

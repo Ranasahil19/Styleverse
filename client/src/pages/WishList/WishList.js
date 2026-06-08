@@ -76,38 +76,44 @@ function WishList() {
   };
 
   return (
-    <div className="max-w-container mx-auto px-4 mb-2">
+    <div className="max-w-container mx-auto px-4 pb-16">
       <Breadcrumbs title="Wish List Product" />
-      <h2 className="text-2xl font-semibold mb-6">Your Wishlist</h2>
+      <div className="mb-8 rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+        <p className="text-sm font-semibold uppercase tracking-wide text-violet-600">
+          Saved Items
+        </p>
+        <h2 className="mt-1 text-3xl font-bold text-gray-950">Your Wishlist</h2>
+        <p className="mt-1 text-sm text-gray-500">Keep track of products you love.</p>
+      </div>
       {popup.show && <PopupMsg type={popup.type} message={popup.message} />}
 
       {loading ? (
-        <p className="text-center text-lg">Loading...</p>
+        <div className="rounded-lg border border-gray-200 bg-white p-10 text-center text-gray-500 shadow-sm">Loading...</div>
       ) : wishlistProducts.length === 0 ? (
-        <p className="text-center text-lg">Your wishlist is empty.</p>
+        <div className="rounded-lg border border-dashed border-gray-300 bg-white p-10 text-center text-gray-500">Your wishlist is empty.</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {wishlistProducts.map((product) => (
             <div
               key={product._id}
-              className="border rounded-lg p-4 shadow-md relative"
+              className="relative rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
             >
               <Link to={`/products/${product._id}`}>
                 <img
                   src={product.image}
                   alt={product.title}
-                  className="w-full h-44 object-contain rounded-md"
+                  className="w-full h-52 object-contain rounded-md bg-gray-50 p-3"
                 />
-                <h3 className="text-lg font-semibold mt-2">{`${product.title.slice(
+                <h3 className="text-base font-bold mt-3 text-gray-950">{`${product.title.slice(
                   0,
                   20
                 )}...`}</h3>
-                <p className="text-gray-600">${product.price}</p>
+                <p className="text-primeColor font-bold mt-1">${product.price}</p>
               </Link>
 
               <button
                 onClick={() => removeFromWishlist(product._id)}
-                className="absolute top-3 right-3 bg-red-500 text-white p-2 rounded-full"
+                className="absolute top-3 right-3 bg-white border border-red-100 text-red-500 p-2 rounded-full shadow-sm hover:bg-red-50"
               >
                 <Trash2 size={20} />
               </button>

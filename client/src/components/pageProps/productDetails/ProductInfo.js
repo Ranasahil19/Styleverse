@@ -45,32 +45,35 @@ const ProductInfo = ({ productInfo }) => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white border rounded-xl shadow-lg">
+    <div className="max-w-2xl mx-auto p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
       {/* Product Title */}
-      <h2 className="text-3xl font-bold text-gray-900">{productInfo?.title || "No Title"}</h2>
+      <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-violet-600">
+        {productInfo?.category || "Product"}
+      </p>
+      <h2 className="text-3xl font-bold text-gray-950">{productInfo?.title || "No Title"}</h2>
 
       {/* Price */}
-      <p className="text-2xl font-semibold text-red-600 mt-2">${productInfo?.price || 0}</p>
+      <p className="text-3xl font-bold text-primeColor mt-3">${productInfo?.price || 0}</p>
 
       {/* Quantity */}
-      <p className="text-lg font-medium text-gray-700 mt-2">
+      <p className="text-sm font-medium text-gray-600 mt-3">
         <span className="font-semibold">Available Quantity:</span> {productInfo?.quantity ?? "Not Available"}
       </p>
 
       {/* Description */}
-      <p className="text-gray-700 mt-4 leading-relaxed">
+      <p className="text-gray-600 mt-5 leading-7">
         {productInfo?.description || "No Description Available"}
       </p>
 
       {/* Categories */}
-      <p className="text-sm text-gray-500 mt-1">
+      <p className="text-sm text-gray-500 mt-4">
         <span className="font-semibold">Category:</span> {productInfo?.category || "N/A"}
       </p>
 
       {/* Add to Cart Button */}
       <button
         onClick={handleAddToCart}
-        className="w-full mt-6 py-3 bg-gradient-to-r from-red-500 to-red-700 text-white font-semibold text-lg rounded-lg hover:scale-105 transition-all duration-300 shadow-md"
+        className="w-full mt-6 py-3 bg-primeColor text-white font-bold text-sm uppercase tracking-wide rounded-md hover:bg-black transition-all duration-300"
       >
         Add to Cart
       </button>

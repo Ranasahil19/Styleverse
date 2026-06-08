@@ -7,9 +7,11 @@ const CouponSection = ({
   handleApplyCoupon,
   handleRemoveCoupon,
 }) => (
-  <div className="flex flex-col md:flex-row items-center gap-4 w-full p-4 border border-gray-300 rounded-md bg-white">
+  <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+    <h3 className="text-lg font-bold text-gray-950">Promo Code</h3>
+    <p className="mt-1 text-sm text-gray-500">Apply an available coupon before checkout.</p>
     <select
-      className="w-full md:w-52 sm:w-50 h-10 px-4 border text-primeColor text-sm outline-none border-gray-400 rounded-md"
+      className="mt-4 h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-primeColor outline-none transition focus:border-primeColor"
       onChange={handleCouponChange}
       defaultValue=""
     >
@@ -23,11 +25,11 @@ const CouponSection = ({
     </select>
 
     {selectedCoupon && (
-      <div className="border p-3 rounded-lg bg-gray-100 text-gray-700 w-full md:w-80 flex flex-col items-center">
-        <h3 className="font-bold text-lg text-primeColor border border-dashed bg-white border-gray-500 px-4 py-1 w-full text-center">
+      <div className="mt-4 rounded-lg border border-dashed border-violet-300 bg-violet-50 p-4 text-gray-700">
+        <h3 className="rounded-md bg-white px-4 py-2 text-center text-base font-bold text-primeColor shadow-sm">
           {selectedCoupon.code}
         </h3>
-        <p className="text-sm mt-2">
+        <p className="mt-3 text-sm">
           <strong>Discount:</strong>{" "}
           {selectedCoupon.type === "flat" ? `$${selectedCoupon.discount}` : `${selectedCoupon.discount}%`}
         </p>
@@ -37,11 +39,11 @@ const CouponSection = ({
         <p className="text-sm">
           <strong>Max Discounts:</strong> ${selectedCoupon.maxDiscount}
         </p>
-        <div className="flex gap-4 mt-2">
-          <button onClick={handleApplyCoupon} className="bg-green-600 text-white py-1 px-3 rounded hover:bg-green-700">
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <button onClick={handleApplyCoupon} className="rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-green-700">
             Apply
           </button>
-          <button onClick={handleRemoveCoupon} className="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600">
+          <button onClick={handleRemoveCoupon} className="rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50">
             Remove
           </button>
         </div>

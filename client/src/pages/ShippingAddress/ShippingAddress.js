@@ -5,15 +5,20 @@ import { AuthContext } from "../../context/AuthContext";
 import { PopupMsg } from "../../components/popup/PopupMsg";
 import { stripeKey } from "../../config/ApiConfig";
 import { API_BASE_URL } from "../../config/ApiConfig";
+import { FiArrowLeft, FiCreditCard, FiMapPin, FiTruck } from "react-icons/fi";
 
 const stripePromise = loadStripe(stripeKey);
 
-const ShippingAddress = ({ cartItems, totalPrice, clearCart, discount }) => {
+const ShippingAddress = ({
+  cartItems = [],
+  totalPrice = 0,
+  discount = 0,
+  shippingCharge = 5,
+  onBack,
+}) => {
   const { state } = useContext(AuthContext);
-  const { user } = state;
-  const userId = user.userId;
-
-  // console.log("Discount:", discount);
+  const { user } = state || {};
+  const userId = user?.userId;
 
   const [shippingAddress, setShippingAddress] = useState({
     address: "",
@@ -24,7 +29,8 @@ const ShippingAddress = ({ cartItems, totalPrice, clearCart, discount }) => {
     mobileno: "",
   });
   const [isUpdating, setIsUpdating] = useState(false);
-const [shippingCharge, setShippingCharge] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
 
   const [popup, setPopup] = useState({
     message: "",
@@ -59,17 +65,17 @@ const [shippingCharge, setShippingCharge] = useState(0);
     e.preventDefault();
 
     if (!userId) {
-      alert("User ID is missing.");
+      showPopup("User ID is missing.", "error");
       return;
     }
 
-    const { address, city, state, pincode, mobileno } = shippingAddress;
-    if (!address || !city || !state || !pincode || !mobileno) {
-      alert("All fields are required.");
+    if (!isAddressComplete) {
+      showPopup("Please complete all address fields.", "error");
       return;
     }
 
     try {
+      setIsSaving(true);
       const apiUrl = isUpdating
         ? `${API_BASE_URL}/api/user/update-address/${userId}`
         : `${API_BASE_URL}/api/user/add-address/${userId}`;
@@ -97,23 +103,33 @@ const [shippingCharge, setShippingCharge] = useState(0);
         type: "error",
         show: true,
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  useEffect(() => {
-    if (totalPrice) {
-      setShippingCharge(5);
-    }
-  }, [totalPrice]);
-
-totalPrice = Number(totalPrice) + Number(shippingCharge);
-
-  console.log("Total Price:", totalPrice);
-
-  const finalPrice = totalPrice;
+  const subtotal = cartItems.reduce(
+    (acc, item) => acc + Number(item.price || 0) * Number(item.quantity || 0),
+    0
+  );
+  const finalPrice = Number(totalPrice) + Number(shippingCharge);
+  const isAddressComplete = [
+    "address",
+    "city",
+    "state",
+    "country",
+    "pincode",
+    "mobileno",
+  ].every((field) => shippingAddress[field]?.trim());
 
   const handleCheckout = async () => {
+    if (!isAddressComplete) {
+      showPopup("Please save a complete shipping address before payment.", "error");
+      return;
+    }
+
     try {
+      setIsPaying(true);
       const stripe = await stripePromise;
 
       // Create payment session
@@ -144,8 +160,14 @@ totalPrice = Number(totalPrice) + Number(shippingCharge);
       }
     } catch (error) {
       console.error("Error during payment or order placement:", error);
-      alert("An error occurred. Please try again.");
+      showPopup("An error occurred. Please try again.", "error");
+    } finally {
+      setIsPaying(false);
     }
+  };
+
+  const showPopup = (message, type = "info") => {
+    setPopup({ message, type, show: true });
   };
 
   useEffect(() => {
@@ -156,138 +178,205 @@ totalPrice = Number(totalPrice) + Number(shippingCharge);
   }, [popup]);
 
   return (
-    <div className="max-w-5xl mx-auto mt-12 p-8 bg-white shadow-xl rounded-lg border border-gray-200">
-      <h2 className="text-3xl font-semibold mb-8 text-gray-800 text-center">
-        Shipping Address
-      </h2>
+    <div className="max-w-container mx-auto px-4 pb-16 pt-8">
       {popup.show && <PopupMsg message={popup.message} type={popup.type} />}
-      <form onSubmit={handleSaveAddress} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <div className="mb-8 rounded-lg border border-gray-200 bg-white px-5 py-4 shadow-sm">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <label
-              htmlFor="address"
-              className="block text-sm font-medium text-gray-600"
-            >
-              Address
-            </label>
-            <input
-              type="text"
-              name="address"
-              id="address"
-              value={shippingAddress.address}
-              onChange={handleInputChange}
-              className="mt-2 p-3 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-              required
-            />
+            <p className="text-sm font-semibold uppercase tracking-wide text-violet-600">
+              Checkout
+            </p>
+            <h1 className="mt-1 text-3xl font-bold text-gray-950">
+              Delivery Details
+            </h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Confirm where your order should be delivered.
+            </p>
           </div>
-          <div>
-            <label
-              htmlFor="city"
-              className="block text-sm font-medium text-gray-600"
-            >
-              City
-            </label>
-            <input
-              type="text"
+          <div className="flex items-center gap-2 text-sm font-semibold text-gray-500">
+            <span>Cart</span>
+            <span className="h-px w-8 bg-gray-300" />
+            <span className="rounded-full bg-primeColor px-3 py-1 text-white">
+              Address
+            </span>
+            <span className="h-px w-8 bg-gray-300" />
+            <span>Payment</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
+        <form
+          onSubmit={handleSaveAddress}
+          className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
+        >
+          <div className="mb-6 flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-violet-50 text-violet-600">
+              <FiMapPin />
+            </span>
+            <div>
+              <h2 className="text-xl font-bold text-gray-950">
+                Shipping Address
+              </h2>
+              <p className="text-sm text-gray-500">
+                {isUpdating ? "Update your saved address." : "Add a delivery address."}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            <div className="md:col-span-2">
+              <AddressInput
+                label="Address"
+                name="address"
+                value={shippingAddress.address}
+                onChange={handleInputChange}
+                placeholder="House no, building, street"
+              />
+            </div>
+            <AddressInput
+              label="City"
               name="city"
-              id="city"
               value={shippingAddress.city}
               onChange={handleInputChange}
-              className="mt-2 p-3 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-              required
+              placeholder="City"
             />
-          </div>
-          <div>
-            <label
-              htmlFor="state"
-              className="block text-sm font-medium text-gray-600"
-            >
-              State
-            </label>
-            <input
-              type="text"
+            <AddressInput
+              label="State"
               name="state"
-              id="state"
               value={shippingAddress.state}
               onChange={handleInputChange}
-              className="mt-2 p-3 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-              required
+              placeholder="State"
             />
-          </div>
-          <div>
-            <label
-              htmlFor="country"
-              className="block text-sm font-medium text-gray-600"
-            >
-              Country
-            </label>
-            <input
-              type="text"
+            <AddressInput
+              label="Country"
               name="country"
-              id="country"
               value={shippingAddress.country}
               onChange={handleInputChange}
-              className="mt-2 p-3 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-              required
+              placeholder="Country"
             />
-          </div>
-          <div>
-            <label
-              htmlFor="pincode"
-              className="block text-sm font-medium text-gray-600"
-            >
-              Pincode
-            </label>
-            <input
-              type="text"
+            <AddressInput
+              label="Pincode"
               name="pincode"
-              id="pincode"
               value={shippingAddress.pincode}
               onChange={handleInputChange}
-              className="mt-2 p-3 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-              required
+              placeholder="Postal code"
             />
+            <div className="md:col-span-2">
+              <AddressInput
+                label="Mobile Number"
+                name="mobileno"
+                value={shippingAddress.mobileno}
+                onChange={handleInputChange}
+                placeholder="Delivery contact number"
+              />
+            </div>
           </div>
-          <div className="md:col-span-2">
-            <label
+
+          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+            <button
+              type="button"
+              onClick={onBack || (() => window.history.back())}
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
             >
-              Mobile Number
-            </label>
-            <input
-              type="text"
-              name="mobileno"
-              id="mobileno"
-              value={shippingAddress.mobileno}
-              onChange={handleInputChange}
-              className="mt-2 p-3 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-              required
-            />
+              <FiArrowLeft /> Back to cart
+            </button>
+            <button
+              type="submit"
+              className="rounded-md bg-primeColor px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isSaving}
+            >
+              {isSaving ? "Saving..." : isUpdating ? "Update Address" : "Save Address"}
+            </button>
           </div>
-        </div>
-        <button
-          type="submit"
-          className="w-full py-3 px-6 bg-blue-500 text-white font-medium rounded-lg shadow-md hover:bg-blue-600 transition-all duration-200"
-        >
-          Save Address
-        </button>
-      </form>
-      <div className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-          Order Summary
-        </h2>
-        <div className="flex justify-between items-center text-lg font-medium">
-          <span>Total Price:</span>
-          <span>
-            ${cartItems ? (totalPrice).toFixed(2) : 0}
-          </span>
-        </div>
-        <button
-          onClick={handleCheckout}
-          className="mt-6 w-full py-3 px-6 bg-green-500 text-white font-medium rounded-lg shadow-md hover:bg-green-600 transition-all duration-200"
-        >
-          Proceed to Checkout
-        </button>
+        </form>
+
+        <aside className="space-y-5 lg:sticky lg:top-28 lg:self-start">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="mb-5 flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-md bg-green-50 text-green-600">
+                <FiTruck />
+              </span>
+              <div>
+                <h2 className="text-xl font-bold text-gray-950">Order Review</h2>
+                <p className="text-sm text-gray-500">{cartItems.length} items</p>
+              </div>
+            </div>
+
+            <div className="max-h-64 space-y-3 overflow-y-auto pr-1">
+              {cartItems.map((item) => (
+                <div key={item._id} className="flex gap-3">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="h-16 w-16 rounded-md border border-gray-100 bg-gray-50 object-contain p-1"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-gray-950">
+                      {item.title}
+                    </p>
+                    <p className="text-xs text-gray-500">Qty {item.quantity}</p>
+                  </div>
+                  <span className="text-sm font-bold text-gray-950">
+                    ${(item.price * item.quantity).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-5 space-y-3 border-t border-gray-200 pt-5 text-sm">
+              <SummaryLine label="Subtotal" value={`$${subtotal.toFixed(2)}`} />
+              <SummaryLine label="Discount" value={`- $${Number(discount).toFixed(2)}`} accent="green" />
+              <SummaryLine label="Shipping" value={`+ $${Number(shippingCharge).toFixed(2)}`} accent="orange" />
+              <div className="flex justify-between border-t border-gray-200 pt-4 text-lg font-bold text-gray-950">
+                <span>Total</span>
+                <span>${finalPrice.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <button
+              onClick={handleCheckout}
+              disabled={isPaying}
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md bg-green-600 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <FiCreditCard />
+              {isPaying ? "Redirecting..." : "Pay Securely"}
+            </button>
+          </div>
+        </aside>
       </div>
+    </div>
+  );
+};
+
+const AddressInput = ({ label, name, value, onChange, placeholder }) => (
+  <label className="block">
+    <span className="text-sm font-semibold text-gray-700">{label}</span>
+    <input
+      type="text"
+      name={name}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      className="mt-2 h-12 w-full rounded-md border border-gray-200 bg-white px-4 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-primeColor focus:ring-2 focus:ring-gray-100"
+      required
+    />
+  </label>
+);
+
+const SummaryLine = ({ label, value, accent }) => {
+  const color =
+    accent === "green"
+      ? "text-green-600"
+      : accent === "orange"
+      ? "text-orange-500"
+      : "text-gray-600";
+
+  return (
+    <div className={`flex justify-between ${color}`}>
+      <span>{label}</span>
+      <span className="font-semibold">{value}</span>
     </div>
   );
 };

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
+import { FiSearch } from "react-icons/fi";
 
 function SearchOrders({ orders, onSearchChange }) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
+  const [suggestions] = useState([]);
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
   
   const searchBoxRef = useRef(null); // Reference for the search box container
@@ -50,22 +51,25 @@ function SearchOrders({ orders, onSearchChange }) {
   };
 
   return (
-    <div className="relative" ref={searchBoxRef}>
-      <input
-        type="text"
-        placeholder="Search orders..."
-        value={searchTerm}
-        onChange={handleSearchChange}
-        onFocus={() => setFilteredSuggestions(suggestions)}
-        className="border px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300 w-64"
-      />
+    <div className="relative w-full md:max-w-md" ref={searchBoxRef}>
+      <label className="flex h-11 w-full items-center gap-3 rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-700">
+        <FiSearch className="text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search orders by product"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          onFocus={() => setFilteredSuggestions(suggestions)}
+          className="h-full flex-1 bg-transparent outline-none placeholder:text-gray-400"
+        />
+      </label>
 
       {filteredSuggestions.length > 0 && (
-        <ul className="absolute left-0 w-full bg-white border rounded-lg shadow-lg mt-1 z-10">
+        <ul className="absolute left-0 z-10 mt-2 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
           {filteredSuggestions.map((suggestion, index) => (
             <li
               key={index}
-              className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+              className="cursor-pointer px-4 py-2 text-sm hover:bg-gray-50"
               onClick={() => handleSuggestionClick(suggestion)}
             >
               {suggestion}

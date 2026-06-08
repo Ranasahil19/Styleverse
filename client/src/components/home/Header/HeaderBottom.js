@@ -20,6 +20,7 @@ import { useDispatch } from "react-redux";
 import { resetWishlist } from "../../../redux/orebiSlice";
 import ProductSearch from "../../AiProductSearch/productSearch";
 import { API_BASE_URL } from "../../../config/ApiConfig";
+import useCartCount from "../../../hooks/useCartCount";
 
 const HeaderBottom = ({setSearchResults}) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -27,8 +28,8 @@ const HeaderBottom = ({setSearchResults}) => {
   const navigate = useNavigate();
   const { state, dispatch } = useContext(AuthContext);
   const { isLoggedIn, user } = state;
-  const [cartCount, setCartCount] = useState(0);
   const userId = user?.userId;
+  const cartCount = useCartCount(userId);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
@@ -145,48 +146,6 @@ const HeaderBottom = ({setSearchResults}) => {
     fetchProducts();
   }, []);
 
-  useEffect(() => {
-    const fetchCartCount = async () => {
-      try {
-        const response = await axios.get(
-          `${API_BASE_URL}/api/cart/count/${userId}`
-        );
-        setCartCount(response.data.count);
-      } catch (error) {
-        console.error("Failed to fetch cart count:", error);
-      }
-    };
-
-    const intervalId = setInterval(() => {
-      if (userId) {
-        fetchCartCount();
-      }
-    }, 1000);
-
-    return () => clearInterval(intervalId);
-  }, [userId]);
-
-  // const fetchCartCount = async () => {
-  //   try {
-  //     const response = await axios.get(
-  //       `http://localhost:5000/api/cart/count/${userId}`
-  //     );
-  //     setCartCount(response.data.count);
-  //   } catch (error) {
-  //     console.error("Failed to fetch cart count:", error);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   const intervalId = setInterval(() => {
-  //     if (userId) {
-  //       fetchCartCount();
-  //     }
-  //   }, 1000);
-
-  //   return () => clearInterval(intervalId);
-  // }, [userId]);
-
   const fuse = new Fuse(allProducts, {
     keys: ["title", "category"],  // Now searching in both title and category
     includeScore: true,
@@ -234,10 +193,10 @@ const HeaderBottom = ({setSearchResults}) => {
   }, [searchQuery, allProducts]);
 
   return (
-    <div className="w-full bg-[#F5F5F3] relative">
+    <div className="w-full bg-white relative border-b border-gray-100">
       <div className="max-w-container mx-auto">
-        <Flex className="flex flex-col lg:flex-row items-start lg:items-center justify-between w-full px-4 pb-4 lg:pb-0 h-full lg:h-24">
-          <div className="relative w-full lg:w-[700px] h-[50px] text-base text-primeColor bg-white flex items-center gap-2 justify-between px-6 rounded-xl">
+        <Flex className="flex flex-col lg:flex-row items-start lg:items-center justify-between w-full gap-3 px-4 py-4 h-full">
+          <div className="relative w-full lg:w-[720px] h-12 text-base text-primeColor bg-gray-50 flex items-center gap-2 justify-between px-5 rounded-lg border border-gray-200 focus-within:border-primeColor focus-within:bg-white transition">
           <div className="relative flex-1 h-full">
             {/* Ghost Text (Positioned Behind) */}
             {/* {suggestedWords.length > 0 && searchQuery && (
@@ -251,7 +210,7 @@ const HeaderBottom = ({setSearchResults}) => {
 
             {/* Input Field */}
             <input
-              className="absolute w-full h-full outline-none bg-transparent placeholder:text-[#C4C4C4] placeholder:text-[14px] text-black z-10"
+              className="absolute w-full h-full outline-none bg-transparent placeholder:text-gray-400 placeholder:text-[14px] text-black z-10"
               type="text"
               onChange={handleSearch}
               value={searchQuery}
@@ -259,7 +218,7 @@ const HeaderBottom = ({setSearchResults}) => {
               placeholder="Search your products here"
             />
           </div>
-            <FaSearch className="w-5 h-5" />
+            <FaSearch className="w-5 h-5 text-gray-500" />
             <div className="relative">
               <FaMicrophone 
                 className={`w-5 h-5 cursor-pointer transition-all ${
@@ -288,7 +247,7 @@ const HeaderBottom = ({setSearchResults}) => {
             {(searchQuery.trim() !== "" ) && (
                 <div
                 ref={searchDropdownRef} // Add ref here
-                className="w-full mx-auto h-96 bg-white top-16 absolute left-0 z-50 overflow-y-scroll shadow-2xl scrollbar-hide cursor-pointer"
+                className="w-full mx-auto max-h-96 bg-white top-14 absolute left-0 z-50 overflow-y-auto shadow-2xl scrollbar-hide cursor-pointer rounded-lg border border-gray-200"
               >
                 {/* Close Button */}
                 <div className="flex justify-end p-2">
@@ -298,7 +257,7 @@ const HeaderBottom = ({setSearchResults}) => {
                       setFilteredProducts([]);
                       setSearchQuery("");
                     }}
-                    className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-700"
+                    className="rounded-md border border-gray-200 px-3 py-1 text-sm font-semibold text-gray-600 hover:bg-gray-50"
                   >
                     Close
                   </button>
@@ -319,12 +278,12 @@ const HeaderBottom = ({setSearchResults}) => {
                       ) & setSearchQuery("") & setFilteredProducts([])
                     }
                     key={item._id}
-                    className="max-w-[600px] h-28 bg-gray-100 mb-3 flex items-center gap-3"
+                    className="mx-3 mb-3 flex min-h-24 items-center gap-3 rounded-lg bg-gray-50 p-3 transition hover:bg-gray-100"
                   >
-                    <img className="w-24" src={item.image} alt="productImg" />
-                    <div className="flex flex-col gap-1">
-                      <p className="font-semibold text-lg">{item.title}</p>
-                      <p className="text-xs">{item.description}</p>
+                    <img className="h-20 w-20 rounded-md object-contain bg-white p-1" src={item.image} alt="productImg" />
+                    <div className="flex min-w-0 flex-col gap-1">
+                      <p className="font-semibold text-base truncate">{item.title}</p>
+                      <p className="text-xs text-gray-500 line-clamp-2">{item.description}</p>
                       <p className="text-sm">
                         Price:{" "}
                         <span className="text-primeColor font-semibold">
@@ -337,17 +296,17 @@ const HeaderBottom = ({setSearchResults}) => {
               </div>
             )}
           </div>
-          <div className="flex justify-start w-full mt-2 ml-2 lg:mt-0">
+          <div className="flex justify-start w-full lg:w-auto">
             <button
             onClick={() => setIsSearchModalOpen(true)}
-            className="bg-black font-semibold rounded-md text-white px-3 py-2">
+            className="bg-primeColor font-semibold rounded-md text-white px-4 py-3 text-sm hover:bg-black transition">
               Search By Image
             </button>
           </div>
           
           {isSearchModalOpen && <ProductSearch close={() => setIsSearchModalOpen(false)} setSearchResults={setSearchResults} />}
 
-          <div className="flex gap-4 mt-2 ml-2 lg:mt-0 items-center pr-6 cursor-pointer relative">
+          <div className="flex gap-3 items-center cursor-pointer relative">
             <div className="relative">
               <div
                 ref={avatarRef}
@@ -359,7 +318,7 @@ const HeaderBottom = ({setSearchResults}) => {
                     isLoggedIn
                       ? "bg-black text-white"
                       : "bg-gray-400 text-gray-800"
-                  } rounded-full w-10 h-10 flex items-center justify-center text-lg uppercase`}
+                    } rounded-full w-10 h-10 flex items-center justify-center text-lg uppercase shadow-sm`}
                 >
                   {isLoggedIn && user?.username ? user.username.charAt(0) : "G"}
                 </div>
@@ -367,7 +326,7 @@ const HeaderBottom = ({setSearchResults}) => {
               {isDropdownOpen && (
                 <div
                   ref={dropdownRef}
-                  className="absolute mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50 
+                    className="absolute mt-2 bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 z-50 
                     w-56 sm:w-48 lg:w-56 lg:right-5 left-1/2 transform -translate-x-1/2 sm:left-auto sm:translate-x-0 
                     overflow-hidden"
                 >
@@ -435,15 +394,15 @@ const HeaderBottom = ({setSearchResults}) => {
                 </div>
               )}
             </div>
-            <Link to="/wishlist">
+            <Link to="/wishlist" className="rounded-full border border-gray-200 bg-white p-3 text-gray-700 transition hover:bg-gray-50">
               <div className="relative">
                 <FaHeart />
               </div>
             </Link>
-            <Link to="/cart">
+            <Link to="/cart" className="rounded-full border border-gray-200 bg-white p-3 text-gray-700 transition hover:bg-gray-50">
               <div className="relative">
                 <FaShoppingCart />
-                <span className="absolute font-titleFont top-3 -right-2 text-xs w-4 h-4 flex items-center justify-center rounded-full bg-primeColor text-white">
+                <span className="absolute font-titleFont -top-3 -right-3 text-xs min-w-5 h-5 px-1 flex items-center justify-center rounded-full bg-primeColor text-white">
                   {cartCount}
                 </span>
               </div>

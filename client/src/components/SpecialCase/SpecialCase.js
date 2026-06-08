@@ -1,34 +1,15 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import { RiShoppingCart2Fill } from "react-icons/ri";
 import { MdSwitchAccount } from "react-icons/md";
-import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
-import { API_BASE_URL } from "../../config/ApiConfig";
+import useCartCount from "../../hooks/useCartCount";
 
 const SpecialCase = () => {
-  const [cartCount, setCartCount] = useState(0);
   const { state } = useContext(AuthContext);
   const { user } = state;
   const userId = user?.userId;
-
-  useEffect(() => {
-    if (!userId) return;
-
-    const fetchCartCount = async () => {
-      try {
-        const response = await axios.get(`${API_BASE_URL}/api/cart/count/${userId}`);
-        setCartCount(response.data.count);
-      } catch (error) {
-        console.error("Failed to fetch cart count:", error);
-      }
-    };
-
-    fetchCartCount();
-    const intervalId = setInterval(fetchCartCount, 5000);
-
-    return () => clearInterval(intervalId);
-  }, [userId]);
+  const cartCount = useCartCount(userId);
 
   return (
     <div className="fixed top-1/2 right-4 transform -translate-y-1/2 z-50 flex flex-col gap-6">

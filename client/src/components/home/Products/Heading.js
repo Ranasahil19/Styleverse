@@ -1,7 +1,7 @@
 import React from "react";
 
 const Heading = ({ heading }) => {
-  return <div className="text-3xl font-semibold pb-6">{heading}</div>;
+  return <h2 className="text-3xl font-semibold text-gray-950">{heading}</h2>;
 };
 
 export default Heading;

@@ -59,12 +59,12 @@ const Header = () => {
   }, []);
 
   return (
-    <div className="w-full h-20 bg-white sticky top-0 z-50 border-b-[1px] border-b-gray-200">
+    <div className="w-full h-20 bg-white/95 backdrop-blur sticky top-0 z-50 border-b border-gray-200 shadow-sm">
       <nav className="h-full px-4 max-w-container mx-auto relative">
         <Flex className="flex items-center justify-between h-full">
           <Link to="/">
-            <div>
-              <Image className="w-48 object-cover" imgSrc={Logo} />
+            <div className="flex items-center">
+              <Image className="w-40 md:w-48 object-contain" imgSrc={Logo} />
             </div>
           </Link>
           <div>
@@ -73,13 +73,13 @@ const Header = () => {
                 initial={{ y: 30, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.5 }}
-                className="flex items-center w-auto z-50 p-0 gap-2"
+                className="flex items-center w-auto z-50 p-0 gap-2 rounded-full bg-gray-50 px-2 py-2"
               >
                 <>
                   {navBarList.map(({ _id, title, link }) => (
                     <NavLink
                       key={_id}
-                      className="flex font-normal hover:font-bold w-20 h-6 justify-center items-center px-12 text-base text-[#767676] hover:underline underline-offset-[4px] decoration-[1px] hover:text-[#262626] md:border-r-[2px] border-r-gray-300 hoverEffect last:border-r-0"
+                      className="flex h-9 items-center justify-center rounded-full px-5 text-sm font-semibold text-gray-500 transition hover:bg-white hover:text-primeColor hover:shadow-sm"
                       to={link}
                       state={{ data: location.pathname.split("/")[1] }}
                     >
@@ -91,17 +91,17 @@ const Header = () => {
             )}
             <HiMenuAlt2
               onClick={() => setSidenav(!sidenav)}
-              className="inline-block md:hidden cursor-pointer w-8 h-6 absolute top-6 right-4"
+              className="inline-block md:hidden cursor-pointer w-8 h-6 absolute top-6 right-4 text-primeColor"
             />
             {sidenav && (
-              <div className="fixed top-0 left-0 w-full h-screen bg-white text-gray-600 bg-opacity-80 z-50">
+              <div className="fixed top-0 left-0 w-full h-screen bg-black/30 text-gray-600 z-50">
                 <motion.div
                   initial={{ x: -300, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.5 }}
-                  className="w-[80%] h-full relative"
+                  className="w-[84%] max-w-sm h-full relative"
                 >
-                  <div className="w-full h-full bg-white p-6">
+                  <div className="w-full h-full bg-white p-6 shadow-2xl">
                     <img
                       className="w-40 h-20 mb-6 object-cover"
                       src={Logo}
@@ -110,7 +110,7 @@ const Header = () => {
                     <ul className="text-gray-600 flex flex-col gap-2">
                       {navBarList.map((item) => (
                         <li
-                          className="font-normal hover:font-bold items-center text-lg text-gray-600 hover:underline underline-offset-[4px] decoration-[1px] hover:text-gray-800 md:border-r-[2px] border-r-gray-300 hoverEffect last:border-r-0"
+                          className="rounded-md px-3 py-2 text-base font-semibold text-gray-600 transition hover:bg-gray-50 hover:text-gray-950"
                           key={item._id}
                         >
                           <NavLink
@@ -172,7 +172,7 @@ const Header = () => {
                   </div>
                   <span
                     onClick={() => setSidenav(false)}
-                    className="w-8 h-8 border-[1px] border-gray-300 absolute top-2 -right-10 text-gray-300 text-2xl flex justify-center items-center cursor-pointer hover:border-red-500 hover:text-red-500 duration-300"
+                    className="w-9 h-9 rounded-full bg-white shadow absolute top-3 -right-12 text-gray-700 text-2xl flex justify-center items-center cursor-pointer hover:text-red-500 duration-300"
                   >
                     <MdClose />
                   </span>

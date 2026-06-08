@@ -45,13 +45,13 @@ const Footer = () => {
     }
   };
   return (
-    <div className="w-full bg-[#F5F5F3] py-20">
-      <div className="max-w-container mx-auto grid grid-cols-1 md:grid-cols-2  xl:grid-cols-6 px-4 gap-10">
+    <div className="w-full border-t border-gray-200 bg-white py-16">
+      <div className="max-w-container mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 px-4 gap-10">
         <div className="col-span-2">
           <FooterListTitle title=" More about StyleVerse Shop" />
           <div className="flex flex-col gap-6">
-            <p className="text-base w-full xl:w-[80%]">
-              StyleVerse is a trendy online fashion store offering stylish apparel, accessories, and footwear for every occasion. Stay fashionable with the latest trends and premium-quality products! ✨🛍️
+            <p className="text-base w-full xl:w-[80%] leading-7 text-gray-600">
+              StyleVerse is a trendy online fashion store offering stylish apparel, accessories, and footwear for every occasion.
             </p>
             <ul className="flex items-center gap-2">
               <a
@@ -59,7 +59,7 @@ const Footer = () => {
                 target="_blank"
                 rel="noreferrer"
               >
-                <li className="w-7 h-7 bg-primeColor text-gray-100 hover:text-white cursor-pointer text-lg rounded-full flex justify-center items-center hover:bg-black duration-300">
+                <li className="w-9 h-9 bg-primeColor text-gray-100 hover:text-white cursor-pointer text-lg rounded-full flex justify-center items-center hover:bg-black duration-300">
                   <FaYoutube />
                 </li>
               </a>
@@ -68,7 +68,7 @@ const Footer = () => {
                 target="_blank"
                 rel="noreferrer"
               >
-                <li className="w-7 h-7 bg-primeColor text-gray-100 hover:text-white cursor-pointer text-lg rounded-full flex justify-center items-center hover:bg-black duration-300">
+                <li className="w-9 h-9 bg-primeColor text-gray-100 hover:text-white cursor-pointer text-lg rounded-full flex justify-center items-center hover:bg-black duration-300">
                   <FaGithub />
                 </li>
               </a>
@@ -77,7 +77,7 @@ const Footer = () => {
                 target="_blank"
                 rel="noreferrer"
               >
-                <li className="w-7 h-7 bg-primeColor text-gray-100 hover:text-white cursor-pointer text-lg rounded-full flex justify-center items-center hover:bg-black duration-300">
+                <li className="w-9 h-9 bg-primeColor text-gray-100 hover:text-white cursor-pointer text-lg rounded-full flex justify-center items-center hover:bg-black duration-300">
                   <FaFacebook />
                 </li>
               </a>
@@ -86,7 +86,7 @@ const Footer = () => {
                 target="_blank"
                 rel="noreferrer"
               >
-                <li className="w-7 h-7 bg-primeColor text-gray-100 hover:text-white cursor-pointer text-lg rounded-full flex justify-center items-center hover:bg-black duration-300">
+                <li className="w-9 h-9 bg-primeColor text-gray-100 hover:text-white cursor-pointer text-lg rounded-full flex justify-center items-center hover:bg-black duration-300">
                   <FaLinkedin />
                 </li>
               </a>
@@ -145,8 +145,8 @@ const Footer = () => {
         </div>
         <div className="col-span-2 flex flex-col items-center w-full px-4">
           <FooterListTitle title="Subscribe to our newsletter." />
-          <div className="w-full">
-            <p className="text-center mb-4">
+          <div className="w-full rounded-lg border border-gray-200 bg-gray-50 p-5">
+            <p className="text-center mb-4 text-gray-600">
             Subscribe to our newsletter for the latest updates and exclusive offers!
             </p>
             {subscription ? (
@@ -164,7 +164,7 @@ const Footer = () => {
                   <input
                     onChange={(e) => setEmailInfo(e.target.value)}
                     value={emailInfo}
-                    className="w-full h-12 border-b border-gray-400 bg-transparent px-4 text-primeColor text-lg placeholder:text-base outline-none"
+                    className="w-full h-12 rounded-md border border-gray-200 bg-white px-4 text-primeColor text-sm placeholder:text-sm outline-none focus:border-primeColor"
                     type="text"
                     placeholder="Insert your email ...*"
                   />
@@ -176,7 +176,7 @@ const Footer = () => {
                 </div>
                 <button
                   onClick={handleSubscription}
-                  className="bg-white text-lightText w-[30%] h-10 hover:bg-black hover:text-white duration-300 text-base tracking-wide"
+                  className="bg-primeColor text-white w-full xl:w-[34%] h-12 rounded-md hover:bg-black duration-300 text-sm font-bold tracking-wide"
                 >
                   Subscribe
                 </button>

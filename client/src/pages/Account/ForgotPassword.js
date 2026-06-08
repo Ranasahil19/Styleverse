@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { PopupMsg } from "../../components/popup/PopupMsg";
 import { Link } from "react-router-dom";
@@ -56,10 +56,10 @@ const ForgotPassword = () => {
   // }, [popup]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       {popup.show && <PopupMsg message={popup.message} type={popup.type} />}
-      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+      <div className="w-full max-w-md bg-white rounded-lg border border-gray-200 shadow-xl p-8">
+        <h2 className="text-3xl font-bold text-center text-gray-950 mb-3">
           Forgot Password
         </h2>
         <p className="text-sm text-gray-600 text-center mb-6">
@@ -71,7 +71,7 @@ const ForgotPassword = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full h-12 rounded-md border border-gray-200 px-4 focus:outline-none focus:border-primeColor"
               placeholder="Enter Your Email"
               required
             />
@@ -81,7 +81,7 @@ const ForgotPassword = () => {
           </div>
           <button
             type="submit"
-            className="w-full py-2 rounded-lg bg-purple-600 text-white font-semibold hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full py-3 rounded-md bg-primeColor text-white font-bold hover:bg-black focus:outline-none"
           >
             Send Reset Link
           </button>
@@ -94,7 +94,7 @@ const ForgotPassword = () => {
             Remembered your password?{" "}
             <Link
               to="/signin"
-              className="text-purple-600 font-medium hover:underline"
+              className="text-primeColor font-semibold hover:underline"
             >
               Login here
             </Link>

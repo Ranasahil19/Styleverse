@@ -42,7 +42,11 @@ const useCart = (userId) => {
   }, [userId]);
 
   const calculateTotal = useCallback(() => {
-    if (!cartItems || cartItems.length === 0) return;
+    if (!cartItems || cartItems.length === 0) {
+      setTotalAmt(0);
+      setDiscountAmt(0);
+      return;
+    }
 
     const subtotal = cartItems.reduce(
       (acc, item) => acc + item.price * item.quantity,
@@ -199,6 +203,10 @@ const useCart = (userId) => {
     setProceedToCheckout(true);
   };
 
+  const handleBackToCart = () => {
+    setProceedToCheckout(false);
+  };
+
   const showPopup = (message, type = "info") => {
     setPopup({ show: true, message, type });
     setTimeout(() => setPopup({ show: false, message: "", type: "" }), 3000);
@@ -220,6 +228,7 @@ const useCart = (userId) => {
     handleApplyCoupon,
     handleRemoveCoupon,
     handleProceedToCheckout,
+    handleBackToCart,
     shippingCharge,
     setShippingCharge,
   };

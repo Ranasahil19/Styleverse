@@ -8,7 +8,6 @@ import { API_BASE_URL } from "../../config/ApiConfig";
 
 const ProductDetails = () => {
   const { id } = useParams();
-  const [prevLocation, setPrevLocation] = useState("");
   const [productInfo, setProductInfo] = useState({});
   const [mainImage, setMainImage] = useState("");
 
@@ -31,28 +30,28 @@ const ProductDetails = () => {
   }, [id]);
 
   return (
-    <div className="w-full mx-auto border-b-[1px] border-b-gray-300">
+    <div className="w-full mx-auto border-b border-gray-200 pb-16">
       <div className="max-w-container mx-auto px-4">
-        <div className="xl:-mt-10 -mt-7">
-          <Breadcrumbs title="Product Description" prevLocation={prevLocation} />
+        <div>
+          <Breadcrumbs title="Product Description" prevLocation="/" />
         </div>
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4 h-full -mt-5 xl:-mt-8 pb-10 bg-gray-100 p-4">
-          <div className="h-full">
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-6 h-full rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="h-full rounded-lg bg-gray-50 p-4">
             <ProductsOnSale productInfo={productInfo}/>
           </div>
-          <div className="h-full xl:col-span-2 flex justify-center items-center">
+          <div className="h-full xl:col-span-2 flex justify-center items-center rounded-lg bg-gray-50 p-5">
             {/* Display Main Product Image with Hover Zoom Effect */}
             {mainImage && (
               <div className="relative group w-full max-w-md mx-auto">
                 <img
-                  className="w-full max-h-96 object-contain rounded-lg shadow-lg transition-transform duration-500 ease-in-out transform group-hover:scale-110"
+                  className="w-full max-h-96 object-contain rounded-lg transition-transform duration-500 ease-in-out transform group-hover:scale-105"
                   src={mainImage}
                   alt="Product Main"
                 />
               </div>
             )}
           </div>
-          <div className="h-full w-full md:col-span-2 xl:col-span-3 xl:p-14 flex flex-col gap-6 justify-center">
+          <div className="h-full w-full md:col-span-2 xl:col-span-3 flex flex-col gap-6 justify-center">
             {/* Product Description */}
             <ProductInfo productInfo={productInfo} />
           </div>

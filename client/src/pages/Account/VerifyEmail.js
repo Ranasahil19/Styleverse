@@ -9,7 +9,7 @@ const VerifyEmail = () => {
   const queryParams = new URLSearchParams(location.search);
   const emailFromURL = queryParams.get("email");
 
-  const [email, setEmail] = useState(emailFromURL || localStorage.getItem("verificationEmail"));
+  const [email] = useState(emailFromURL || localStorage.getItem("verificationEmail"));
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [popup, setPopup] = useState({ message: "", type: "", show: false });
@@ -103,10 +103,10 @@ const VerifyEmail = () => {
   };  
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white p-6 rounded-lg shadow-md w-96">
+    <div className="flex justify-center items-center min-h-screen bg-gray-50 p-4">
+      <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-xl w-full max-w-md">
         {popup.show && <PopupMsg message={popup.message} type={popup.type} />}
-        <h2 className="text-2xl font-semibold text-center text-gray-700">Verify Your Email</h2>
+        <h2 className="text-3xl font-bold text-center text-gray-950">Verify Your Email</h2>
         <p className="text-center text-gray-500 mb-4">
           Enter the 6-digit code sent to <b>{email}</b>
         </p>
@@ -122,7 +122,7 @@ const VerifyEmail = () => {
                 value={digit}
                 onChange={(e) => handleChange(index, e)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
-                className="w-12 h-12 text-center text-xl border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-12 h-12 text-center text-xl border border-gray-200 rounded-md focus:outline-none focus:border-primeColor"
               />
             ))}
           </div>
@@ -130,7 +130,7 @@ const VerifyEmail = () => {
           <button
             type="submit"
             className={`w-full py-2 text-white font-semibold rounded-md ${
-              loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
+              loading ? "bg-gray-400" : "bg-primeColor hover:bg-black"
             }`}
             disabled={loading}
           >
@@ -139,7 +139,7 @@ const VerifyEmail = () => {
 
           <button
             type="button"
-            className="mt-4 w-full py-2 text-white font-semibold rounded-md bg-blue-500 hover:bg-blue-600"
+            className="mt-4 w-full py-2 text-white font-semibold rounded-md bg-primeColor hover:bg-black disabled:bg-gray-300"
             onClick={handleResend}
             disabled={!canResend || loading}
           >

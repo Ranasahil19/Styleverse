@@ -35,7 +35,7 @@ import Aisearch from "./pages/AiSearch/AiSearch";
 
 const Layout = () => {
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50 text-gray-950">
       <Header />
       <HeaderBottom />
       <SpecialCase />
@@ -81,7 +81,7 @@ const router = createBrowserRouter(
 function App() {
   return (
     <AuthProvider>
-      <div className="font-bodyFont">
+      <div className="font-bodyFont bg-gray-50">
         <RouterProvider router={router} />
       </div>
     </AuthProvider>

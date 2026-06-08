@@ -63,13 +63,13 @@ const InvoiceDropdown = ({ orderId }) => {
       {popup.show && <PopupMsg message={popup.message} type={popup.type} />}
       <button
         onClick={() => handleInvoiceClick(orderId)}
-        className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+        className="rounded-md bg-primeColor px-3 py-2 text-sm font-semibold text-white transition hover:bg-black"
       >
-        Invoice ▼
+        Invoice
       </button>
 
       {dropdownOpen === orderId && (
-        <div className="absolute right-0 mt-2 bg-white border rounded-lg shadow-lg w-32 z-50 text-zinc-700">
+        <div className="absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-lg border border-gray-200 bg-white text-sm text-zinc-700 shadow-lg">
           {loading === orderId ? (
             <div className="flex justify-center items-center py-2">
               <svg
@@ -97,15 +97,15 @@ const InvoiceDropdown = ({ orderId }) => {
             <>
               <button
                 onClick={() => downloadInvoice(orderId)}
-                className="block w-full px-4 py-2 hover:bg-gray-100"
+                className="block w-full px-4 py-3 text-left font-medium hover:bg-gray-50"
               >
-                Download Invoice
+                Download
               </button>
               <button
                 onClick={() => emailInvoice(orderId)}
-                className="block w-full px-4 py-2 hover:bg-gray-100"
+                className="block w-full border-t border-gray-100 px-4 py-3 text-left font-medium hover:bg-gray-50"
               >
-                Email Invoice
+                Email
               </button>
             </>
           )}

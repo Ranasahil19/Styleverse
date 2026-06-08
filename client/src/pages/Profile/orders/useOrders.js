@@ -11,7 +11,6 @@ const useOrders = () => {
   const [filter, setFilter] = useState("last 30 days");
   const [searchTerm, setSearchTerm] = useState("");
   const [popup, setPopup] = useState({ message: "", type: "", show: false });
-  const [prevLocation, setPrevLocation] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -68,7 +67,6 @@ const useOrders = () => {
 
   return {
     popup,
-    prevLocation,
     orders,
     filteredOrders,
     filter,

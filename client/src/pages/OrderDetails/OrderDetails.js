@@ -52,25 +52,26 @@ function OrderDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 sm:px-6 lg:px-8">
+    <div className="max-w-container mx-auto px-4 pb-16">
       <Breadcrumbs title="Order Details" />
-      <div className="max-w-7xl mx-auto bg-white shadow-lg rounded-lg p-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-6 text-center">
-          Order Details
-        </h1>
+      <div className="mx-auto rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="mb-6">
+          <p className="text-sm font-semibold uppercase tracking-wide text-violet-600">Order</p>
+          <h1 className="mt-1 text-3xl font-bold text-gray-950">Order Details</h1>
+        </div>
 
         {/* Order Summary */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-            <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+          <div className="bg-gray-50 p-6 rounded-lg border border-gray-100">
+            <h2 className="text-xl font-bold text-gray-950 mb-4">
               Order Info
             </h2>
-            <p className="text-lg text-gray-600">Order ID: {order._id}</p>
-            <p className="text-lg text-gray-600">Status: {order.status}</p>
-            <p className="text-lg text-gray-600">
+            <p className="text-sm text-gray-600">Order ID: {order._id}</p>
+            <p className="text-sm text-gray-600">Status: {order.status}</p>
+            <p className="text-sm text-gray-600">
               Order Date: {new Date(order.createdAt).toLocaleDateString()}
             </p>
-            <p className="text-lg text-gray-600">
+            <p className="text-sm text-gray-600">
               {order.status === "Delivered"
                 ? `Delivered Date: ${new Date(
                     order.deliveryDate
@@ -79,20 +80,20 @@ function OrderDetails() {
                     order.deliveryDate
                   ).toLocaleDateString()}`}
             </p>
-            <p className="text-xl font-semibold text-gray-800 mt-1">
+            <p className="text-base font-semibold text-gray-800 mt-3">
               Discount Amt: ${order.discount ? order.discount.toFixed(2) : 0}
             </p>
-            <p className="text-xl font-semibold text-gray-800 mt-">
+            <p className="text-xl font-bold text-gray-950 mt-1">
               Total Price:${order.totalPrice.toFixed(2)}
             </p>
           </div>
 
           {/* Shipping Address */}
-          <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-            <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+          <div className="bg-gray-50 p-6 rounded-lg border border-gray-100">
+            <h2 className="text-xl font-bold text-gray-950 mb-4">
               Shipping Address
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-sm leading-7 text-gray-600">
               Address: {order.shippingAddress.address}, <br />
               City: {order.shippingAddress.city}, <br />
               State: {order.shippingAddress.state},
@@ -100,7 +101,7 @@ function OrderDetails() {
               Pincode: {order.shippingAddress.pincode} <br />
               Country: {order.shippingAddress.country}
             </p>
-            <p className="text-lg text-gray-600">
+            <p className="text-sm text-gray-600">
               Phone: {order.shippingAddress.mobileno}
             </p>
           </div>
@@ -108,19 +109,19 @@ function OrderDetails() {
 
         {/* Order Items */}
         <div className="mt-8">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+          <h2 className="text-xl font-bold text-gray-950 mb-4">
             Ordered Items
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {order.items.map((item) => (
               <div
                 key={item._id}
-                className="bg-white p-4 rounded-lg shadow-md flex items-center space-x-4"
+                className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex items-center space-x-4"
               >
                 <img
                   src={item.image}
                   alt={item.title}
-                  className="w-24 h-24 object-cover rounded-md"
+                  className="w-24 h-24 object-contain bg-gray-50 p-2 rounded-md"
                 />
                 <div>
                   <p className="text-lg font-medium text-gray-800">
@@ -138,14 +139,14 @@ function OrderDetails() {
 
         {/* Payment Details */}
         {payment && (
-          <div className="mt-8 bg-gray-50 p-6 rounded-lg shadow-sm">
-            <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+          <div className="mt-8 bg-gray-50 p-6 rounded-lg border border-gray-100">
+            <h2 className="text-xl font-bold text-gray-950 mb-4">
               Payment Details
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-sm text-gray-600">
               Payment Method: {payment.paymentMethod}
             </p>
-            <p className="text-lg text-gray-600">
+            <p className="text-sm text-gray-600">
               Transaction ID: {payment.transactionId}
             </p>
             <p className="text-xl font-semibold text-gray-800 mt-1">
