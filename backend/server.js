@@ -44,6 +44,9 @@ const localPythonBin = path.join(__dirname, "venv", "bin", "python");
 const PYTHON_BIN =
   process.env.PYTHON_BIN ||
   (fs.existsSync(localPythonBin) ? localPythonBin : "python3");
+const shouldStartPythonServer =
+  process.env.START_PYTHON_SERVER === "true" ||
+  process.env.NODE_ENV !== "production";
 
 const allowedOrigins = parseCsvEnv(process.env.ALLOWED_ORIGINS);
 const fallbackAllowedOrigins = [
@@ -126,7 +129,7 @@ global.onlineUsers = onlineUsers;
 let pythonProcess = null;
 let isShuttingDown = false;
 
-if (process.env.NODE_ENV !== "production") {
+if (shouldStartPythonServer) {
   console.log("Starting Python Flask server...");
 
   pythonProcess = spawn(PYTHON_BIN, ["app.py"], {

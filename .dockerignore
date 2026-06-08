@@ -1,0 +1,15 @@
+.git
+.gitignore
+.DS_Store
+
+client
+admin
+
+**/node_modules
+**/build
+**/.env
+**/__pycache__
+**/*.pyc
+
+backend/venv
+backend/uploads
