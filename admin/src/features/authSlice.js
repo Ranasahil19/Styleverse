@@ -148,11 +148,17 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.isAuthenticated = true; // Set authenticated to true
                 state.seller = action.payload.seller; // Update seller data if needed
+                state.role = action.payload.seller?.role ?? state.role;
+                if (state.role !== null && state.role !== undefined) {
+                    localStorage.setItem("sellerRole", state.role);
+                }
             })
             .addCase(checkAuthStatus.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
                 state.isAuthenticated = false; // Set authenticated to false
+                state.role = null;
+                localStorage.removeItem("sellerRole");
             });
     }
 });

@@ -5,6 +5,7 @@ import UserProfile from "component/Profile";
 import AccountSettings from "component/AccountSetting";
 import CategoriesList from "views/pages/admin/CategoriesPage";
 import CouponManage from "views/pages/admin/CouponList";
+import RoleRoute from "component/RoleRoute";
 
 const AdminDashboard = Loadable(lazy(() => import("views/pages/admin/AdminDashboard")));
 const UserList = Loadable(lazy(() => import("views/pages/admin/userList")));
@@ -15,7 +16,11 @@ const SamplePage = Loadable(lazy(() => import("views/sample-page")));
 
 const AdminRoutes = {
     path : "/admin",
-    element: <MainLayout />,
+    element: (
+        <RoleRoute allowedRoles={[0]}>
+            <MainLayout />
+        </RoleRoute>
+    ),
     children : [
         { path:"dashboard" , element: <AdminDashboard />},
         { path:"user-list" , element: <UserList />},

@@ -3,6 +3,7 @@ import Loadable from "ui-component/Loadable";
 import MainLayout from "layout/MainLayout";
 import UserProfile from "component/Profile";
 import AccountSettings from "component/AccountSetting";
+import RoleRoute from "component/RoleRoute";
 
 // Lazy-loaded seller pages
 const SellerDashboard = Loadable(lazy(() => import("views/pages/seller/dashboard")));
@@ -12,7 +13,11 @@ const SamplePage = Loadable(lazy(() => import("views/sample-page")));
 
 const SellerRoutes = {
   path: "/seller",
-  element: <MainLayout />, // Main layout for seller routes
+  element: (
+    <RoleRoute allowedRoles={[1]}>
+      <MainLayout />
+    </RoleRoute>
+  ), // Main layout for seller routes
   children: [
     { path: "dashboard", element: <SellerDashboard /> },
     { path: "product-list", element: <ProductList /> },

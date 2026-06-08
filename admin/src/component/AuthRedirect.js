@@ -8,7 +8,7 @@ const AuthRedirect = () => {
         if( sellerRole === 1){
             navigate("/seller/dashboard");
         }else if ( sellerRole === 0){
-            navigate("admin/dashboard");
+            navigate("/admin/dashboard");
         }else {
             navigate("/login");
         }

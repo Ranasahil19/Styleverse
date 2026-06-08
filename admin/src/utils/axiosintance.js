@@ -1,8 +1,10 @@
 import axios from "axios";
 import { setAccessToken, logoutSeller } from "../features/authSlice";
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5050/";
+
 const api = axios.create({
-    baseURL: "http://localhost:5000/",
+    baseURL: API_BASE_URL,
     withCredentials: true,
 });
 
@@ -26,6 +28,7 @@ api.interceptors.request.use(
     (config) => {
         const { accessToken } = getStore().getState().auth;
         if (accessToken) {
+            config.headers = config.headers || {};
             config.headers["Authorization"] = `Bearer ${accessToken}`;
         }
         return config;
@@ -40,12 +43,13 @@ api.interceptors.response.use(
         const originalRequest = error.config;
 
         // If the error is a 403 (Token Expired) and we haven’t retried yet
-        if (error.response?.status === 403 && !originalRequest._retry) {
+        if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
             originalRequest._retry = true; // Mark this request as retried
 
             if (isRefreshing) {
                 return new Promise((resolve) => {
                     subscribeTokenRefresh((newAccessToken) => {
+                        originalRequest.headers = originalRequest.headers || {};
                         originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
                         resolve(api(originalRequest)); // Retry the request
                     });
@@ -58,9 +62,11 @@ api.interceptors.response.use(
                 const oldRefreshToken = getStore().getState().auth.refreshToken;
 
                 // Call refresh API only once
-                const response = await axios.post("http://localhost:5000/seller-refreshtoken", {
-                    refreshToken: oldRefreshToken,
-                });
+                const response = await axios.post(
+                    `${API_BASE_URL.replace(/\/$/, "")}/seller-refreshtoken`,
+                    { refreshToken: oldRefreshToken },
+                    { withCredentials: true }
+                );
 
                 const newAccessToken = response.data.accessToken;
 
@@ -71,6 +77,8 @@ api.interceptors.response.use(
                 onRefreshed(newAccessToken);
 
                 // Retry the original request with new token
+                originalRequest.headers = originalRequest.headers || {};
+                originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
                 return api(originalRequest);
             } catch (refreshError) {
                 getStore().dispatch(logoutSeller());
