@@ -1,5 +1,5 @@
-const { spawn } = require("child_process");
 const Product = require("../../models/productModel");
+const { extractImageFeatures } = require("../../utils/pythonRunner");
 
 
 const cosineSimilarity = (vecA, vecB) => {
@@ -21,58 +21,35 @@ const cosineSimilarity = (vecA, vecB) => {
 };
 
 const searchByImage = async (req, res) => {
-    try {
-    imageUrl = req.file.path // Now getting URL from Cloudinary
+  try {
+    const imageUrl = req.file.path; // Now getting URL from Cloudinary
 
     if (!imageUrl) {
-        return res.status(400).json({ error: "Image URL is required" });
+      return res.status(400).json({ error: "Image URL is required" });
     }
 
-    // Extract features using Python
-    const pythonProcess = spawn("python", ["./ml_model/extract_features.py", imageUrl]);
+    const searchVector = await extractImageFeatures(imageUrl);
+    // Find similar products using vector search
+    const products = await Product.find({ vector: { $exists: true, $ne: null } });
 
-    let resultData = "";
-    pythonProcess.stdout.on("data", (data) => {
-        resultData += data.toString();
-    });
-
-    pythonProcess.stderr.on("data", (data) => {
-        console.error(`Python Error: ${data}`);
-    });
-
-    pythonProcess.on("close", async (code) => {
-    if (code !== 0) {
-        return res.status(500).json({ error: "Feature extraction failed" });
+    if (products.length === 0) {
+      return res.json([]); // No products with vectors found
     }
-
-    try {
-        const searchVector = JSON.parse(resultData);
-        // Find similar products using vector search
-        const products = await Product.find({ vector: { $exists: true, $ne: null } });
-
-        if (products.length === 0) {
-          return res.json([]); // No products with vectors found
-        }
         
-        // Compute similarity for only valid products
-        const results = products.filter(product => Array.isArray(product.vector) && product.vector.length === searchVector.length).map(product => {
-            const similarity = cosineSimilarity(searchVector, product.vector);
-            return { ...product._doc, similarity };
-        });
-
-        // Sort results by similarity
-        results.sort((a, b) => b.similarity - a.similarity);
-
-        res.json(results.slice(0, 2)); // Return top 10 results
-        } catch (error) {
-        console.error("Vector Processing Error:", error);
-        res.status(500).json({ error: "Search failed" });
-    }
+    // Compute similarity for only valid products
+    const results = products.filter(product => Array.isArray(product.vector) && product.vector.length === searchVector.length).map(product => {
+      const similarity = cosineSimilarity(searchVector, product.vector);
+      return { ...product._doc, similarity };
     });
 
-    } catch (err) {
+    // Sort results by similarity
+    results.sort((a, b) => b.similarity - a.similarity);
+
+    res.json(results.slice(0, 2)); // Return top 10 results
+  } catch (err) {
+    console.error("Image search error:", err);
     res.status(500).json({ error: "Something went wrong" });
-    }
+  }
 };
 
 module.exports = {

@@ -1,35 +1,56 @@
-import sys
-import numpy as np
-import torch
-import timm
-from PIL import Image
-import torchvision.transforms as transforms
-import requests
-from io import BytesIO
 import json
+import sys
+from io import BytesIO
 
-# Load pre-trained model
-model = timm.create_model('resnet50', pretrained=True)
-model.eval()
+import numpy as np
+import requests
+from PIL import Image
 
-# Preprocessing function
-transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-])
+
+VECTOR_SIZE = 1000
+
 
 def extract_features(image_url):
-    response = requests.get(image_url)
-    image = Image.open(BytesIO(response.content)).convert("RGB")
-    image = transform(image).unsqueeze(0)
+    response = requests.get(image_url, timeout=20)
+    response.raise_for_status()
 
-    with torch.no_grad():
-        features = model(image).squeeze().numpy()
-    
-    return features.tolist()
+    image = Image.open(BytesIO(response.content)).convert("RGB")
+
+    # Compact, deterministic image embedding that avoids heavyweight ML deps.
+    resized = image.resize((18, 18))
+    pixels = np.asarray(resized, dtype=np.float32).reshape(-1) / 255.0
+
+    channel_values = np.asarray(image.resize((64, 64)), dtype=np.float32) / 255.0
+    channel_means = channel_values.mean(axis=(0, 1))
+    channel_stds = channel_values.std(axis=(0, 1))
+
+    histograms = []
+    for channel in range(3):
+        hist, _ = np.histogram(
+            channel_values[:, :, channel],
+            bins=8,
+            range=(0.0, 1.0),
+            density=True,
+        )
+        histograms.extend(hist.astype(np.float32).tolist())
+
+    features = np.concatenate(
+        [
+            pixels,
+            channel_means,
+            channel_stds,
+            np.asarray(histograms, dtype=np.float32),
+        ]
+    )
+
+    if features.size < VECTOR_SIZE:
+        features = np.pad(features, (0, VECTOR_SIZE - features.size))
+
+    return features[:VECTOR_SIZE].astype(float).tolist()
+
 
 if __name__ == "__main__":
-    image_url = sys.argv[1]  # Get image URL from command line
-    features = extract_features(image_url)
-    print(json.dumps(features))  # Return JSON-encoded features
+    if len(sys.argv) < 2:
+        raise SystemExit("Usage: extract_features.py <image_url>")
+
+    print(json.dumps(extract_features(sys.argv[1])))

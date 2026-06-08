@@ -1,0 +1,23 @@
+{
+  "watch": [
+    "server.js",
+    "config",
+    "controllers",
+    "graphql",
+    "Middleware",
+    "models",
+    "routes"
+  ],
+  "ext": "js,json",
+  "ignore": [
+    "node_modules/**",
+    "venv/**",
+    "uploads/**",
+    "data/**",
+    "**/__pycache__/**",
+    "**/*.pyc",
+    "*.log"
+  ],
+  "delay": "500",
+  "exec": "node server.js"
+}

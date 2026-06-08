@@ -1,5 +1,6 @@
 const Cart = require("../../models/cart");
 const mongoose = require("mongoose");
+const { emitCartCountUpdated } = require("./cartSocket");
 
 // Add Product to cart
 exports.AddToCart = async (req, res) => {
@@ -20,10 +21,12 @@ exports.AddToCart = async (req, res) => {
     if (existingItem) {
       existingItem.quantity += quantity;
       await existingItem.save();
+      await emitCartCountUpdated(userId);
       return res.status(200).json({ success: true, message: "Cart updated" });
     } else {
       const newCartItem = new Cart({ productId, quantity, userId });
       await newCartItem.save();
+      await emitCartCountUpdated(userId);
       return res.status(201).json({ success: true, cartItem: newCartItem });
     }
   } catch (error) {

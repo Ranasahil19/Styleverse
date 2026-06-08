@@ -1,4 +1,5 @@
 const Cart = require("../../models/cart");
+const { emitCartCountUpdated } = require("./cartSocket");
 
 // Fetch all cart items for a specific user
 exports.getCartByUser = async (req, res) => {
@@ -52,6 +53,7 @@ exports.updatedCart = async (req, res) => {
     // Update the quantity
     cartItem.quantity = quantity;
     await cartItem.save();
+    await emitCartCountUpdated(userId);
 
     res.status(200).json({ message: "Cart updated successfully", cartItem });
   } catch (error) {
@@ -76,6 +78,8 @@ exports.removeCart = async (req, res) => {
       return res.status(404).json({ message: "Cart item not found" });
     }
 
+    await emitCartCountUpdated(deletedItem.userId);
+
     res.status(200).json({ success: true, message: "Cart item deleted" });
   } catch (error) {
     console.error("Error deleting cart item:", error);
@@ -90,6 +94,7 @@ exports.clearCart = async (req, res) => {
 
     // Clear the cart items from the database
     await Cart.deleteMany({ userId });
+    await emitCartCountUpdated(userId);
 
     res.status(200).json({ message: "Cart cleared successfully" });
   } catch (error) {

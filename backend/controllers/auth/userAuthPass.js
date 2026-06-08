@@ -28,7 +28,8 @@ exports.forgotPass = async (req, res) => {
 
     // Send email with reset link
 
-    const resetLink = `http://localhost:3001/reset-password/${user._id}/${token}`;
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+    const resetLink = `${clientUrl}/reset-password/${user._id}/${token}`;
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: user.email,

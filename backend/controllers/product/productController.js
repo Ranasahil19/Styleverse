@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 const Category = require("../../models/category");
 const Seller = require("../../models/seller");
 const csvtojson = require("csvtojson");
-const { spawn } = require("child_process");
+const { extractImageFeatures } = require("../../utils/pythonRunner");
 // const { uploadBase64ToCloudinary } = require("../../utils/cloudinary");
 
 const addProduct = async (req, res) => {
@@ -30,24 +30,11 @@ const addProduct = async (req, res) => {
 
     const imageUrl = req.file.path;
 
-    const pythonProcess = spawn("python", ["./ml_model/extract_features.py", imageUrl]);
+    const vector = await extractImageFeatures(imageUrl);
+
     // Find the last product to get the highest id
     const lastProduct = await Product.findOne().sort({ id: -1 });
-    let resultData = "";
-        pythonProcess.stdout.on("data", (data) => {
-            resultData += data.toString();
-        });
 
-        pythonProcess.stderr.on("data", (data) => {
-            console.error(`Python Error: ${data}`);
-        });
-
-        pythonProcess.on("close", async (code) => {
-          if (code !== 0) {
-              return res.status(500).json({ error: "Feature extraction failed" });
-          }
-          try {
-            const vector = JSON.parse(resultData);
     // Create new product
     const newProduct = new Product({
       id: lastProduct ? lastProduct.id + 1 : 1, // Generate a unique id if the last product doesn't exist
@@ -77,10 +64,6 @@ const addProduct = async (req, res) => {
     return res
       .status(201)
       .json({ message: "Product added successfully!", product: newProduct });
-  }catch (error) {
-        res.status(500).json({ error: "Failed to process product data" });
-    }
-});
   }  catch (error) {
     console.error("Error adding product:", error);
     if (!res.headersSent) {

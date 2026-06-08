@@ -25,7 +25,8 @@ exports.forgotPassword = async( req , res) => {
             },
         });
 
-        const resetLink = `http://localhost:3000/reset-password/${seller._id}/${token}`
+        const adminClientUrl = process.env.ADMIN_CLIENT_URL || "http://localhost:3001";
+        const resetLink = `${adminClientUrl}/reset-password/${seller._id}/${token}`;
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: seller.email,
@@ -87,7 +88,7 @@ exports.resetPassword = async (req , res) => {
             to: seller.email,
             subject: "Password Reset Successfully",
             html: `
-                <p>Hello ${seller.firstname + " " + seller.lastname || "User"},</p>
+                <p>Hello ${seller.name},</p>
                 <p>Your password has been reset successfully. If you did not perform this action, please contact our support StyleVerse team immediately.</p>
             `,
         };

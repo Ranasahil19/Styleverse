@@ -26,7 +26,7 @@ exports.sellerAuthMiddleware = async (req, res, next) => {
       }
 
       const token = authHeader.split(" ")[1];
-      const decoded = jwt.verify(token , "my-ecommerce-access");
+      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
       const seller = await Seller.findById(decoded._id).select(" -password -refreshToken ");
       if(!seller){
@@ -39,5 +39,4 @@ exports.sellerAuthMiddleware = async (req, res, next) => {
       return res.status(403).json({ message: "Unauthorized request", error: error.message });
   }
 };
-
 

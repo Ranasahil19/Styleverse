@@ -1,5 +1,7 @@
 const Payment = require("../../models/payment");
 const Cart = require("../../models/cart");
+const Order = require("../../models/order");
+const { emitCartCountUpdated } = require("../cart/cartSocket");
 const { v4: uuidv4 } = require("uuid");
 const { placeOrder } = require("../order/orderController");
 const nodemailer = require("nodemailer");
@@ -7,7 +9,59 @@ const dotenv = require("dotenv");
 dotenv.config();
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
-const endpointSecret =process.env.STRIPE_WEBHOOK_KEY;
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+
+const completeCheckoutSession = async (session) => {
+  const payment = await Payment.findOne({ sessionId: session.id });
+
+  if (!payment) {
+    throw new Error(`Payment record not found for sessionId: ${session.id}`);
+  }
+
+  payment.status = session.payment_status === "paid" ? "paid" : payment.status;
+  payment.cardHolderName = session.customer_details?.name || payment.cardHolderName || "Unknown";
+  await payment.save();
+
+  const existingOrder = await Order.findOne({ paymentId: payment._id });
+  if (existingOrder) {
+    return { payment, order: existingOrder };
+  }
+
+  const {
+    userId,
+    carts,
+    totalPrice,
+    discount,
+    _id: paymentId,
+    shippingAddress,
+  } = payment;
+
+  if (!userId || !carts || !carts.length || !totalPrice) {
+    throw new Error("Missing order details.");
+  }
+
+  const order = await placeOrder({
+    userId,
+    cartItems: carts,
+    totalPrice,
+    discount,
+    shippingAddress,
+    paymentId,
+    createdAt: new Date(),
+    status: "Pending",
+    deliveryDate: new Date(new Date().setDate(new Date().getDate() + 5)),
+  });
+
+  await Cart.deleteMany({ userId });
+  await emitCartCountUpdated(userId);
+
+  if (session.customer_details?.email) {
+    await sendOrderConfirmationEmail(session.customer_details.email, order, payment);
+  }
+
+  return { payment, order };
+};
 
   exports.stripeWebhook = async (req, res) => {
     const sig = req.headers["stripe-signature"];
@@ -25,67 +79,7 @@ const endpointSecret =process.env.STRIPE_WEBHOOK_KEY;
       const session = event.data.object;
   
       try {
-        // Find the payment record by sessionId
-        const payment = await Payment.findOne({ sessionId: session.id });
-  
-        if (!payment) {
-          return console.error(
-            "Payment record not found for sessionId:",
-            session.id
-          );
-        }
-  
-        console.log("Payment record found:", payment);
-  
-        // Update payment status
-        payment.status = "paid";
-        payment.cardHolderName = session.customer_details?.name || "Unknown";
-        await payment.save();
-        console.log("Payment record updated:", payment);
-  
-        // Extract order details
-        const {
-          userId,
-          carts,
-          totalPrice,
-          discount,
-          _id: paymentId,
-          shippingAddress,
-        } = payment;
-        console.log("Carts:", carts);
-  
-        // Ensure we have all necessary data
-        if (!userId || !carts || !carts.length || !totalPrice) {
-          return console.error("Missing order details.");
-        }
-  
-        console.log("Shipping Address:", shippingAddress);
-  
-        // Create the order (with shipping address)
-        const order = await placeOrder({
-          userId,
-          cartItems: carts,
-          totalPrice,
-          discount,
-          shippingAddress,
-          paymentId,
-          createdAt: new Date(),
-          status: "Pending",
-          deliveryDate: new Date(new Date().setDate(new Date().getDate() + 5)), // Estimated delivery
-        });
-  
-        console.log("Order placed successfully after payment");
-
-        // Clear the cart
-        await Cart.deleteMany({ userId });
-        console.log("Cart cleared successfully for user:", userId);
-  
-        // Send Email Notification to User
-        await sendOrderConfirmationEmail(
-          session.customer_details.email,
-          order,
-          payment
-        );
+        await completeCheckoutSession(session);
       } catch (err) {
         console.error("Error processing payment or order:", err.message);
       }
@@ -179,7 +173,7 @@ const sendOrderConfirmationEmail = async (email, order, payment) => {
           </div>
 
           <div style="text-align: center; margin-top: 20px;">
-            <a href="https://major-project-three-beta.vercel.app/profile/myorders" style="background: #28a745; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">View Order</a>
+            <a href="${clientUrl}/profile/myorders" style="background: #28a745; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">View Order</a>
           </div>
 
           <div style="text-align: center; font-size: 12px; color: #999; margin-top: 20px;">
@@ -251,8 +245,8 @@ exports.createPayment = async (req, res) => {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `https://major-project-three-beta.vercel.app/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: "https://major-project-three-beta.vercel.app/cancel",
+      success_url: `${clientUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${clientUrl}/cart`,
     });
 
     // Prepare cart data for the database
@@ -307,15 +301,24 @@ exports.finalizePayment = async (req, res) => {
 
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    const cardHolderName = session.customer_details?.name;
 
-    const payment = await Payment.findOneAndUpdate(
-      { sessionId },
-      { cardHolderName },
-      { new: true }
-    );
+    if (session.payment_status !== "paid") {
+      const payment = await Payment.findOneAndUpdate(
+        { sessionId },
+        { cardHolderName: session.customer_details?.name },
+        { new: true }
+      );
 
-    res.status(200).json({ message: "Payment finalized", payment });
+      return res.status(200).json({
+        message: "Payment session is not paid yet",
+        payment,
+        paymentStatus: session.payment_status,
+      });
+    }
+
+    const { payment, order } = await completeCheckoutSession(session);
+
+    res.status(200).json({ message: "Payment finalized", payment, order });
   } catch (error) {
     console.error("Error finalizing payment:", error.message);
     res.status(500).send("Failed to finalize payment");
