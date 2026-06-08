@@ -6,7 +6,6 @@ Styleverse is a full-stack e-commerce college project with a customer storefront
 
 - Frontend: https://styleverse-app.netlify.app
 - Admin/Seller Dashboard: https://styleverse-app-admin.netlify.app
-- Backend API: https://styleverse-22l1.onrender.com
 
 ## Project Structure
 
