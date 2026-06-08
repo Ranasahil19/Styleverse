@@ -14,6 +14,7 @@ const ResetPassword = () => {
   });
   const [errors, setErrors] = useState({});
   const [successMsg, setSuccessMsg] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateForm = () => {
     let errors = {};
@@ -27,6 +28,7 @@ const ResetPassword = () => {
     if (!validateForm()) return;
 
     try {
+      setIsSubmitting(true);
       const res = await axios.post(
         `${API_BASE_URL}/reset-password/${id}/${token}`,
         { password }
@@ -50,6 +52,8 @@ const ResetPassword = () => {
         show: true,
       });
       setErrors(e.response?.data?.errors || {});
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -86,9 +90,13 @@ const ResetPassword = () => {
           </div>
           <button
             type="submit"
-            className="w-full py-3 rounded-md bg-primeColor text-white font-bold hover:bg-black focus:outline-none"
+            disabled={isSubmitting}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primeColor py-3 font-bold text-white hover:bg-black focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-400"
           >
-            Reset Password
+            {isSubmitting && (
+              <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+            )}
+            {isSubmitting ? "Resetting..." : "Reset Password"}
           </button>
         </form>
         {successMsg && (

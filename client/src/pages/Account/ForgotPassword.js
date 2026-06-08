@@ -13,6 +13,7 @@ const ForgotPassword = () => {
   });
   const [errors, setErrors] = useState({});
   const [successMsg, setSuccessMsg] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateForm = () => {
     let errors = {};
@@ -26,6 +27,7 @@ const ForgotPassword = () => {
     if (!validateForm()) return;
 
     try {
+      setIsSubmitting(true);
       const res = await axios.post(`${API_BASE_URL}/forgot-password`, {
         email,
       });
@@ -45,6 +47,8 @@ const ForgotPassword = () => {
         type: "error",
         show: true,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -81,9 +85,13 @@ const ForgotPassword = () => {
           </div>
           <button
             type="submit"
-            className="w-full py-3 rounded-md bg-primeColor text-white font-bold hover:bg-black focus:outline-none"
+            disabled={isSubmitting}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primeColor py-3 font-bold text-white hover:bg-black focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-400"
           >
-            Send Reset Link
+            {isSubmitting && (
+              <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+            )}
+            {isSubmitting ? "Sending..." : "Send Reset Link"}
           </button>
         </form>
         {successMsg && (

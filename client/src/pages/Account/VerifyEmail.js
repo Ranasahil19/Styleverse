@@ -129,11 +129,14 @@ const VerifyEmail = () => {
 
           <button
             type="submit"
-            className={`w-full py-2 text-white font-semibold rounded-md ${
+            className={`inline-flex w-full items-center justify-center gap-2 rounded-md py-2 font-semibold text-white ${
               loading ? "bg-gray-400" : "bg-primeColor hover:bg-black"
             }`}
             disabled={loading}
           >
+            {loading && (
+              <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+            )}
             {loading ? "Verifying..." : "Verify"}
           </button>
 

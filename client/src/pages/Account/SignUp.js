@@ -24,6 +24,7 @@ const SignUp = () => {
   const [suggestedPassword , setSuggestedPassword] = useState("")
   const [showPasswordDialog , setShowPasswordDialog] = useState(false);
   const [isPasswordPrompted, setIsPasswordPrompted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const generateStrongPassword = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*_+";
@@ -66,6 +67,7 @@ const SignUp = () => {
     }
 
     try {
+      setIsSubmitting(true);
       await axios.post(`${API_BASE_URL}/register`, {
         username,
         password,
@@ -98,6 +100,8 @@ const SignUp = () => {
         type: "error",
         show: true,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   }    
 
@@ -221,9 +225,13 @@ const SignUp = () => {
             </div>
             <button
               type="submit"
-              className="w-full py-3 bg-primeColor text-white rounded-md font-bold hover:bg-black transition"
+              disabled={isSubmitting}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primeColor py-3 font-bold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-gray-400"
             >
-              Sign Up
+              {isSubmitting && (
+                <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+              )}
+              {isSubmitting ? "Creating Account..." : "Sign Up"}
             </button>
           </form>
           <p className="text-center text-sm mt-4">

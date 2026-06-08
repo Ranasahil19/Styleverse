@@ -27,6 +27,7 @@ const SignIn = () => {
   });
   const [failedAttempts, setFailedAttempts] = useState(0); // Track failed login attempts
   const [hasAttemptedLogin, setHasAttemptedLogin] = useState(false); // Tracks login attempts
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const secret_Key = `${secretKey}`;
 
   useEffect(() => {
@@ -72,6 +73,7 @@ const SignIn = () => {
     e.preventDefault();
     if (!validateForm()) return;
     setHasAttemptedLogin(true);
+    setIsSubmitting(true);
 
     try {
       const res = await axios.post(`${API_BASE_URL}/login`, {
@@ -146,6 +148,8 @@ const SignIn = () => {
         type: "error",
         show: true,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -263,14 +267,21 @@ const SignIn = () => {
                 </div>
                 <button
                   type="submit"
-                  className={`w-full py-2 rounded ${
-                    canLoginAgain
+                  className={`inline-flex w-full items-center justify-center gap-2 rounded py-2 font-semibold transition ${
+                    canLoginAgain && !isSubmitting
                       ? "bg-primeColor text-white hover:bg-black"
                       : "bg-gray-400 text-gray-700 cursor-not-allowed"
                   }`}
-                  disabled={!canLoginAgain}
+                  disabled={!canLoginAgain || isSubmitting}
                 >
-                  {canLoginAgain ? "Sign In" : "Account Locked"}
+                  {isSubmitting && (
+                    <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                  )}
+                  {isSubmitting
+                    ? "Signing In..."
+                    : canLoginAgain
+                    ? "Sign In"
+                    : "Account Locked"}
                 </button>
                 <p className="text-sm text-center mt-4">
                   Not registered?{" "}
