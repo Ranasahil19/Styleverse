@@ -146,13 +146,13 @@ function TryOnModal({ product, onClose }) {
       !video.videoHeight
     ) return;
 
-    const targetWidth = Math.min(720, video.videoWidth);
+    const targetWidth = Math.min(480, video.videoWidth);
     const targetHeight = Math.round((video.videoHeight / video.videoWidth) * targetWidth);
     canvas.width = targetWidth;
     canvas.height = targetHeight;
     canvas.getContext("2d").drawImage(video, 0, 0, targetWidth, targetHeight);
 
-    const userB64 = canvas.toDataURL("image/jpeg", 0.72);
+    const userB64 = canvas.toDataURL("image/jpeg", 0.6);
     if (userB64 === "data:,") return;
 
     try {
@@ -170,7 +170,7 @@ function TryOnModal({ product, onClose }) {
       requestTimeoutRef.current = setTimeout(() => {
         inFlightRef.current = false;
         setStatus(prev => (prev === "loading" ? "error" : prev));
-      }, 14000);
+      }, 45000);
     } catch {
       inFlightRef.current = false;
       setStatus("error");
@@ -183,7 +183,7 @@ function TryOnModal({ product, onClose }) {
     const v = videoRef.current;
     const start = () => {
       processFrame();
-      intervalRef.current = setInterval(processFrame, 1800);
+      intervalRef.current = setInterval(processFrame, 4000);
     };
     if (v?.readyState >= 2) {
       start();

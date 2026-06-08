@@ -7,6 +7,8 @@ import base64
 from flask_cors import CORS
 import traceback
 import math
+import hashlib
+from collections import OrderedDict
 from rembg import remove
 from flask_socketio import SocketIO, emit
 from dotenv import load_dotenv
@@ -36,6 +38,8 @@ pose = mp_pose.Pose(
     min_tracking_confidence=0.5,
 )
 selfie_seg = mp_selfie.SelfieSegmentation(model_selection=1)
+PRODUCT_CACHE_LIMIT = int(os.environ.get("TRYON_PRODUCT_CACHE_LIMIT", 24))
+product_overlay_cache = OrderedDict()
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -98,9 +102,28 @@ def prepare_product_overlay(img: np.ndarray) -> np.ndarray:
     bgra[:, :, 3] = np.where(bgra[:, :, 3] < 10, 0, bgra[:, :, 3]).astype(np.uint8)
     return trim_transparent_padding(bgra)
 
+def get_cached_product_overlay(product_b64: str) -> np.ndarray:
+    """rembg is the slowest hosted step, so cache each product overlay per process."""
+    product_key = hashlib.sha256(product_b64.encode("utf-8")).hexdigest()
+    cached = product_overlay_cache.get(product_key)
+    if cached is not None:
+        product_overlay_cache.move_to_end(product_key)
+        return cached.copy()
+
+    product_img = base64_to_image(product_b64)
+    product_img = remove_bg(product_img)
+    product_img = prepare_product_overlay(product_img)
+
+    product_overlay_cache[product_key] = product_img
+    product_overlay_cache.move_to_end(product_key)
+    while len(product_overlay_cache) > PRODUCT_CACHE_LIMIT:
+        product_overlay_cache.popitem(last=False)
+
+    return product_img.copy()
+
 def prepare_glasses_overlay(img: np.ndarray, product_name: str = "") -> np.ndarray:
     """Keep clear eyeglass lenses transparent, but preserve sunglass lenses."""
-    bgra = prepare_product_overlay(img)
+    bgra = ensure_bgra(img.copy())
     alpha = bgra[:, :, 3]
     visible = alpha > 20
     if not np.any(visible):
@@ -119,7 +142,7 @@ def prepare_glasses_overlay(img: np.ndarray, product_name: str = "") -> np.ndarr
     if is_sunglasses:
         alpha = cv2.GaussianBlur(alpha, (3, 3), 0)
         bgra[:, :, 3] = np.where(alpha < 8, 0, alpha).astype(np.uint8)
-        return trim_transparent_padding(bgra)
+        return bgra
 
     # For normal eyeglasses, keep frames and fine edge details, not filled lenses.
     dark_frame = gray < 165
@@ -134,7 +157,7 @@ def prepare_glasses_overlay(img: np.ndarray, product_name: str = "") -> np.ndarr
     frame_mask = cv2.GaussianBlur(frame_mask, (3, 3), 0)
 
     bgra[:, :, 3] = np.minimum(alpha, frame_mask).astype(np.uint8)
-    return trim_transparent_padding(bgra)
+    return bgra
 
 def rotate_image(img: np.ndarray, angle: float) -> np.ndarray:
     h, w = img.shape[:2]
@@ -341,7 +364,7 @@ def overlay_shirt(user_img: np.ndarray, shirt_img: np.ndarray,
     top_y = shoulder_mid[1] - shoulder_w * (0.26 + vertical_offset) + shoulder_w * fit["offsetY"]
     bottom_y = min(ih + torso_h * 0.10, shoulder_mid[1] + torso_h * 1.18)
 
-    shirt_bgra = prepare_product_overlay(shirt_img)
+    shirt_bgra = ensure_bgra(shirt_img.copy())
     sh, sw = shirt_bgra.shape[:2]
     if sw == 0 or sh == 0:
         return user_img
@@ -409,8 +432,7 @@ def overlay_shirt(user_img: np.ndarray, shirt_img: np.ndarray,
 
 def process_tryon(data: dict) -> str:
     user_img    = base64_to_image(data["userImage"])
-    product_img = base64_to_image(data["productImage"])
-    product_img = remove_bg(product_img)
+    product_img = get_cached_product_overlay(data["productImage"])
     adjustments = data.get("adjustments") or {}
     product_name = data.get("productName") or data.get("title") or ""
 

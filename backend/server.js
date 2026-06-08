@@ -33,6 +33,7 @@ const PYTHON_PORT = process.env.PYTHON_PORT || 5001;
 
 const PYTHON_URL =
   process.env.PYTHON_URL || `http://localhost:${PYTHON_PORT}`;
+const TRYON_REQUEST_TIMEOUT = Number(process.env.TRYON_REQUEST_TIMEOUT || 60000);
 
 const parseCsvEnv = (value) =>
   String(value || "")
@@ -175,7 +176,12 @@ app.post("/tryon", async (req, res) => {
   try {
     const response = await axios.post(
       `${PYTHON_URL}/tryon`,
-      req.body
+      req.body,
+      {
+        timeout: TRYON_REQUEST_TIMEOUT,
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+      }
     );
 
     res.json(response.data);
@@ -318,6 +324,11 @@ app.post("//api/ai-tryon", handleAiTryOn);
               category,
               adjustments,
               productName,
+            },
+            {
+              timeout: TRYON_REQUEST_TIMEOUT,
+              maxBodyLength: Infinity,
+              maxContentLength: Infinity,
             }
           );
 
