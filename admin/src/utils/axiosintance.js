@@ -1,7 +1,6 @@
 import axios from "axios";
 import { setAccessToken, logoutSeller } from "../features/authSlice";
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5050/";
+import { API_BASE_URL } from "./apiConfig";
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -63,7 +62,7 @@ api.interceptors.response.use(
 
                 // Call refresh API only once
                 const response = await axios.post(
-                    `${API_BASE_URL.replace(/\/$/, "")}/seller-refreshtoken`,
+                    `${API_BASE_URL}/seller-refreshtoken`,
                     { refreshToken: oldRefreshToken },
                     { withCredentials: true }
                 );
