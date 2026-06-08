@@ -31,6 +31,14 @@ const useCartCount = (userId) => {
       transports: ["websocket"],
     });
 
+    const handleLocalCartCountUpdated = (event) => {
+      if (event.detail?.userId === userId) {
+        setCartCount(event.detail.count);
+      }
+    };
+
+    window.addEventListener("cartCountUpdated", handleLocalCartCountUpdated);
+
     socket.emit("registerCart", userId);
 
     socket.on("cartCountUpdated", (data) => {
@@ -41,6 +49,7 @@ const useCartCount = (userId) => {
 
     return () => {
       isMounted = false;
+      window.removeEventListener("cartCountUpdated", handleLocalCartCountUpdated);
       socket.disconnect();
     };
   }, [userId]);
