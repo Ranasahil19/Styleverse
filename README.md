@@ -38,7 +38,7 @@ Styleverse/
 ## Clone Project
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/Ranasahil19/Styleverse.git
 cd Styleverse
 ```
 
