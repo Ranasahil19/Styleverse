@@ -1,8 +1,11 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../../models/user");
-const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
+const {
+  createEmailTransporter,
+  getEmailFrom,
+} = require("../../utils/emailTransporter");
 dotenv.config();
 
 // Forgot Password Controller
@@ -18,20 +21,14 @@ exports.forgotPass = async (req, res) => {
     const token = jwt.sign({ id: user._id }, "secret", { expiresIn: "3h" });
 
     // Configure email transporter
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
+    const transporter = createEmailTransporter();
 
     // Send email with reset link
 
     const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
     const resetLink = `${clientUrl}/reset-password/${user._id}/${token}`;
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: getEmailFrom(),
       to: user.email,
       subject: "Reset Your Password",
       html: `
@@ -83,16 +80,10 @@ exports.resetPass = async (req, res) => {
     }
 
     // Send a confirmation email
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
+    const transporter = createEmailTransporter();
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: getEmailFrom(),
       to: user.email,
       subject: "Password Reset Successfully",
       html: `

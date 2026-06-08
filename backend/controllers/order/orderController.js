@@ -2,13 +2,16 @@ const fs = require("fs");
 const path = require("path");
 const PDFDocument = require("pdfkit");
 const Order = require("../../models/order"); // Adjust the path to your Order model
-const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
 dotenv.config();
 const Product = require("../../models/productModel");
 const Seller = require("../../models/seller");
 const { checkStockAndNotify } = require("../product/checkStockAndNotify");
 const { createNotification } = require("../notifications/notificationController");
+const {
+  createEmailTransporter,
+  getEmailFrom,
+} = require("../../utils/emailTransporter");
 
 const generateInvoicePDF = async (orderId, order, filePath) => {
   const doc = new PDFDocument({ margin: 50 });
@@ -135,16 +138,10 @@ exports.sendInvoiceEmail = async (req, res) => {
     // Generate the PDF invoice
     await generateInvoicePDF(orderId, order, filePath);
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
+    const transporter = createEmailTransporter();
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: getEmailFrom(),
       to: order.userId.email,
       subject: `Invoice for Order ${order._id}`,
       text: `Dear ${order.userId.username},\n\nPlease find your invoice for order ${order._id} attached.\n\nThank you!`,

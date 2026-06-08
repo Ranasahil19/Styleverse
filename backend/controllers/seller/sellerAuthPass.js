@@ -1,8 +1,11 @@
-const nodemailer = require('nodemailer')
 const dotenv = require("dotenv");
 const Seller = require('../../models/seller');
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
+const {
+    createEmailTransporter,
+    getEmailFrom,
+} = require("../../utils/emailTransporter");
 dotenv.config();
 
 exports.forgotPassword = async( req , res) => {
@@ -17,18 +20,12 @@ exports.forgotPassword = async( req , res) => {
 
         const token = jwt.sign({ id : seller._id} , "secret" , {expiresIn : '3h'});
 
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASSWORD,
-            },
-        });
+        const transporter = createEmailTransporter();
 
         const adminClientUrl = process.env.ADMIN_CLIENT_URL || "http://localhost:3001";
         const resetLink = `${adminClientUrl}/reset-password/${seller._id}/${token}`;
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: getEmailFrom(),
             to: seller.email,
             subject: "Reset Your Password",
             html: `
@@ -75,16 +72,10 @@ exports.resetPassword = async (req , res) => {
             return res.status(404).json({message : "Seller not found"})
         }
 
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASSWORD,
-            },
-        });
+        const transporter = createEmailTransporter();
         
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: getEmailFrom(),
             to: seller.email,
             subject: "Password Reset Successfully",
             html: `

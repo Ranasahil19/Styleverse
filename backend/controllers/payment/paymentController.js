@@ -4,8 +4,11 @@ const Order = require("../../models/order");
 const { emitCartCountUpdated } = require("../cart/cartSocket");
 const { v4: uuidv4 } = require("uuid");
 const { placeOrder } = require("../order/orderController");
-const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
+const {
+  createEmailTransporter,
+  getEmailFrom,
+} = require("../../utils/emailTransporter");
 dotenv.config();
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
@@ -114,16 +117,10 @@ const sendOrderConfirmationEmail = async (email, order, payment) => {
 
     console.log("Preparing to send email with order details:", order);
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
+    const transporter = createEmailTransporter();
 
     const mailOptions = {
-      from: `"Your Store" <${process.env.EMAIL_USER}>`,
+      from: `"StyleVerse" <${getEmailFrom()}>`,
       to: email,
       subject: "Your Order Has Been Confirmed! 🎉",
       html: `

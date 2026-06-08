@@ -2,7 +2,6 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../../models/user");
 const PendingVerification = require("../../models/PendingVerification");
-const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
 dotenv.config();
 const crypto = require("crypto");
@@ -11,20 +10,18 @@ const {
 } = require("../../Middleware/EmailTemplate");
 const Seller = require("../../models/seller");
 const { createNotification } = require("../notifications/notificationController");
+const {
+  createEmailTransporter,
+  getEmailFrom,
+} = require("../../utils/emailTransporter");
 
 // Configure nodemailer transport
-const transporter = nodemailer.createTransport({
-  service: "gmail", // Use your preferred email service
-  auth: {
-    user: process.env.EMAIL_USER, // Your email address
-    pass: process.env.EMAIL_PASSWORD, // Your email password or app-specific password
-  },
-});
+const transporter = createEmailTransporter();
 
 // Function to send emails
 const sendEmail = async (to, subject, html) => {
   const mailOptions = {
-    from: `"Our Platform Team" <${process.env.EMAIL_USER}>`, // Friendly name for the sender
+    from: `"StyleVerse" <${getEmailFrom()}>`,
     to,
     subject,
     html,
